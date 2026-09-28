@@ -1,0 +1,206 @@
+@import "tailwindcss";
+@import "leaflet/dist/leaflet.css";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@layer base {
+  body {
+    @apply bg-slate-50 text-slate-900 font-sans antialiased selection:bg-indigo-500 selection:text-white transition-colors duration-150;
+  }
+
+  html.dark body,
+  body.dark {
+    @apply bg-slate-950 text-slate-100 selection:bg-indigo-600 selection:text-white;
+  }
+}
+
+/* Custom Scrollbar for Bento layout */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Custom Print Styles for Authentic Philippine Barangay Certificates, ID cards, and Attendance Rosters */
+@media print {
+  @page {
+    size: portrait;
+    margin: 8mm 10mm;
+  }
+
+  /* Force clean white background and black text across all modes (including dark mode) */
+  html,
+  body,
+  html.dark,
+  body.dark,
+  .dark {
+    background-color: #ffffff !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+    font-size: 11pt !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    height: auto !important;
+    min-height: 100% !important;
+    overflow: visible !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Hide all app navigation, headers, footers, and screen-only controls */
+  nav,
+  header,
+  footer,
+  aside,
+  .no-print,
+  button,
+  input,
+  select,
+  textarea,
+  .sidebar-nav {
+    display: none !important;
+  }
+
+  /* Complete isolation: When ANY printable modal, receipt, or certificate is active,
+     completely hide the main dashboard layout and its tables so they never leak into the printout */
+  body.modal-open-certificate #app-main-content,
+  body.modal-open-certificate main,
+  body.modal-open-certificate header,
+  body.modal-open-certificate footer,
+  body.modal-open-certificate aside,
+  body.modal-open-certificate nav,
+  body.is-printing-modal #app-main-content,
+  body.is-printing-modal main,
+  body.is-printing-modal header,
+  body.is-printing-modal footer,
+  body.is-printing-modal aside,
+  body.is-printing-modal nav,
+  body:has(.modal-backdrop) #app-main-content,
+  body:has(.modal-backdrop) main,
+  body:has(.modal-backdrop) header,
+  body:has(.modal-backdrop) footer,
+  body:has(#printable-certificate) #app-main-content,
+  body:has(#printable-certificate) main,
+  body:has(#printable-certificate) header,
+  body:has(#printable-certificate) footer,
+  body:has([id^="printable-"]) #app-main-content,
+  body:has([id^="printable-"]) main,
+  body:has([id^="printable-"]) header,
+  body:has([id^="printable-"]) footer,
+  body:has(.printable-area) #app-main-content,
+  body:has(.printable-area) main,
+  body:has(.printable-area) header,
+  body:has(.printable-area) footer {
+    display: none !important;
+  }
+
+  /* Reset modal containers so content can print smoothly without clipping or gray overlays */
+  .modal-backdrop,
+  [class*="fixed inset-0"] {
+    position: static !important;
+    background: transparent !important;
+    background-color: transparent !important;
+    backdrop-filter: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+    display: block !important;
+    box-shadow: none !important;
+    border: none !important;
+  }
+
+  .modal-backdrop > div,
+  [class*="fixed inset-0"] > div,
+  .certificate-paper-canvas {
+    max-height: none !important;
+    height: auto !important;
+    overflow: visible !important;
+    box-shadow: none !important;
+    border: none !important;
+    background: transparent !important;
+    background-color: transparent !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border-radius: 0 !important;
+  }
+
+  /* Specific styling for the official certificate */
+  #printable-certificate {
+    display: block !important;
+    position: static !important;
+    width: 100% !important;
+    max-width: 8.5in !important;
+    margin: 0 auto !important;
+    padding: 24px 32px !important;
+    box-shadow: none !important;
+    border: 6px double #92400e !important; /* Preserves authentic Philippine double amber/gold border */
+    border-radius: 0 !important;
+    background: #ffffff !important;
+    color: #0f172a !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    page-break-after: avoid !important;
+    break-after: avoid !important;
+  }
+
+  /* Generic printable area fallback */
+  .printable-area:not(#printable-certificate) {
+    display: block !important;
+    position: static !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 auto !important;
+    padding: 0.2in !important;
+    box-shadow: none !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  .avoid-break {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  .print-page-break {
+    page-break-after: always;
+    break-after: page;
+  }
+
+  table {
+    page-break-inside: auto;
+  }
+
+  tr {
+    page-break-inside: avoid;
+    page-break-after: auto;
+  }
+}
+
+/* Watermark background styling for certificates */
+.certificate-watermark {
+  background-image: radial-gradient(circle at center, rgba(79, 70, 229, 0.04) 0%, transparent 70%);
+}
+
+.gold-seal-border {
+  border: 4px double #b45309;
+}
+
+.official-seal-badge {
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}

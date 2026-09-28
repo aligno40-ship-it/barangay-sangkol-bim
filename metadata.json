@@ -1,0 +1,5 @@
+{
+  "name": "Barangay Sangkol Information Management System",
+  "description": "Comprehensive Information Management System (BIMS) for Barangay Sangkol with full administrative modules, automated SMS and Email alert dispatch engine (for ready certificates, Lupon hearing summons, emergency announcements, and concern updates), citizen concerns intake & action workflow, interactive Lupon mediation and blotter dispute workflows with activity logs, read-only resident citizen civil data portal with correction filing, activities calendar, announcements, online certificate applications, certificate archive history, and self-service password recovery.",
+  "requestFramePermissions": ["camera"]
+}

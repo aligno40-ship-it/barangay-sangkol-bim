@@ -220,7 +220,7 @@ interface BarangayContextType {
   updateUser: (id: string, updates: Partial<SystemUser>) => void;
   deleteUser: (id: string) => { success: boolean; message: string };
   toggleUserStatus: (id: string) => void;
-  adminResetPassword: (userId: string, newPass: string) => void;
+  adminResetPassword: (userId: string, newPass: string) => Promise<{ success: boolean; message: string }>;
   checkResidentMatch: (data: {
     firstName: string;
     middleName?: string;
@@ -4372,21 +4372,44 @@ export const BarangayProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     );
   };
 
-  const adminResetPassword = (userId: string, newPass: string) => {
-    setUsers((prev) =>
-      prev.map((u) => {
-        if (u.id === userId) {
-          addAuditLog('UPDATE', 'User Management', `Admin reset password for user ${u.name} (@${u.username}).`);
-          clearFailedAttempts(u.username);
-          if (u.email) clearFailedAttempts(u.email);
-          if (isSupabaseConfigured && currentUser.id === userId) {
-            supabase.auth.updateUser({ password: newPass }).catch(() => {});
-          }
-          return u;
+  const adminResetPassword = async (
+    userId: string,
+    newPass: string
+  ): Promise<{ success: boolean; message: string }> => {
+    const targetUser = users.find((user) => user.id === userId);
+    if (!targetUser) {
+      return { success: false, message: 'User account could not be found.' };
+    }
+
+    const updatedUser = { ...targetUser, passwordHash: newPass };
+    try {
+      const { error } = await upsertUser(updatedUser);
+      if (error) {
+        console.error('Supabase adminResetPassword error:', error.message);
+        return { success: false, message: 'The password could not be saved. Please try again.' };
+      }
+    } catch (error) {
+      console.error('Supabase adminResetPassword error:', error);
+      return { success: false, message: 'The password could not be saved. Please try again.' };
+    }
+
+    setUsers((prev) => prev.map((user) => (user.id === userId ? updatedUser : user)));
+    clearFailedAttempts(targetUser.username);
+    if (targetUser.email) clearFailedAttempts(targetUser.email);
+
+    if (isSupabaseConfigured && currentUser.id === userId) {
+      try {
+        const { error: authError } = await supabase.auth.updateUser({ password: newPass });
+        if (authError) {
+          console.error('Supabase Auth password update error:', authError.message);
         }
-        return u;
-      })
-    );
+      } catch (authError) {
+        console.error('Supabase Auth password update error:', authError);
+      }
+    }
+
+    addAuditLog('UPDATE', 'User Management', `Admin reset password for user ${targetUser.name} (@${targetUser.username}).`);
+    return { success: true, message: `Password for @${targetUser.username} was reset successfully.` };
   };
 
   const checkResidentMatch = (data: {

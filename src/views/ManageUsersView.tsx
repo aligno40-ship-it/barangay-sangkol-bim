@@ -399,16 +399,21 @@ export const ManageUsersView: React.FC = () => {
     setIsPasswordModalOpen(true);
   };
 
-  const handleExecutePasswordReset = (e: React.FormEvent) => {
+  const handleExecutePasswordReset = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!passwordTargetUser) return;
     if (!newAdminPassword || newAdminPassword.length < 6) {
       alert('Password must be at least 6 characters.');
       return;
     }
-    adminResetPassword(passwordTargetUser.id, newAdminPassword);
+    const result = await adminResetPassword(passwordTargetUser.id, newAdminPassword);
+    if (!result.success) {
+      triggerFeedback(result.message, 'error');
+      return;
+    }
+
     setIsPasswordModalOpen(false);
-    triggerFeedback(`Password for @${passwordTargetUser.username} was reset to "${newAdminPassword}".`);
+    triggerFeedback(`${result.message} Share the new password securely.`);
   };
 
   const handleCopyPassword = () => {

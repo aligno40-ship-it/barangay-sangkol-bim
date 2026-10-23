@@ -1,0 +1,28 @@
+import { BarangaySettings } from '../types';
+
+export const INITIAL_SETTINGS: BarangaySettings = {
+  barangayName: '',
+  municipality: '',
+  province: '',
+  region: '',
+  zipCode: '',
+  punongBarangay: '',
+  captainSignatureUrl: '',
+  skChairperson: '',
+  kagawads: [],
+  barangaySecretary: '',
+  barangayTreasurer: '',
+  contactNumber: '',
+  email: '',
+  hallAddress: '',
+  officeHours: '',
+  clearanceFeeRegular: 0,
+  businessClearanceFee: 0,
+  residencyCertFee: 0,
+  indigencyCertFee: 0,
+  goodMoralFee: 0,
+  certificateFees: {},
+  puroks: [],
+  theme: 'light',
+  isDarkMode: false,
+};

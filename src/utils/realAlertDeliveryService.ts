@@ -685,6 +685,48 @@ export const sendRealEmailNotification = async (params: {
   }
 };
 
+export const sendServerMail = async (params: {
+  to: string;
+  subject: string;
+  body: string;
+}): Promise<{ success: boolean; message?: string; error?: string }> => {
+  try {
+    const response = await fetch('/api/send-email', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(params),
+    });
+
+    if (!response.ok) {
+      const responseText = await response.text();
+      let error = response.status === 404
+        ? 'Server Mail is unavailable. Confirm the Vercel deployment includes /api/send-email.'
+        : `Server Mail failed (HTTP ${response.status}).`;
+      try {
+        const data = JSON.parse(responseText);
+        if (typeof data.error === 'string' && data.error.trim()) error = data.error;
+      } catch {
+        // Non-JSON responses, such as Vercel's HTML 404 page, use the status-based message.
+      }
+      return { success: false, error };
+    }
+
+    const data = await response.json();
+    if (!data.success) {
+      return { success: false, error: data.error || 'Gmail could not send this email.' };
+    }
+
+    return { success: true, message: 'Email delivered through Gmail SMTP.' };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error
+        ? `Could not connect to Server Mail: ${error.message}`
+        : 'Could not connect to Server Mail. Please try again.',
+    };
+  }
+};
+
 /**
  * Fetch delivery notification logs from backend (GET /api/notify/logs)
  */

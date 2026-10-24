@@ -717,15 +717,15 @@ export const CertificatesView: React.FC = () => {
                                 </>
                               )}
 
-                              {currentUser.role === 'Administrator' && (
-                                <button
-                                  onClick={() => setDeleteTargetCert(cert)}
-                                  className="p-1.5 bg-slate-800 hover:bg-rose-950/60 text-slate-400 hover:text-rose-400 rounded-lg border border-slate-700 cursor-pointer"
-                                  title="Delete Record"
-                                >
-                                  <Trash2 className="w-3.5 h-3.5" />
-                                </button>
-                              )}
+                              <button
+                                onClick={() => setDeleteTargetCert(cert)}
+                                disabled={currentUser.role !== 'Administrator'}
+                                className="px-2.5 py-1.5 bg-rose-950/70 hover:bg-rose-900 text-rose-300 rounded-lg border border-rose-700/70 cursor-pointer inline-flex items-center gap-1 text-[10px] font-bold disabled:bg-slate-800 disabled:text-slate-500 disabled:border-slate-700 disabled:cursor-not-allowed"
+                                title={currentUser.role === 'Administrator' ? 'Delete Certificate Record' : 'Only Administrators can delete certificate records'}
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                                <span>Delete</span>
+                              </button>
                             </div>
                           </td>
                         </tr>
@@ -847,15 +847,15 @@ export const CertificatesView: React.FC = () => {
                           )}
                         </div>
 
-                        {currentUser.role === 'Administrator' && (
-                          <button
-                            onClick={() => setDeleteTargetCert(cert)}
-                            className="p-1.5 bg-slate-800 hover:bg-rose-950/60 text-slate-400 hover:text-rose-400 rounded-lg border border-slate-700 cursor-pointer"
-                            title="Delete Record"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        )}
+                        <button
+                          onClick={() => setDeleteTargetCert(cert)}
+                          disabled={currentUser.role !== 'Administrator'}
+                          className="px-2.5 py-1.5 bg-rose-950/70 hover:bg-rose-900 text-rose-300 rounded-lg border border-rose-700/70 cursor-pointer inline-flex items-center gap-1 text-[10px] font-bold disabled:bg-slate-800 disabled:text-slate-500 disabled:border-slate-700 disabled:cursor-not-allowed"
+                          title={currentUser.role === 'Administrator' ? 'Delete Certificate Record' : 'Only Administrators can delete certificate records'}
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                          <span>Delete</span>
+                        </button>
                       </div>
                     </div>
                   );
@@ -998,15 +998,15 @@ export const CertificatesView: React.FC = () => {
                               <span>Print Document</span>
                             </button>
 
-                            {currentUser.role === 'Administrator' && (
-                              <button
-                                onClick={() => setDeleteTargetCert(cert)}
-                                className="p-1.5 bg-slate-800 hover:bg-rose-950/60 text-slate-300 hover:text-rose-400 rounded-lg border border-slate-700 cursor-pointer"
-                                title="Delete Certificate Record"
-                              >
-                                <Trash2 className="w-3.5 h-3.5" />
-                              </button>
-                            )}
+                            <button
+                              onClick={() => setDeleteTargetCert(cert)}
+                              disabled={currentUser.role !== 'Administrator'}
+                              className="px-2.5 py-1.5 bg-rose-950/70 hover:bg-rose-900 text-rose-300 rounded-lg border border-rose-700/70 cursor-pointer inline-flex items-center gap-1 text-[10px] font-bold disabled:bg-slate-800 disabled:text-slate-500 disabled:border-slate-700 disabled:cursor-not-allowed"
+                              title={currentUser.role === 'Administrator' ? 'Delete Certificate Record' : 'Only Administrators can delete certificate records'}
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                              <span>Delete</span>
+                            </button>
                           </div>
                         </td>
                       </tr>
@@ -1093,15 +1093,15 @@ export const CertificatesView: React.FC = () => {
                         </button>
                       </div>
 
-                      {currentUser.role === 'Administrator' && (
-                        <button
-                          onClick={() => setDeleteTargetCert(cert)}
-                          className="p-1.5 bg-slate-800 hover:bg-rose-950/60 text-slate-400 hover:text-rose-400 rounded-lg border border-slate-700 cursor-pointer"
-                          title="Delete Record"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      )}
+                      <button
+                        onClick={() => setDeleteTargetCert(cert)}
+                        disabled={currentUser.role !== 'Administrator'}
+                        className="px-2.5 py-1.5 bg-rose-950/70 hover:bg-rose-900 text-rose-300 rounded-lg border border-rose-700/70 cursor-pointer inline-flex items-center gap-1 text-[10px] font-bold disabled:bg-slate-800 disabled:text-slate-500 disabled:border-slate-700 disabled:cursor-not-allowed"
+                        title={currentUser.role === 'Administrator' ? 'Delete Certificate Record' : 'Only Administrators can delete certificate records'}
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                        <span>Delete</span>
+                      </button>
                     </div>
                   </div>
                 ))}

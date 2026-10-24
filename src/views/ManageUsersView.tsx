@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { useBarangay, areNamesMatching } from '../context/BarangayContext';
+import { useBarangay, areNamesMatching, resolveResidentForProfile } from '../context/BarangayContext';
 import { SystemUser, UserRole } from '../types';
 import { supabase, isSupabaseConfigured } from '../services/supabaseService';
 import { DeleteConfirmationModal } from '../components/DeleteConfirmationModal';
@@ -68,6 +68,10 @@ export const ManageUsersView: React.FC = () => {
     rejectResidentAccount,
     currentUser,
     setCurrentUser,
+    userNameSyncNoticeCount,
+    userNameSyncError,
+    clearUserNameSyncNotice,
+    residentSyncReview,
     settings,
     residents,
     officials,
@@ -253,12 +257,7 @@ export const ManageUsersView: React.FC = () => {
   // Open Edit Modal
   const handleOpenEditUser = (user: SystemUser) => {
     setEditingUser(user);
-    const linkedRes = residents.find(
-      (r) =>
-        (user.residentId && r.id === user.residentId) ||
-        (user.email && r.email && r.email.toLowerCase() === user.email.toLowerCase()) ||
-        (user.username && r.email && user.username.toLowerCase() === r.email.toLowerCase())
-    );
+    const linkedRes = resolveResidentForProfile(user, residents).resident;
     const resolvedReligion = user.religion || linkedRes?.religion || 'Bible Baptist Church';
 
     setFormData({
@@ -748,6 +747,43 @@ export const ManageUsersView: React.FC = () => {
         </div>
       )}
 
+      {userNameSyncNoticeCount > 0 && (
+        <div className="flex items-center justify-between gap-3 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs text-emerald-800">
+          <span className="inline-flex items-center gap-2 font-semibold">
+            <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600" />
+            Name synced from Resident Management
+            {userNameSyncNoticeCount > 1 ? ` (${userNameSyncNoticeCount} user accounts updated)` : ''}
+          </span>
+          <button
+            type="button"
+            onClick={clearUserNameSyncNotice}
+            className="rounded-md px-2 py-1 font-bold text-emerald-800 hover:bg-emerald-100"
+            aria-label="Dismiss name synchronization notice"
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
+
+      {userNameSyncError && (
+        <div className="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-800">
+          {userNameSyncError}
+        </div>
+      )}
+
+      {residentSyncReview.length > 0 && (
+        <div className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-3 text-xs text-amber-900">
+          <p className="font-bold">Resident matches need admin review</p>
+          <ul className="mt-1 space-y-1">
+            {residentSyncReview.map((item) => (
+              <li key={item.username}>
+                @{item.username} ({item.userName}) matches multiple residents: {item.residentNames.join(', ')}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
       {/* Header Banner */}
       <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
@@ -1204,12 +1240,7 @@ export const ManageUsersView: React.FC = () => {
                                 <span>{user.purok || 'Unassigned'}</span>
                               </div>
                               {(() => {
-                                const linkedRes = residents.find(
-                                  (r) =>
-                                    (user.residentId && r.id === user.residentId) ||
-                                    (user.email && r.email && r.email.toLowerCase() === user.email.toLowerCase()) ||
-                                    (user.username && r.email && user.username.toLowerCase() === r.email.toLowerCase())
-                                );
+                                const linkedRes = resolveResidentForProfile(user, residents).resident;
                                 const displayRel = user.religion || linkedRes?.religion;
                                 return displayRel ? (
                                   <span className="inline-block px-1.5 py-0.5 rounded text-[10px] font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200">

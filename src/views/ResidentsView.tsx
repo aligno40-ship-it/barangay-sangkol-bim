@@ -597,9 +597,10 @@ export const ResidentsView: React.FC = () => {
                             <button
                               onClick={() => setDeleteTargetResident(r)}
                               title="Delete Permanently"
-                              className="p-1.5 text-rose-600 hover:text-rose-800 bg-slate-50 hover:bg-rose-50 rounded-lg border border-slate-200 transition-colors cursor-pointer"
+                              className="px-2 py-1.5 text-rose-600 hover:text-rose-800 bg-slate-50 hover:bg-rose-50 rounded-lg border border-slate-200 transition-colors cursor-pointer inline-flex items-center gap-1 text-[10px] font-semibold"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
+                              <span>Delete</span>
                             </button>
                           )}
                         </div>
@@ -764,9 +765,10 @@ export const ResidentsView: React.FC = () => {
                         <button
                           onClick={() => setDeleteTargetResident(r)}
                           title="Delete Permanently"
-                          className="p-1.5 text-rose-600 hover:text-rose-800 bg-slate-50 hover:bg-rose-50 rounded-lg border border-slate-200 transition-colors cursor-pointer"
+                          className="px-2 py-1.5 text-rose-600 hover:text-rose-800 bg-slate-50 hover:bg-rose-50 rounded-lg border border-slate-200 transition-colors cursor-pointer inline-flex items-center gap-1 text-[10px] font-semibold"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
+                          <span>Delete</span>
                         </button>
                       )}
                     </div>

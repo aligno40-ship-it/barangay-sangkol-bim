@@ -184,6 +184,11 @@ interface BarangayContextType {
   setCurrentUser: (user: SystemUser) => void;
   users: SystemUser[];
   setUsers: React.Dispatch<React.SetStateAction<SystemUser[]>>;
+  syncUsersWithResidents: () => void;
+  userNameSyncNoticeCount: number;
+  userNameSyncError: string | null;
+  clearUserNameSyncNotice: () => void;
+  residentSyncReview: Array<{ username: string; userName: string; residentNames: string[] }>;
   switchRole: (role: UserRole) => void;
   globalSearch: string;
   setGlobalSearch: (q: string) => void;
@@ -559,6 +564,113 @@ export const normalizePersonName = (name: string = ''): string => {
     .toLowerCase();
 };
 
+const getResidentNameParts = (name: string): { firstName: string; lastName: string } => {
+  const suffixes = new Set(['jr', 'sr', 'ii', 'iii', 'iv', 'v']);
+  const parts = normalizePersonName(name).split(' ').filter(Boolean);
+  if (parts.length > 1 && suffixes.has(parts[parts.length - 1].replace(/\./g, ''))) {
+    parts.pop();
+  }
+  return { firstName: parts[0] || '', lastName: parts[parts.length - 1] || '' };
+};
+
+const residentNamesMatch = (nameA: string, nameB: string): boolean => {
+  const partsA = getResidentNameParts(nameA);
+  const partsB = getResidentNameParts(nameB);
+  return Boolean(
+    partsA.firstName &&
+    partsA.lastName &&
+    partsA.firstName === partsB.firstName &&
+    partsA.lastName === partsB.lastName
+  );
+};
+
+const normalizeMatchValue = (value?: string | null): string =>
+  (value || '').trim().toLowerCase().replace(/\s+/g, ' ');
+
+const normalizeMatchPhone = (value?: string | null): string =>
+  (value || '').replace(/\D/g, '');
+
+export const resolveResidentForProfile = (
+  user: SystemUser,
+  residentRecords: Resident[]
+): { resident?: Resident; ambiguousResidents?: Resident[] } => {
+  const nameMatches = residentRecords.filter((resident) =>
+    residentNamesMatch(
+      user.name,
+      `${resident.firstName} ${resident.middleName || ''} ${resident.lastName} ${resident.suffix || ''}`
+    )
+  );
+  const userBirthDate = normalizeMatchValue(user.birthDate).slice(0, 10);
+  const userEmail = normalizeMatchValue(user.email);
+  const userPhone = normalizeMatchPhone(user.contactNumber || user.phone);
+  const userNationalId = normalizeMatchValue(user.validIdNumber).replace(/[^a-z0-9]/g, '');
+  const userAddress = normalizeMatchValue(`${user.streetAddress || ''} ${user.purok || ''}`);
+  const userSex = normalizeMatchValue(user.sex);
+  const nameCompatibleMatches = nameMatches.filter((resident) => {
+    const residentBirthDate = normalizeMatchValue(resident.birthDate).slice(0, 10);
+    return !userBirthDate || !residentBirthDate || userBirthDate === residentBirthDate;
+  });
+
+  const candidates = residentRecords.flatMap((resident) => {
+    const nameMatch = nameMatches.includes(resident);
+    const birthDateMatch =
+      Boolean(userBirthDate) &&
+      userBirthDate === normalizeMatchValue(resident.birthDate).slice(0, 10);
+    const emailMatch =
+      Boolean(userEmail) && userEmail === normalizeMatchValue(resident.email);
+    const residentPhone = normalizeMatchPhone(resident.contactNumber);
+    const phoneMatch =
+      userPhone.length >= 7 && userPhone === residentPhone;
+    const nationalIdMatch =
+      Boolean(userNationalId) &&
+      userNationalId === normalizeMatchValue(resident.nationalIdNo).replace(/[^a-z0-9]/g, '');
+    const birthDateConflict =
+      Boolean(userBirthDate) &&
+      Boolean(normalizeMatchValue(resident.birthDate)) &&
+      !birthDateMatch &&
+      !emailMatch &&
+      !nationalIdMatch;
+    if (birthDateConflict) return [];
+
+    const residentAddress = normalizeMatchValue(`${resident.streetAddress || ''} ${resident.purok || ''}`);
+    const addressMatch = Boolean(userAddress.trim()) && userAddress === residentAddress;
+    const sexMatch =
+      Boolean(userSex) && userSex === normalizeMatchValue(resident.sex);
+
+    const sufficientlyMatched =
+      nationalIdMatch ||
+      emailMatch ||
+      (nameMatch && (birthDateMatch || phoneMatch || addressMatch || sexMatch)) ||
+      (birthDateMatch && (phoneMatch || addressMatch || sexMatch)) ||
+      (phoneMatch && addressMatch && sexMatch);
+    if (!sufficientlyMatched) return [];
+
+    const score =
+      (nationalIdMatch ? 16 : 0) +
+      (emailMatch ? 8 : 0) +
+      (birthDateMatch ? 5 : 0) +
+      (nameMatch ? 4 : 0) +
+      (phoneMatch ? 3 : 0) +
+      (addressMatch ? 2 : 0) +
+      (sexMatch ? 1 : 0);
+    return [{ resident, score }];
+  });
+
+  if (candidates.length > 0) {
+    const highestScore = Math.max(...candidates.map((candidate) => candidate.score));
+    const bestMatches = candidates
+      .filter((candidate) => candidate.score === highestScore)
+      .map((candidate) => candidate.resident);
+    return bestMatches.length === 1
+      ? { resident: bestMatches[0] }
+      : { ambiguousResidents: bestMatches };
+  }
+
+  if (nameCompatibleMatches.length === 1) return { resident: nameCompatibleMatches[0] };
+  if (nameCompatibleMatches.length > 1) return { ambiguousResidents: nameCompatibleMatches };
+  return {};
+};
+
 export const areNamesMatching = (nameA: string = '', nameB: string = ''): boolean => {
   if (!nameA || !nameB) return false;
   const normA = normalizePersonName(nameA);
@@ -604,6 +716,10 @@ export const areNamesMatching = (nameA: string = '', nameB: string = ''): boolea
   }
 
   return false;
+};
+
+const resolveResidentForUser = (user: SystemUser, residentRecords: Resident[]): Resident | undefined => {
+  return resolveResidentForProfile(user, residentRecords).resident;
 };
 
 /**
@@ -694,6 +810,11 @@ export const BarangayProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   }));
 
   const [users, setUsers] = useState<SystemUser[]>([]);
+  const [userNameSyncNoticeCount, setUserNameSyncNoticeCount] = useState(0);
+  const [userNameSyncError, setUserNameSyncError] = useState<string | null>(null);
+  const [residentSyncReview, setResidentSyncReview] = useState<
+    Array<{ username: string; userName: string; residentNames: string[] }>
+  >([]);
 
   const [currentUser, setCurrentUser] = useState<SystemUser>(EMPTY_USER);
 
@@ -1913,7 +2034,7 @@ export const BarangayProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   }, [officials]);
 
   // Audit Logging helper
-  const addAuditLog = (action: AuditLog['action'], module: string, details: string) => {
+  const addAuditLog = useCallback((action: AuditLog['action'], module: string, details: string) => {
     const now = new Date();
     const formatted = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
     const newLog: AuditLog = {
@@ -1930,7 +2051,7 @@ export const BarangayProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     };
     setAuditLogs((prev) => [newLog, ...prev]);
     upsertAuditLog(newLog).catch((err) => console.warn('Supabase addAuditLog error:', err?.message || err));
-  };
+  }, [currentUser]);
 
   // Data Integrity Verification & Auto-Repair Engine
   // Verifies that currentUser in context has matching profile data with official resident civil records.
@@ -1952,36 +2073,12 @@ export const BarangayProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         return { checked: false, repaired: false, user: currentUser, discrepancies: [], autoFixedFields: [] };
       }
 
-    // 1. Locate official resident record from Civil Registry
-    let matchedResident: Resident | undefined;
-
-    // Strategy A: Match by explicit residentId
-    if (user.residentId) {
-      matchedResident = residents.find((r) => r.id === user.residentId);
-    }
-
-    // Strategy B: Match by matchedResidentId (applicant / registration flow)
-    if (!matchedResident && user.matchedResidentId) {
-      matchedResident = residents.find((r) => r.id === user.matchedResidentId);
-    }
-
-    // Strategy C: Match by registered email
-    if (!matchedResident && user.email) {
-      matchedResident = residents.find(
-        (r) => r.email && r.email.toLowerCase().trim() === user.email.toLowerCase().trim()
-      );
-    }
-
-    // Strategy D: Match by username / email format
-    if (!matchedResident && user.username) {
-      const cleanUname = user.username.toLowerCase().trim();
-      matchedResident = residents.find(
-        (r) => r.email && r.email.toLowerCase().trim() === cleanUname
-      );
-    }
+    // Match using personal profile details rather than stored resident IDs.
+    const profileMatch = resolveResidentForProfile(user, residents);
+    let matchedResident = profileMatch.resident;
 
     // Strategy E: Role-specific matching for primary executive officials
-    if (!matchedResident) {
+    if (!matchedResident && !profileMatch.ambiguousResidents) {
       const isCaptain = user.role === 'Barangay Captain' || user.username === 'captain' || /punong\s*barangay|captain/i.test(user.position || '');
       const isSecretary = user.role === 'Barangay Secretary' || user.id === 'USR-003' || user.username === 'secretary';
       const isTreasurer = user.role === 'Barangay Treasurer' || user.id === 'USR-004' || user.username === 'treasurer';
@@ -2000,15 +2097,6 @@ export const BarangayProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           residents.find((r) => areNamesMatching(`${r.firstName} ${r.lastName}`, settings.barangayTreasurer)) ||
           residents.find((r) => normalizePersonName(`${r.firstName} ${r.lastName}`).includes('bautista'));
       }
-    }
-
-    // Strategy F: Match by full name similarity
-    if (!matchedResident && user.name) {
-      matchedResident = residents.find((r) => {
-        const fullA = `${r.firstName} ${r.lastName}`.trim();
-        const fullB = `${r.firstName} ${r.middleName || ''} ${r.lastName}`.trim();
-        return areNamesMatching(fullA, user.name) || areNamesMatching(fullB, user.name);
-      });
     }
 
     if (!matchedResident) {
@@ -3715,6 +3803,138 @@ export const BarangayProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     setTheme(nextTheme);
   };
 
+  const syncUsersWithResidents = useCallback((
+    residentRecords: Resident[] = residents,
+    userRecords: SystemUser[] = users
+  ) => {
+    if (userRecords.length === 0 || residentRecords.length === 0) return;
+
+    const reviewItems: Array<{ username: string; userName: string; residentNames: string[] }> = [];
+    const usersToPersist: SystemUser[] = [];
+    let updatedCount = 0;
+
+    const nextUsers = userRecords.map((user) => {
+      const match = resolveResidentForProfile(user, residentRecords);
+      if (!match.resident) {
+        if (match.ambiguousResidents) {
+          reviewItems.push({
+            username: user.username,
+            userName: user.name,
+            residentNames: match.ambiguousResidents.map(
+              (resident) =>
+                `${resident.firstName} ${resident.middleName ? `${resident.middleName} ` : ''}${resident.lastName}${resident.suffix ? ` ${resident.suffix}` : ''} (${resident.id})`
+            ),
+          });
+        }
+        return user;
+      }
+
+      const resident = match.resident;
+      const fullName = `${resident.firstName} ${resident.middleName || ''} ${resident.lastName} ${resident.suffix || ''}`
+        .replace(/\s+/g, ' ')
+        .trim();
+      // A pending resident application may use the matched record for profile data, but stays unlinked until approval.
+      const linkedResidentId =
+        user.role === 'Resident' && (user.status === 'Pending Approval' || user.approvalStatus === 'Pending')
+          ? user.residentId
+          : resident.id;
+      const updatedUser: SystemUser = {
+        ...user,
+        name: fullName,
+        contactNumber: resident.contactNumber || user.contactNumber,
+        phone: resident.contactNumber || user.phone,
+        email: resident.email || user.email,
+        residentId: linkedResidentId,
+        streetAddress: resident.streetAddress,
+        birthDate: resident.birthDate,
+        sex: resident.sex,
+        civilStatus: resident.civilStatus,
+        purok: resident.purok,
+        citizenship: resident.citizenship,
+        religion: resident.religion,
+        bloodType: resident.bloodType,
+        educationalAttainment: resident.educationalAttainment,
+        occupation: resident.occupation,
+        monthlyIncome: resident.monthlyIncome,
+        voterStatus: resident.voterStatus,
+        precinctNo: resident.precinctNo,
+        householdId: resident.householdId,
+        householdNo: resident.householdId,
+        isSeniorCitizen: resident.isSeniorCitizen,
+        isPWD: resident.isPWD,
+        pwdType: resident.pwdType,
+        is4PsBeneficiary: resident.is4PsBeneficiary,
+        isSoloParent: resident.isSoloParent,
+        isIndigent: resident.isIndigent,
+        isHouseholdHead: resident.isHouseholdHead,
+        emergencyContactName: resident.emergencyContactName,
+        emergencyContactNumber: resident.emergencyContactNumber,
+        validIdNumber: resident.nationalIdNo || user.validIdNumber,
+        avatar: resident.photoUrl || resident.avatar || resident.photo || user.avatar,
+      };
+
+      const changed = (Object.keys(updatedUser) as Array<keyof SystemUser>).some(
+        (key) => updatedUser[key] !== user[key]
+      );
+      if (!changed) return user;
+
+      updatedCount++;
+      usersToPersist.push(updatedUser);
+      if (currentUser.id === user.id) {
+        setCurrentUser(updatedUser);
+      }
+      return updatedUser;
+    });
+
+    if (updatedCount > 0) {
+      setUsers(nextUsers);
+      addAuditLog(
+        'UPDATE',
+        'User Management',
+        `Synced ${updatedCount} user account profile(s) from Resident Management.`
+      );
+      if (isSupabaseConfigured) {
+        Promise.all(usersToPersist.map(async (user) => {
+          const result = await upsertUser(user);
+          if (result.error || result.rlsRestricted) {
+            const error = result.error || new Error('Database permissions blocked the user profile update.');
+            console.error(`Supabase resident profile sync failed for user ${user.id}:`, error);
+            throw error;
+          }
+        }))
+          .then(() => {
+            setUserNameSyncError(null);
+            setUserNameSyncNoticeCount(updatedCount);
+          })
+          .catch(() => {
+            setUserNameSyncError(
+              'Resident data updated on screen, but one or more user profiles could not be saved. Check the database permissions and try again.'
+            );
+          });
+      } else {
+        setUserNameSyncNoticeCount(updatedCount);
+      }
+    }
+
+    setResidentSyncReview((previous) => {
+      const unchanged =
+        previous.length === reviewItems.length &&
+        previous.every((item, index) =>
+          item.username === reviewItems[index].username &&
+          item.userName === reviewItems[index].userName &&
+          item.residentNames.join('|') === reviewItems[index].residentNames.join('|')
+        );
+      return unchanged ? previous : reviewItems;
+    });
+  }, [users, residents, currentUser.id, addAuditLog]);
+
+  const clearUserNameSyncNotice = () => setUserNameSyncNoticeCount(0);
+
+  useEffect(() => {
+    if (isSupabaseSyncing) return;
+    syncUsersWithResidents();
+  }, [syncUsersWithResidents, isSupabaseSyncing]);
+
   // Residents
   const addResident = (residentData: Omit<Resident, 'id' | 'dateRegistered' | 'updatedAt'>): Resident => {
     let nextNum = residents.length + 1;
@@ -3733,7 +3953,9 @@ export const BarangayProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       updatedAt: today,
     };
 
-    setResidents((prev) => [newResident, ...prev]);
+    const nextResidents = [newResident, ...residents];
+    setResidents(nextResidents);
+    syncUsersWithResidents(nextResidents);
     upsertResident(newResident).catch((err) => console.error('Failed to sync added resident to Supabase:', err));
     addAuditLog('CREATE', 'Resident Management', `Registered new resident: ${newResident.firstName} ${newResident.lastName} (ID: ${id}, ${newResident.purok}).`);
     return newResident;
@@ -3744,9 +3966,12 @@ export const BarangayProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     const targetRes = residents.find((r) => r.id === id);
     const oldFullName = targetRes ? `${targetRes.firstName} ${targetRes.lastName}`.trim() : '';
 
-    setResidents((prev) =>
-      prev.map((r) => (r.id === id ? { ...r, ...updates, updatedAt: today } : r))
-    );
+    const updatedResident = targetRes ? { ...targetRes, ...updates, updatedAt: today } : undefined;
+    const nextResidents = updatedResident
+      ? residents.map((resident) => resident.id === id ? updatedResident : resident)
+      : residents;
+    setResidents(nextResidents);
+    if (updatedResident) syncUsersWithResidents(nextResidents);
 
     if (targetRes) {
       const newFirstName = updates.firstName ?? targetRes.firstName;
@@ -3772,59 +3997,7 @@ export const BarangayProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
       const formattedPbName = `Hon. ${newFullName}`;
 
-      // 1. Synchronize matching user accounts
-      const usersToUpsert: SystemUser[] = [];
-      setUsers((prev) =>
-        prev.map((u) => {
-          const isMatch =
-            u.residentId === id ||
-            u.matchedResidentId === id ||
-            areNamesMatching(u.name, oldFullName) ||
-            (u.email && targetRes.email && u.email.toLowerCase() === targetRes.email.toLowerCase()) ||
-            (isCaptainResident && (u.role === 'Administrator' || u.role === 'Barangay Captain' || u.id === 'USR-001' || u.id === 'USR-002')) ||
-            (isSecretaryResident && (u.role === 'Barangay Secretary' || u.id === 'USR-003')) ||
-            (isTreasurerResident && (u.role === 'Barangay Treasurer' || u.id === 'USR-004'));
-
-          if (isMatch) {
-            const userName = isCaptainResident && (u.role === 'Administrator' || u.id === 'USR-001')
-              ? formattedPbName
-              : newFullName;
-
-            const updatedUser: SystemUser = {
-              ...u,
-              name: userName,
-              contactNumber: newContact || u.contactNumber,
-              email: newEmail || u.email,
-              purok: newPurok || u.purok,
-              streetAddress: newAddress || u.streetAddress,
-              avatar: newAvatar !== undefined ? newAvatar : u.avatar,
-              residentId: id,
-              religion: updates.religion !== undefined ? updates.religion : (targetRes.religion || u.religion),
-              citizenship: updates.citizenship !== undefined ? updates.citizenship : (targetRes.citizenship || u.citizenship),
-              bloodType: updates.bloodType !== undefined ? updates.bloodType : (targetRes.bloodType || u.bloodType),
-              civilStatus: (updates.civilStatus as any) !== undefined ? (updates.civilStatus as any) : u.civilStatus,
-              birthDate: updates.birthDate !== undefined ? updates.birthDate : u.birthDate,
-              sex: (updates.sex as any) !== undefined ? (updates.sex as any) : u.sex,
-            };
-
-            if (currentUser.id === u.id || areNamesMatching(currentUser.name, oldFullName) || (isCaptainResident && currentUser.role === 'Administrator')) {
-              setCurrentUser(updatedUser);
-              if (isAuthenticated) {
-                safeSetSessionItem(STORAGE_KEY_PREFIX + 'current_user_id', updatedUser.id);
-              }
-            }
-            usersToUpsert.push(updatedUser);
-            return updatedUser;
-          }
-          return u;
-        })
-      );
-
-      usersToUpsert.forEach((u) => {
-        upsertUser(u).catch((err) => console.warn('Supabase sync user avatar from updateResident error:', err?.message || err));
-      });
-
-      // 2. Synchronize Officials
+      // 1. Synchronize Officials
       setOfficials((prev) =>
         prev.map((off) => {
           const isKagawad = /kagawad|councilor/i.test(off.position);
@@ -3854,7 +4027,7 @@ export const BarangayProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         })
       );
 
-      // 3. Synchronize Settings institutional heads
+      // 2. Synchronize Settings institutional heads
       if (isCaptainResident && newFullName) {
         setSettings((prev) => ({
           ...prev,
@@ -3870,7 +4043,7 @@ export const BarangayProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         setSettings((prev) => ({ ...prev, barangayTreasurer: newFullName }));
       }
 
-      // 4. Synchronize Households
+      // 3. Synchronize Households
       setHouseholds((prev) =>
         prev.map((hh) => {
           const isHeadMatch = hh.headResidentId === id || areNamesMatching(hh.headName, oldFullName);
@@ -6397,15 +6570,14 @@ export const BarangayProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       return { success: false, message: 'Activity not found.' };
     }
 
-    // Match resident details
     const currentName = currentUser?.name || currentUser?.username || 'User';
-    const resId = customData?.residentId || currentUser?.residentId;
-    const resident = residents.find(
-      (r) =>
-        (resId && r.id === resId) ||
-        (currentUser?.residentId && r.id === currentUser.residentId) ||
-        (r.firstName && currentName && r.firstName.toLowerCase() === currentName.toLowerCase().split(' ')[0])
-    );
+    const resident = customData?.residentId
+      ? residents.find((r) => r.id === customData.residentId)
+      : resolveResidentForUser(currentUser, residents);
+    if (customData?.residentId && !resident) {
+      return { success: false, message: 'Selected resident not found in civil registry.' };
+    }
+    const resId = resident?.id;
 
     const resName =
       customData?.residentName ||
@@ -6504,13 +6676,14 @@ export const BarangayProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     residentIdOrUserId?: string
   ): { success: boolean; message: string } => {
     const targetAct = activities.find((a) => a.id === activityId);
-    const resId = residentIdOrUserId || currentUser?.residentId;
+    const resId = residentIdOrUserId || resolveResidentForUser(currentUser, residents)?.id;
     const currentName = (currentUser?.name || currentUser?.username || '').toLowerCase();
     const targetAtt = activityAttendees.find(
       (att) =>
         att.activityId === activityId &&
-        ((resId && att.residentId === resId) ||
-          (currentName && att.residentName && att.residentName.toLowerCase() === currentName))
+        (resId
+          ? att.residentId === resId
+          : currentName && att.residentName && att.residentName.toLowerCase() === currentName)
     );
 
     if (!targetAtt) {
@@ -6623,12 +6796,14 @@ export const BarangayProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   };
 
   const rsvpActivity = (id: string) => {
+    const residentId = resolveResidentForUser(currentUser, residents)?.id;
     const currentName = (currentUser?.name || currentUser?.username || '').toLowerCase();
     const isAttending = activityAttendees.some(
       (att) =>
         att.activityId === id &&
-        ((currentUser?.residentId && att.residentId === currentUser.residentId) ||
-          (currentName && att.residentName && att.residentName.toLowerCase() === currentName))
+        (residentId
+          ? att.residentId === residentId
+          : currentName && att.residentName && att.residentName.toLowerCase() === currentName)
     );
 
     if (isAttending) {
@@ -7346,6 +7521,16 @@ export const BarangayProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       }
       return [...newResidentsToInsert, ...next];
     });
+    const updatedResidentIds = new Set(existingResidentsToUpdate.map((resident) => resident.id));
+    const importedResidents = [
+      ...newResidentsToInsert,
+      ...residents.map((resident) =>
+        updatedResidentIds.has(resident.id)
+          ? existingResidentsToUpdate.find((updated) => updated.id === resident.id) || resident
+          : resident
+      ),
+    ];
+    syncUsersWithResidents(importedResidents);
 
     // Batch insert/upsert in chunks of 500 to Supabase
     const allRecordsToSync = [...existingResidentsToUpdate, ...newResidentsToInsert];
@@ -7810,6 +7995,11 @@ export const BarangayProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         setCurrentUser,
         users,
         setUsers,
+        syncUsersWithResidents,
+        userNameSyncNoticeCount,
+        userNameSyncError,
+        clearUserNameSyncNotice,
+        residentSyncReview,
         switchRole,
         globalSearch,
         setGlobalSearch,

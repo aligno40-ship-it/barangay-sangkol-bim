@@ -4,7 +4,7 @@ import { useBarangay } from '../context/BarangayContext';
 import {
   validateResidentEmail,
   formatCertificateReadySms,
-  sendRealEmailNotification,
+  sendServerMail,
   openGmailWebCompose,
   sendRealGmail,
   buildOfficialBarangayHtmlEmail,
@@ -187,35 +187,22 @@ Please bring 1 valid government ID upon claiming your document. You may also pre
     setEmailStatus('sending');
     setEmailFeedback(null);
 
-    const res = await sendRealEmailNotification({
-      email: emailAddress,
-      residentId: certificate.residentId || matchedResident?.id,
-      residentName: certificate.residentName,
-      certificateId: certificate.id,
-      controlNumber: certificate.controlNumber,
-      certificateType: certificate.type,
-      status: certificate.status || 'Approved & Ready',
+    const res = await sendServerMail({
+      to: emailAddress,
       subject: officialEmailSubject,
-      htmlBody: officialHtmlBody,
-      plainText: officialEmailBodyText,
-      sentBy: 'Barangay Staff Officer',
+      body: officialEmailBodyText,
     });
 
     if (res.success) {
       setEmailStatus('success');
-      const isSim = (res.provider || '').includes('Simulated');
-      setEmailFeedback(
-        isSim
-          ? `✓ Logged to Server Mail Queue. Use 'Send with Gmail' to deliver straight to inbox.`
-          : `✓ Dispatched via ${res.provider || 'Email Gateway'}`
-      );
-      setEmailMsgId(res.providerMessageId || null);
+      setEmailFeedback(`✓ Email delivered to ${emailAddress} through Gmail SMTP.`);
+      setEmailMsgId(null);
       if (onAlertSent) {
         onAlertSent('email', `Email dispatched to ${emailAddress}`);
       }
     } else {
       setEmailStatus('error');
-      setEmailFeedback(res.error || res.message || 'Email dispatch failed');
+      setEmailFeedback(res.error || 'Email dispatch failed.');
     }
   };
 

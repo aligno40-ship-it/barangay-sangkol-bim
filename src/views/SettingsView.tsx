@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useMemo } from 'react';
+﻿import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { useBarangay } from '../context/BarangayContext';
 import { DeleteConfirmationModal } from '../components/DeleteConfirmationModal';
 import { DataImportModal } from '../components/DataImportModal';
@@ -38,7 +38,6 @@ import {
   Phone,
   Mail,
   Home,
-  Award,
   FileSpreadsheet,
   Cookie,
   Scale,
@@ -56,7 +55,6 @@ type SettingsTab =
   | 'appearance'
   | 'general'
   | 'branding'
-  | 'signatories'
   | 'fees'
   | 'puroks'
   | 'users'
@@ -433,7 +431,6 @@ export const SettingsView: React.FC = () => {
     { id: 'appearance', label: 'Dark Mode & Theme', icon: Moon },
     { id: 'general', label: 'General & Jurisdiction', icon: Building },
     { id: 'branding', label: 'Official Seal & Branding', icon: ImageIcon },
-    { id: 'signatories', label: 'Signatories & Officials', icon: Award },
     { id: 'fees', label: 'Fee Schedule (₱)', icon: DollarSign },
     { id: 'puroks', label: 'Purok & Sitio Zones', icon: MapPin, badge: String(puroksList.length) },
     { id: 'users', label: 'Users & Access', icon: Users, badge: String(users.length) },
@@ -1414,254 +1411,8 @@ export const SettingsView: React.FC = () => {
         )}
 
         {/* ========================================================================= */}
-        {/* SECTION 4: SIGNATORIES & LEADERSHIP                                       */}
+        {/* SECTION 4: FEE SCHEDULE                                                   */}
         {/* ========================================================================= */}
-        {(viewMode === 'all' || activeTab === 'signatories') && (
-          <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs space-y-6">
-            <div className="flex items-center gap-3 border-b border-slate-100 dark:border-slate-800 pb-3">
-              <div className="w-9 h-9 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800/60 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
-                <Award className="w-4.5 h-4.5" />
-              </div>
-              <div>
-                <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">
-                  Official Document Signatories & Leadership Roster
-                </h3>
-                <p className="text-xs text-slate-500 dark:text-slate-400">
-                  Designated officials whose names and signatures appear on certificates, clearances, and official council records.
-                </p>
-              </div>
-            </div>
-
-            {/* Subsection 4A: Core Executive Signatories */}
-            <div className="space-y-3">
-              <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wide flex items-center gap-1.5">
-                <BadgeCheck className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
-                <span>Executive Signatories</span>
-              </h4>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5 flex items-center gap-1">
-                    <BadgeCheck className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
-                    <span>Punong Barangay (Barangay Captain) *</span>
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.punongBarangay}
-                    onChange={(e) => setFormData({ ...formData, punongBarangay: e.target.value })}
-                    placeholder="e.g. Hon. Rodrigo M. Sangkol"
-                    className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-900 dark:text-slate-100 focus:outline-hidden focus:ring-2 focus:ring-indigo-500 font-bold"
-                  />
-                  <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-1">
-                    Executive signatory for all issued certifications and clearances.
-                  </p>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5 flex items-center gap-1">
-                    <FileText className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
-                    <span>Barangay Secretary *</span>
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.barangaySecretary}
-                    onChange={(e) => setFormData({ ...formData, barangaySecretary: e.target.value })}
-                    placeholder="e.g. Atty. Maria Elena V. Ramos"
-                    className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-900 dark:text-slate-100 focus:outline-hidden focus:ring-2 focus:ring-indigo-500 font-bold"
-                  />
-                  <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-1">
-                    Attesting officer on official barangay documents.
-                  </p>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5 flex items-center gap-1">
-                    <DollarSign className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-                    <span>Barangay Treasurer *</span>
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.barangayTreasurer}
-                    onChange={(e) => setFormData({ ...formData, barangayTreasurer: e.target.value })}
-                    placeholder="e.g. Mrs. Cynthia T. Bautista"
-                    className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-900 dark:text-slate-100 focus:outline-hidden focus:ring-2 focus:ring-indigo-500 font-bold"
-                  />
-                  <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-1">
-                    Collecting & disbursing officer for official receipts.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Subsection 4B: Punong Barangay Signature Image (Optional) */}
-            <div className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700 space-y-3">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                <div>
-                  <label className="text-xs font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
-                    <ImageIcon className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
-                    <span>Punong Barangay Signature Image (Optional)</span>
-                  </label>
-                  <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                    Upload an authentic transparent PNG or image signature to display automatically above the Captain's name on issued certificates and clearances.
-                  </p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="file"
-                    ref={signatureInputRef}
-                    onChange={handleCaptainSignatureUpload}
-                    accept="image/*"
-                    className="hidden"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => signatureInputRef.current?.click()}
-                    className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
-                  >
-                    <Upload className="w-3.5 h-3.5" />
-                    <span>{formData.captainSignatureUrl ? 'Replace Signature' : 'Upload Signature'}</span>
-                  </button>
-                  {formData.captainSignatureUrl && (
-                    <button
-                      type="button"
-                      onClick={handleRemoveCaptainSignature}
-                      className="px-3 py-1.5 bg-rose-50 dark:bg-rose-950/50 hover:bg-rose-100 text-rose-600 dark:text-rose-400 rounded-lg text-xs font-semibold flex items-center gap-1 transition-colors cursor-pointer"
-                      title="Remove signature image"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                      <span>Remove</span>
-                    </button>
-                  )}
-                </div>
-              </div>
-
-              {formData.captainSignatureUrl && (
-                <div className="flex items-center gap-4 pt-2 border-t border-slate-200 dark:border-slate-700">
-                  <div className="h-14 p-1.5 bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700 flex items-center justify-center">
-                    <img
-                      src={formData.captainSignatureUrl}
-                      alt="Captain Signature Preview"
-                      className="h-full object-contain max-w-[140px]"
-                      referrerPolicy="no-referrer"
-                    />
-                  </div>
-                  <div className="text-[11px] text-slate-600 dark:text-slate-400">
-                    <p className="font-medium text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
-                      <CheckCircle2 className="w-3.5 h-3.5" /> Signature configured
-                    </p>
-                    <p>Will be embedded on printable certificate templates.</p>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Subsection 4C: SK Chairperson & Term Dates */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-1">
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5 flex items-center gap-1">
-                  <Users className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" />
-                  <span>SK Chairperson</span>
-                </label>
-                <input
-                  type="text"
-                  value={formData.skChairperson || ''}
-                  onChange={(e) => setFormData({ ...formData, skChairperson: e.target.value })}
-                  placeholder="e.g. Hon. John Paul V. Alcantara"
-                  className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-900 dark:text-slate-100 focus:outline-hidden focus:ring-2 focus:ring-indigo-500 font-bold"
-                />
-                <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-1">
-                  Youth council head and ex-officio barangay council member.
-                </p>
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5 flex items-center gap-1">
-                  <Calendar className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
-                  <span>Term Start Date</span>
-                </label>
-                <input
-                  type="date"
-                  value={formData.termStart || ''}
-                  onChange={(e) => setFormData({ ...formData, termStart: e.target.value })}
-                  className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-900 dark:text-slate-100 focus:outline-hidden focus:ring-2 focus:ring-indigo-500 font-medium"
-                />
-                <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-1">
-                  Beginning of official mandate (historical tracking).
-                </p>
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5 flex items-center gap-1">
-                  <Calendar className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
-                  <span>Term End Date</span>
-                </label>
-                <input
-                  type="date"
-                  value={formData.termEnd || ''}
-                  onChange={(e) => setFormData({ ...formData, termEnd: e.target.value })}
-                  className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-900 dark:text-slate-100 focus:outline-hidden focus:ring-2 focus:ring-indigo-500 font-medium"
-                />
-                <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-1">
-                  Scheduled expiry of term of office.
-                </p>
-              </div>
-            </div>
-
-            {/* Subsection 4D: Barangay Kagawads (Councilors) */}
-            <div className="pt-2 space-y-3">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wide flex items-center gap-1.5">
-                    <Users className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
-                    <span>Barangay Kagawads (Councilors - usually 7)</span>
-                  </h4>
-                  <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                    Elected councilors representing committees and authorizing council resolutions.
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={handleAddKagawad}
-                  className="px-3 py-1.5 bg-indigo-50 dark:bg-indigo-950/60 hover:bg-indigo-100 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800/60 rounded-xl text-xs font-semibold flex items-center gap-1 transition-colors cursor-pointer"
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                  <span>Add Kagawad</span>
-                </button>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                {(formData.kagawads || []).map((kagawad, idx) => (
-                  <div
-                    key={idx}
-                    className="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700 flex items-center gap-2"
-                  >
-                    <span className="w-6 h-6 rounded-lg bg-indigo-100 dark:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 text-[11px] font-bold flex items-center justify-center shrink-0">
-                      {idx + 1}
-                    </span>
-                    <input
-                      type="text"
-                      value={kagawad}
-                      onChange={(e) => handleKagawadChange(idx, e.target.value)}
-                      placeholder={'Hon. Kagawad ' + (idx + 1)}
-                      className="flex-1 px-2.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-900 dark:text-slate-100 font-semibold focus:outline-hidden focus:ring-1 focus:ring-indigo-500"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveKagawad(idx)}
-                      className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/50 rounded-lg transition-colors cursor-pointer"
-                      title="Remove councilor"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-
         {/* ========================================================================= */}
         {/* SECTION 5: FEE SCHEDULE                                                   */}
         {/* ========================================================================= */}

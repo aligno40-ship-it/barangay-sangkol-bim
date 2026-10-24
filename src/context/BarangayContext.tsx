@@ -1474,6 +1474,7 @@ export const BarangayProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [lastSupabaseSync, setLastSupabaseSync] = useState<string | null>(null);
   const [supabaseError, setSupabaseError] = useState<string | null>(null);
   const isInitialSupabaseLoadDone = useRef(false);
+  const isInitialAuthRestoreComplete = useRef(false);
   const isSyncInProgressRef = useRef(false);
   const pendingSyncRef = useRef(false);
 
@@ -1501,9 +1502,65 @@ export const BarangayProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
       const hasSavedAuthSession = safeGetSessionItem(STORAGE_KEY_PREFIX + 'auth_session') === 'true';
       const savedUserId = safeGetSessionItem(STORAGE_KEY_PREFIX + 'current_user_id');
-      const activeDatabaseUser = databaseUsers.find(
+      let activeDatabaseUser = databaseUsers.find(
         (user) => hasSavedAuthSession && savedUserId && user.id === savedUserId
       );
+      if (hasSavedAuthSession && savedUserId && !activeDatabaseUser) {
+        try {
+          const { data: savedUserRow, error } = await supabase
+            .from('system_users')
+            .select('*')
+            .eq('id', savedUserId)
+            .maybeSingle();
+          if (error || !savedUserRow) {
+            throw error || new Error('Saved user was not returned by the system_users query.');
+          }
+          activeDatabaseUser = userFromRow(savedUserRow);
+          setUsers((currentUsers) => [
+            activeDatabaseUser!,
+            ...currentUsers.filter((user) => user.id !== savedUserId),
+          ]);
+        } catch (error) {
+          console.warn('Could not verify the saved login session with Supabase:', error);
+          const cachedUser = safeGetSessionItem(STORAGE_KEY_PREFIX + 'cached_current_user');
+          if (cachedUser) {
+            try {
+              const parsedUser: unknown = JSON.parse(cachedUser);
+              if (
+                parsedUser &&
+                typeof parsedUser === 'object' &&
+                'id' in parsedUser &&
+                parsedUser.id === savedUserId &&
+                'username' in parsedUser &&
+                typeof parsedUser.username === 'string' &&
+                'name' in parsedUser &&
+                typeof parsedUser.name === 'string' &&
+                'role' in parsedUser &&
+                typeof parsedUser.role === 'string' &&
+                'position' in parsedUser &&
+                typeof parsedUser.position === 'string' &&
+                'email' in parsedUser &&
+                typeof parsedUser.email === 'string' &&
+                'contactNumber' in parsedUser &&
+                typeof parsedUser.contactNumber === 'string' &&
+                'status' in parsedUser &&
+                typeof parsedUser.status === 'string'
+              ) {
+                activeDatabaseUser = parsedUser as SystemUser;
+                setUsers((currentUsers) => [
+                  activeDatabaseUser!,
+                  ...currentUsers.filter((user) => user.id !== savedUserId),
+                ]);
+              } else {
+                console.warn('Cached login session does not contain a valid user profile.');
+              }
+            } catch (cacheError) {
+              console.warn('Could not restore the cached login session user:', cacheError);
+            }
+          }
+        }
+      }
+      isInitialAuthRestoreComplete.current = true;
       if (activeDatabaseUser) {
         setIsAuthenticated(true);
         setActiveModule('dashboard');
@@ -1610,7 +1667,7 @@ export const BarangayProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       try {
         safeSetSessionItem(STORAGE_KEY_PREFIX + 'cached_current_user', JSON.stringify(currentUser));
       } catch {}
-    } else {
+    } else if (isInitialAuthRestoreComplete.current) {
       safeRemoveSessionItem(STORAGE_KEY_PREFIX + 'current_user_id');
       safeRemoveSessionItem(STORAGE_KEY_PREFIX + 'cached_current_user');
     }

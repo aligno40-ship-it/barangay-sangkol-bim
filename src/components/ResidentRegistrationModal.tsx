@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { useBarangay } from '../context/BarangayContext';
 import { ResidentRegistrationInput, Sex, CivilStatus } from '../types';
 import { BarangaySangkolSeal } from './OfficialSeals';
@@ -144,6 +144,7 @@ export const ResidentRegistrationModal: React.FC<ResidentRegistrationModalProps>
 
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const errorMessageRef = useRef<HTMLDivElement>(null);
   const [submittedResult, setSubmittedResult] = useState<{
     success: boolean;
     referenceId: string;
@@ -157,6 +158,12 @@ export const ResidentRegistrationModal: React.FC<ResidentRegistrationModalProps>
     matchReason?: string;
     faceVerified?: boolean;
   } | null>(null);
+
+  useEffect(() => {
+    if (errorMessage) {
+      errorMessageRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }, [errorMessage]);
 
   // Real-time civil registry 3-point triangulation match checking
   const matchResult = useMemo(() => {
@@ -223,6 +230,13 @@ export const ResidentRegistrationModal: React.FC<ResidentRegistrationModalProps>
     }
     if (!formData.contactNumber.trim()) {
       setErrorMessage('Please provide an active mobile contact number.');
+      return;
+    }
+    if (
+      formData.email.trim() &&
+      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email.trim())
+    ) {
+      setErrorMessage('Please enter a valid email address or leave the optional field blank.');
       return;
     }
     if (!formData.username.trim() || formData.username.trim().length < 4) {
@@ -432,7 +446,7 @@ export const ResidentRegistrationModal: React.FC<ResidentRegistrationModalProps>
             </div>
           ) : (
             /* Registration Form */
-            <form onSubmit={handleSubmit} className="space-y-5">
+            <form onSubmit={handleSubmit} noValidate className="space-y-5">
               {/* Official Notice Banner */}
               <div className="p-3.5 bg-emerald-50/80 border border-emerald-200 rounded-2xl text-xs text-emerald-900 flex items-start gap-2.5">
                 <Info className="w-4 h-4 text-emerald-700 shrink-0 mt-0.5" />
@@ -446,7 +460,11 @@ export const ResidentRegistrationModal: React.FC<ResidentRegistrationModalProps>
 
               {/* Error Notification */}
               {errorMessage && (
-                <div className="p-3 bg-rose-50 border border-rose-200 text-rose-900 rounded-2xl text-xs flex items-start gap-2 animate-in fade-in duration-150">
+                <div
+                  ref={errorMessageRef}
+                  role="alert"
+                  className="p-3 bg-rose-50 border border-rose-200 text-rose-900 rounded-2xl text-xs flex items-start gap-2 animate-in fade-in duration-150"
+                >
                   <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
                   <span className="font-medium leading-relaxed">{errorMessage}</span>
                 </div>

@@ -125,6 +125,7 @@ const MainLayout: React.FC = () => {
   const [authView, setAuthView] = useState<'landing' | 'login'>('login');
   const [loginInitialMode, setLoginInitialMode] = useState<'resident' | 'official'>('resident');
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
+  const [registrationSubmitted, setRegistrationSubmitted] = useState(false);
 
   // Automatically ensure Login Portal view is active whenever activeModule is 'login'
   useEffect(() => {
@@ -349,7 +350,10 @@ const MainLayout: React.FC = () => {
             setLoginInitialMode(mode);
             setAuthView('login');
           }}
-          onOpenRegister={() => setIsRegisterModalOpen(true)}
+          onOpenRegister={() => {
+            setRegistrationSubmitted(false);
+            setIsRegisterModalOpen(true);
+          }}
           onOpenVerification={(controlNo) => {
             if (controlNo) {
               setGlobalVerificationControlNo(controlNo);
@@ -360,11 +364,16 @@ const MainLayout: React.FC = () => {
         />
         <ResidentRegistrationModal
           isOpen={isRegisterModalOpen}
-          onClose={() => setIsRegisterModalOpen(false)}
-          onSuccess={() => {
+          onClose={() => {
             setIsRegisterModalOpen(false);
+            if (registrationSubmitted) {
+              setAuthView('login');
+              setRegistrationSubmitted(false);
+            }
+          }}
+          onSuccess={() => {
+            setRegistrationSubmitted(true);
             setLoginInitialMode('resident');
-            setAuthView('login');
           }}
         />
         <CertificateVerificationModal
@@ -1050,4 +1059,3 @@ export default function App() {
     </BarangayProvider>
   );
 }
-

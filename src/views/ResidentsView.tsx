@@ -156,7 +156,7 @@ export const ResidentsView: React.FC = () => {
 
       // Fast check 3: Sector
       if (sec !== 'all') {
-        if (sec === 'senior' && !Boolean(r.isSeniorCitizen) && Number(r.age) < 60) return false;
+        if (sec === 'senior' && !(Number(r.age) >= 60)) return false;
         if (sec === 'pwd' && !Boolean(r.isPWD)) return false;
         if (sec === '4ps' && !Boolean(r.is4PsBeneficiary)) return false;
         if (sec === 'soloparent' && !Boolean(r.isSoloParent)) return false;

@@ -384,7 +384,13 @@ export const SettingsView: React.FC = () => {
   const handleRemovePurok = (purokToRemove: string) => {
     const currentPuroks = formData.puroks || [];
     const updated = currentPuroks.filter((p) => p !== purokToRemove);
-    setFormData({ ...formData, puroks: updated });
+    setFormData({
+      ...formData,
+      puroks: updated,
+      purokMapBoundaries: (formData.purokMapBoundaries || []).filter(
+        (boundary) => boundary.purok !== purokToRemove
+      ),
+    });
   };
 
   const handleFeeChange = (certType: string, newFee: number) => {

@@ -102,12 +102,7 @@ export const OfficialsView: React.FC = () => {
   const photoFileInputRef = useRef<HTMLInputElement | null>(null);
   const signatureFileInputRef = useRef<HTMLInputElement | null>(null);
 
-  const availablePuroks = useMemo(() => {
-    const list = settings?.puroks?.length
-      ? settings.puroks
-      : ['Purok Pinya', 'Purok Lumboy', 'Purok Mangga', 'Purok Tambis', 'Purok Kaimito', 'Purok Bayabas'];
-    return list;
-  }, [settings?.puroks]);
+  const availablePuroks = useMemo(() => settings?.puroks || [], [settings?.puroks]);
 
   const initialForm: OfficialFormData = {
     residentId: '',
@@ -116,7 +111,7 @@ export const OfficialsView: React.FC = () => {
     committee: 'Committee on Peace & Order and Public Safety',
     contactNumber: '0917-000-0000',
     email: '',
-    purok: availablePuroks[0] || 'Purok Pinya',
+    purok: availablePuroks[0] || '',
     termStart: '2023-11-01',
     termEnd: '2026-11-30',
     status: 'Active',
@@ -173,7 +168,7 @@ export const OfficialsView: React.FC = () => {
     setFormData({
       ...initialForm,
       order: officials.length + 1,
-      purok: availablePuroks[0] || 'Purok Pinya',
+      purok: availablePuroks[0] || '',
     });
     setIsModalOpen(true);
   };
@@ -195,7 +190,7 @@ export const OfficialsView: React.FC = () => {
       committee: off.committee || '',
       contactNumber: off.contactNumber || '',
       email: off.email || '',
-      purok: off.purok || availablePuroks[0] || 'Purok Pinya',
+      purok: off.purok || availablePuroks[0] || '',
       termStart: off.termStart || '2023-11-01',
       termEnd: off.termEnd || '2026-11-30',
       status: off.status || 'Active',
@@ -1484,12 +1479,14 @@ export const OfficialsView: React.FC = () => {
                     onChange={(e) => setFormData({ ...formData, purok: e.target.value })}
                     className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   >
+                    <option value="" disabled>
+                      {availablePuroks.length ? 'Select a purok' : 'Add puroks in the barangay settings first'}
+                    </option>
                     {availablePuroks.map((p) => (
                       <option key={p} value={p}>
                         {p}
                       </option>
                     ))}
-                    <option value="Barangay Hall Compound">Barangay Hall Compound</option>
                   </select>
                 </div>
               </div>

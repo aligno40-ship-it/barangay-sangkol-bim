@@ -895,6 +895,10 @@ export interface BarangaySettings {
   goodMoralFee: number;
   certificateFees?: Record<string, number>;
   puroks: string[];
+  purokMapBoundaries?: Array<{
+    purok: string;
+    coordinates: [number, number][];
+  }>;
   logoUrl?: string; // Custom uploaded image / Data URL or custom URL for Barangay Seal/Logo
   republicLogoUrl?: string; // Optional custom Republic Seal URL
   theme?: 'light' | 'dark' | 'system'; // System theme display mode

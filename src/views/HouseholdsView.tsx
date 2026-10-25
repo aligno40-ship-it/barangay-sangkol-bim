@@ -38,6 +38,10 @@ export const HouseholdsView: React.FC = () => {
   const [householdForPrint, setHouseholdForPrint] = useState<Household | null>(null);
   const [editingHousehold, setEditingHousehold] = useState<Household | null>(null);
   const [deleteTargetHousehold, setDeleteTargetHousehold] = useState<Household | null>(null);
+  const [headSearchQuery, setHeadSearchQuery] = useState('');
+  const [isHeadSearchOpen, setIsHeadSearchOpen] = useState(false);
+  const [memberSearchQuery, setMemberSearchQuery] = useState('');
+  const [memberRelationship, setMemberRelationship] = useState<HouseholdMember['relationshipToHead']>('Other');
 
   // Form State
   const initialForm: Omit<Household, 'id' | 'dateCreated'> = {
@@ -88,6 +92,7 @@ export const HouseholdsView: React.FC = () => {
         const matchesSearch =
           hhNo.includes(term) ||
           head.includes(term) ||
+          h.members.some((member) => (member.name || '').toLowerCase().includes(term)) ||
           address.includes(term) ||
           purok.includes(term) ||
           arePuroksMatching(h.purok, term);
@@ -109,6 +114,10 @@ export const HouseholdsView: React.FC = () => {
       ...initialForm,
       householdNo: `HH-2026-${String(households.length + 1).padStart(3, '0')}`,
     });
+    setHeadSearchQuery('');
+    setIsHeadSearchOpen(false);
+    setMemberSearchQuery('');
+    setMemberRelationship('Other');
     setIsModalOpen(true);
   };
 
@@ -131,6 +140,10 @@ export const HouseholdsView: React.FC = () => {
       remarks: hh.remarks || '',
       members: hh.members,
     });
+    setHeadSearchQuery('');
+    setIsHeadSearchOpen(false);
+    setMemberSearchQuery('');
+    setMemberRelationship('Other');
     setIsModalOpen(true);
   };
 
@@ -154,9 +167,17 @@ export const HouseholdsView: React.FC = () => {
             sex: res.sex,
             occupation: res.occupation,
           },
-          ...prev.members.filter((m) => m.residentId !== res.id),
+          ...prev.members
+            .filter((member) => member.residentId !== res.id)
+            .map((member) =>
+              member.relationshipToHead === 'Head'
+                ? { ...member, relationshipToHead: 'Other' as const }
+                : member,
+            ),
         ],
       }));
+      setHeadSearchQuery('');
+      setIsHeadSearchOpen(false);
     }
   };
 
@@ -176,7 +197,32 @@ export const HouseholdsView: React.FC = () => {
       occupation: res.occupation,
     };
     setFormData((prev) => ({ ...prev, members: [...prev.members, newMember] }));
+    setMemberSearchQuery('');
   };
+
+  const matchingHeadResidents = useMemo(() => {
+    const term = headSearchQuery.trim().toLowerCase();
+    if (!term) return [];
+    return residents
+      .filter((resident) => {
+        const name = `${resident.firstName} ${resident.middleName || ''} ${resident.lastName} ${resident.suffix || ''}`.toLowerCase();
+        return name.includes(term) || resident.id.toLowerCase().includes(term) || resident.purok.toLowerCase().includes(term);
+      })
+      .slice(0, 8);
+  }, [residents, headSearchQuery]);
+
+  const matchingMemberResidents = useMemo(() => {
+    const term = memberSearchQuery.trim().toLowerCase();
+    if (!term) return [];
+    const addedResidentIds = new Set(formData.members.map((member) => member.residentId));
+    return residents
+      .filter((resident) => {
+        if (addedResidentIds.has(resident.id)) return false;
+        const name = `${resident.firstName} ${resident.middleName || ''} ${resident.lastName} ${resident.suffix || ''}`.toLowerCase();
+        return name.includes(term) || resident.id.toLowerCase().includes(term) || resident.purok.toLowerCase().includes(term);
+      })
+      .slice(0, 8);
+  }, [residents, memberSearchQuery, formData.members]);
 
   const handleRemoveMember = (resId: string) => {
     setFormData((prev) => ({
@@ -253,7 +299,7 @@ export const HouseholdsView: React.FC = () => {
           className="flex-1"
           value={searchQuery}
           onChange={setSearchQuery}
-          placeholder="Search household no. or head name..."
+          placeholder="Search household no., head, or member name..."
           storageKey="households"
           theme="light"
         />
@@ -545,18 +591,47 @@ export const HouseholdsView: React.FC = () => {
 
               <div>
                 <label className="block text-xs font-semibold text-slate-600 mb-1">Select Family Head from Resident Registry</label>
-                <select
-                  value={formData.headResidentId}
-                  onChange={(e) => handleHeadSelect(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white cursor-pointer"
-                >
-                  <option value="">-- Choose Head of Family --</option>
-                  {residents.map((r) => (
-                    <option key={r.id} value={r.id}>
-                      {r.lastName}, {r.firstName} ({r.purok}) - {r.id}
-                    </option>
-                  ))}
-                </select>
+                <div className="relative">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                    <input
+                      type="search"
+                      value={headSearchQuery}
+                      onChange={(e) => {
+                        setHeadSearchQuery(e.target.value);
+                        setIsHeadSearchOpen(true);
+                      }}
+                      onFocus={() => setIsHeadSearchOpen(true)}
+                      placeholder="Search resident by name, ID, or purok..."
+                      autoComplete="off"
+                      className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white"
+                    />
+                  </div>
+                  {formData.headName && (
+                    <p className="mt-1 text-[11px] text-emerald-700">
+                      Selected head: <span className="font-semibold">{formData.headName}</span>
+                    </p>
+                  )}
+                  {isHeadSearchOpen && headSearchQuery.trim() && (
+                    <div className="absolute z-20 mt-1 w-full max-h-52 overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-lg">
+                      {matchingHeadResidents.length ? matchingHeadResidents.map((resident) => (
+                        <button
+                          key={resident.id}
+                          type="button"
+                          onClick={() => handleHeadSelect(resident.id)}
+                          className="w-full px-3 py-2 text-left hover:bg-indigo-50 border-b last:border-b-0 border-slate-100"
+                        >
+                          <span className="block text-xs font-semibold text-slate-900">
+                            {resident.firstName} {resident.middleName ? `${resident.middleName} ` : ''}{resident.lastName}{resident.suffix ? ` ${resident.suffix}` : ''}
+                          </span>
+                          <span className="block text-[10px] text-slate-500">{resident.id} · {resident.purok}</span>
+                        </button>
+                      )) : (
+                        <p className="px-3 py-2 text-xs text-slate-500">No residents found.</p>
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -638,6 +713,57 @@ export const HouseholdsView: React.FC = () => {
                 </div>
 
                 <div className="bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-[minmax(0,1fr)_auto] gap-2">
+                    <div className="relative">
+                      <div className="relative">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                        <input
+                          type="search"
+                          value={memberSearchQuery}
+                          onChange={(e) => setMemberSearchQuery(e.target.value)}
+                          placeholder="Search resident to add by name, ID, or purok..."
+                          autoComplete="off"
+                          className="w-full pl-9 pr-3 py-2 bg-white border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        />
+                      </div>
+                      {memberSearchQuery.trim() && (
+                        <div className="absolute z-20 mt-1 w-full max-h-52 overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-lg">
+                          {matchingMemberResidents.length ? matchingMemberResidents.map((resident) => (
+                            <div key={resident.id} className="flex items-center justify-between gap-2 px-3 py-2 border-b last:border-b-0 border-slate-100">
+                              <div className="min-w-0">
+                                <span className="block truncate text-xs font-semibold text-slate-900">
+                                  {resident.firstName} {resident.middleName ? `${resident.middleName} ` : ''}{resident.lastName}{resident.suffix ? ` ${resident.suffix}` : ''}
+                                </span>
+                                <span className="block text-[10px] text-slate-500">{resident.id} · {resident.purok}</span>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => handleAddMember(resident.id, memberRelationship)}
+                                className="shrink-0 px-2.5 py-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-[10px] font-bold"
+                              >
+                                Add
+                              </button>
+                            </div>
+                          )) : (
+                            <p className="px-3 py-2 text-xs text-slate-500">No available residents found.</p>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                    <select
+                      value={memberRelationship}
+                      onChange={(e) => setMemberRelationship(e.target.value as HouseholdMember['relationshipToHead'])}
+                      aria-label="Relationship to household head"
+                      className="px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    >
+                      <option value="Spouse">Spouse</option>
+                      <option value="Child">Child</option>
+                      <option value="Parent">Parent</option>
+                      <option value="Sibling">Sibling</option>
+                      <option value="Relative">Relative</option>
+                      <option value="Other">Other</option>
+                    </select>
+                  </div>
                   <div className="space-y-1 max-h-40 overflow-y-auto">
                     {formData.members.map((m, mIdx) => (
                       <div key={`form-m-${m.residentId || mIdx}-${mIdx}`} className="flex items-center justify-between p-2 bg-white rounded-lg border border-slate-200 text-xs shadow-2xs">

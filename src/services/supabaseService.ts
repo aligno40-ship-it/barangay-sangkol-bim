@@ -1873,7 +1873,7 @@ export async function fetchFullDatabase(): Promise<SupabaseFullDatabase> {
 
   return {
     settings: settingsRows && settingsRows[0] ? settingsFromRow(settingsRows[0]) : undefined,
-    residents: dedupeById((residentsRows || []).map(residentFromRow)),
+    residents: (residentsRows || []).map(residentFromRow),
     users: dedupeById((usersRows || []).map(userFromRow)),
     households: dedupeById(households),
     officials: dedupeById((officialsRows || []).map(officialFromRow)),

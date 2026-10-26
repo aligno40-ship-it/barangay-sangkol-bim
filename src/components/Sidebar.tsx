@@ -3,6 +3,7 @@ import { useBarangay, ActiveModule } from '../context/BarangayContext';
 import { useCommunityServices } from '../context/CommunityServicesContext';
 import { ResidentPortalTab } from '../types';
 import { UserProfilePhotoModal } from './UserProfilePhotoModal';
+import { uniqueResidentsById } from '../utils/residentUtils';
 import {
   LayoutDashboard,
   Users,
@@ -411,7 +412,7 @@ export const Sidebar: React.FC<{
           id: 'residents',
           label: 'Resident Management',
           icon: Users,
-          badge: residents.filter((r) => r.residentStatus === 'Active').length,
+          badge: uniqueResidentsById(residents).filter((r) => r.residentStatus === 'Active').length,
           badgeColor: 'bg-indigo-50 text-indigo-700 border-indigo-200',
         },
         {

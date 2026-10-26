@@ -138,12 +138,7 @@ export const ResidentsView: React.FC = () => {
     const term = (deferredSearchQuery || globalSearch || '').toLowerCase().trim();
     const sec = selectedSector.toLowerCase();
     const statusLower = selectedStatus.toLowerCase();
-    const seenResidentIds = new Set<string>();
-
     return residents.filter((r) => {
-      if (!r.id || seenResidentIds.has(r.id)) return false;
-      seenResidentIds.add(r.id);
-
       // Fast check 1: Status
       if (statusLower !== 'all' && String(r.residentStatus || '').toLowerCase() !== statusLower) {
         return false;
@@ -479,8 +474,8 @@ export const ResidentsView: React.FC = () => {
                     </td>
                   </tr>
                 ) : (
-                  paginatedResidents.map((r) => (
-                    <tr key={r.id} className="hover:bg-slate-50/60 transition-colors">
+                  paginatedResidents.map((r, index) => (
+                    <tr key={`${r.id}-${(currentPage - 1) * pageSize + index}`} className="hover:bg-slate-50/60 transition-colors">
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-3">
                           <div
@@ -619,9 +614,9 @@ export const ResidentsView: React.FC = () => {
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                {paginatedResidents.map((r) => (
+                {paginatedResidents.map((r, index) => (
                   <div
-                    key={r.id}
+                    key={`${r.id}-${(currentPage - 1) * pageSize + index}`}
                     className="bg-white p-4 rounded-2xl border border-slate-200 hover:border-indigo-300 hover:shadow-md transition-all flex flex-col justify-between space-y-3 group"
                   >
                     <div className="space-y-3">

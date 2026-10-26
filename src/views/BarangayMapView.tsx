@@ -17,6 +17,7 @@ import {
 import L from 'leaflet';
 import { useBarangay } from '../context/BarangayContext';
 import { InfoButton } from '../components/InfoButton';
+import { uniqueResidentsById } from '../utils/residentUtils';
 
 type MapMode = 'satellite' | 'street' | 'topo' | 'cadastral';
 type Coordinates = [number, number];
@@ -154,7 +155,8 @@ export const BarangayMapView: React.FC = () => {
 
     tileLayerRef.current = L.tileLayer(tileUrl, {
       maxZoom: 20,
-      maxNativeZoom: mapMode === 'topo' ? 17 : 19,
+      maxNativeZoom: mapMode === 'satellite' || mapMode === 'topo' ? 17 : 19,
+      errorTileUrl: 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=',
       subdomains: ['a', 'b', 'c'],
     }).addTo(map);
   }, [mapMode]);
@@ -356,7 +358,7 @@ export const BarangayMapView: React.FC = () => {
     }
   };
 
-  const totalPopulation = residents.filter((resident) => resident.residentStatus === 'Active').length;
+  const totalPopulation = uniqueResidentsById(residents).filter((resident) => resident.residentStatus === 'Active').length;
 
   return (
     <div className="space-y-6 pb-10">

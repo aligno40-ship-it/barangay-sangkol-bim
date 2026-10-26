@@ -6357,13 +6357,15 @@ export const BarangayProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       contactNumber: resContact,
       email: resEmail,
       registeredAt: formatted,
-      attendanceStatus: customData?.attendanceStatus || 'Registered',
+      attendanceStatus: currentUser?.role === 'Administrator' ? customData?.attendanceStatus || 'Registered' : 'Registered',
       attendedAt:
-        customData?.attendedAt ||
-        (customData?.attendanceStatus === 'Present / Attended' || customData?.attendanceStatus === 'Walk-In'
-          ? formatted
-          : undefined),
-      verifiedBy: customData?.verifiedBy || (currentUser.role !== 'Resident' ? currentUser.name : undefined),
+        currentUser?.role === 'Administrator'
+          ? customData?.attendedAt ||
+            (customData?.attendanceStatus === 'Present / Attended' || customData?.attendanceStatus === 'Walk-In'
+              ? formatted
+              : undefined)
+          : undefined,
+      verifiedBy: currentUser?.role === 'Administrator' ? customData?.verifiedBy || currentUser.name : undefined,
       householdNo: customData?.householdNo || resident?.householdId,
       voterStatus: customData?.voterStatus || resident?.voterStatus || 'Registered',
       sector: sector,
@@ -6456,6 +6458,11 @@ export const BarangayProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     status: AnnouncementAttendee['attendanceStatus'],
     remarks?: string
   ) => {
+    if (currentUser?.role !== 'Administrator') {
+      addAuditLog('SECURITY_ALERT', 'Authorization', `Blocked unauthorized announcement attendance update attempt by @${currentUser?.username || 'user'}.`);
+      return;
+    }
+
     const now = new Date();
     const formatted = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
 
@@ -6491,6 +6498,11 @@ export const BarangayProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     residentId: string,
     remarks?: string
   ): { success: boolean; message: string; attendee?: AnnouncementAttendee } => {
+    if (currentUser?.role !== 'Administrator') {
+      addAuditLog('SECURITY_ALERT', 'Authorization', `Blocked unauthorized announcement walk-in registration attempt by @${currentUser?.username || 'user'}.`);
+      return { success: false, message: 'Only an administrator can register walk-in attendees.' };
+    }
+
     const resident = residents.find((r) => r.id === residentId);
     if (!resident) {
       return { success: false, message: 'Selected resident not found in civil registry.' };
@@ -6510,6 +6522,11 @@ export const BarangayProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   };
 
   const deleteAttendee = (attendeeId: string) => {
+    if (currentUser?.role !== 'Administrator') {
+      addAuditLog('SECURITY_ALERT', 'Authorization', `Blocked unauthorized announcement attendee deletion attempt by @${currentUser?.username || 'user'}.`);
+      return;
+    }
+
     const att = announcementAttendees.find((a) => a.id === attendeeId);
     setAnnouncementAttendees((prev) => prev.filter((a) => a.id !== attendeeId));
     deleteAnnouncementAttendeeFromSupabase(attendeeId).catch((err) => console.warn('Supabase deleteAttendee error:', err?.message || err));
@@ -6627,13 +6644,15 @@ export const BarangayProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       contactNumber: resContact,
       email: resEmail,
       registeredAt: formatted,
-      attendanceStatus: customData?.attendanceStatus || 'Registered',
+      attendanceStatus: currentUser?.role === 'Administrator' ? customData?.attendanceStatus || 'Registered' : 'Registered',
       attendedAt:
-        customData?.attendedAt ||
-        (customData?.attendanceStatus === 'Present / Attended' || customData?.attendanceStatus === 'Walk-In'
-          ? formatted
-          : undefined),
-      verifiedBy: customData?.verifiedBy || (currentUser?.role !== 'Resident' ? (currentUser?.name || 'Barangay Staff') : undefined),
+        currentUser?.role === 'Administrator'
+          ? customData?.attendedAt ||
+            (customData?.attendanceStatus === 'Present / Attended' || customData?.attendanceStatus === 'Walk-In'
+              ? formatted
+              : undefined)
+          : undefined,
+      verifiedBy: currentUser?.role === 'Administrator' ? customData?.verifiedBy || currentUser.name : undefined,
       householdNo: customData?.householdNo || resident?.householdId,
       voterStatus: customData?.voterStatus || resident?.voterStatus || 'Registered',
       sector: sector,
@@ -6728,6 +6747,11 @@ export const BarangayProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     status: ActivityAttendee['attendanceStatus'],
     remarks?: string
   ) => {
+    if (currentUser?.role !== 'Administrator') {
+      addAuditLog('SECURITY_ALERT', 'Authorization', `Blocked unauthorized activity attendance update attempt by @${currentUser?.username || 'user'}.`);
+      return;
+    }
+
     const now = new Date();
     const formatted = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
 
@@ -6763,6 +6787,11 @@ export const BarangayProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     residentId: string,
     remarks?: string
   ): { success: boolean; message: string; attendee?: ActivityAttendee } => {
+    if (currentUser?.role !== 'Administrator') {
+      addAuditLog('SECURITY_ALERT', 'Authorization', `Blocked unauthorized activity walk-in registration attempt by @${currentUser?.username || 'user'}.`);
+      return { success: false, message: 'Only an administrator can register walk-in attendees.' };
+    }
+
     const resident = residents.find((r) => r.id === residentId);
     if (!resident) {
       return { success: false, message: 'Selected resident not found in civil registry.' };
@@ -6782,6 +6811,11 @@ export const BarangayProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   };
 
   const deleteActivityAttendee = (attendeeId: string) => {
+    if (currentUser?.role !== 'Administrator') {
+      addAuditLog('SECURITY_ALERT', 'Authorization', `Blocked unauthorized activity attendee deletion attempt by @${currentUser?.username || 'user'}.`);
+      return;
+    }
+
     const att = activityAttendees.find((a) => a.id === attendeeId);
     setActivityAttendees((prev) => prev.filter((a) => a.id !== attendeeId));
     deleteActivityAttendeeFromSupabase(attendeeId).catch((err) => console.warn('Supabase deleteActivityAttendee error:', err?.message || err));

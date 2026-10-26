@@ -48,6 +48,7 @@ export const ActivityAttendanceModal: React.FC<ActivityAttendanceModalProps> = (
     addActivityWalkIn,
     deleteActivityAttendee,
   } = useBarangay();
+  const isAdmin = currentUser?.role === 'Administrator';
 
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('All');
@@ -514,13 +515,15 @@ export const ActivityAttendanceModal: React.FC<ActivityAttendanceModalProps> = (
                     <option value="Purok Bayabas">Purok Bayabas</option>
                   </select>
 
-                  <button
-                    onClick={() => setIsWalkInModalOpen(true)}
-                    className="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 shadow-sm transition-all whitespace-nowrap"
-                  >
-                    <UserPlus className="w-3.5 h-3.5" />
-                    <span>Register Walk-in</span>
-                  </button>
+                  {isAdmin && (
+                    <button
+                      onClick={() => setIsWalkInModalOpen(true)}
+                      className="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 shadow-sm transition-all whitespace-nowrap"
+                    >
+                      <UserPlus className="w-3.5 h-3.5" />
+                      <span>Register Walk-in</span>
+                    </button>
+                  )}
 
                   <button
                     onClick={handleExportCSV}
@@ -547,13 +550,13 @@ export const ActivityAttendanceModal: React.FC<ActivityAttendanceModalProps> = (
                         <th className="py-3 px-4">Sector / Category</th>
                         <th className="py-3 px-4">Registration Info</th>
                         <th className="py-3 px-4">Attendance Status</th>
-                        <th className="py-3 px-4 text-right">Actions & Verification</th>
+                        {isAdmin && <th className="py-3 px-4 text-right">Actions & Verification</th>}
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 text-xs sm:text-sm text-slate-700">
                       {filteredAttendees.length === 0 ? (
                         <tr>
-                          <td colSpan={7} className="py-12 text-center text-slate-500">
+                          <td colSpan={6 + (isAdmin ? 1 : 0)} className="py-12 text-center text-slate-500">
                             <div className="w-12 h-12 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mx-auto mb-3">
                               <Users className="w-6 h-6" />
                             </div>
@@ -656,7 +659,7 @@ export const ActivityAttendanceModal: React.FC<ActivityAttendanceModalProps> = (
                                 )}
                               </td>
 
-                              <td className="py-3.5 px-4 text-right">
+                              {isAdmin && <td className="py-3.5 px-4 text-right">
                                 <div className="flex items-center justify-end gap-1.5">
                                   {!isPresent ? (
                                     <button
@@ -699,7 +702,7 @@ export const ActivityAttendanceModal: React.FC<ActivityAttendanceModalProps> = (
                                     <Trash2 className="w-4 h-4" />
                                   </button>
                                 </div>
-                              </td>
+                              </td>}
                             </tr>
                           );
                         })
@@ -729,7 +732,7 @@ export const ActivityAttendanceModal: React.FC<ActivityAttendanceModalProps> = (
       </div>
 
       {/* WALK-IN REGISTRATION SUB-MODAL */}
-      {isWalkInModalOpen && (
+      {isAdmin && isWalkInModalOpen && (
         <div className="fixed inset-0 z-60 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-lg overflow-hidden animate-in fade-in zoom-in-95">
             <div className="bg-gradient-to-r from-indigo-900 to-slate-900 px-5 py-4 text-white flex items-center justify-between">

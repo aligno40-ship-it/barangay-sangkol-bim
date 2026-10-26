@@ -12,6 +12,7 @@ export default defineConfig(() => {
       VitePWA({
         registerType: 'autoUpdate',
         manifest: {
+          id: '/',
           name: 'Barangay Sangkol BIMS',
           short_name: 'BIMS',
           start_url: '/',
@@ -20,26 +21,27 @@ export default defineConfig(() => {
           background_color: '#f8fafc',
           icons: [
             {
-              src: '/pwa-icon.svg',
+              src: '/pwa-192x192.png',
               sizes: '192x192',
-              type: 'image/svg+xml',
+              type: 'image/png',
               purpose: 'any',
             },
             {
-              src: '/pwa-icon.svg',
+              src: '/pwa-512x512.png',
               sizes: '512x512',
-              type: 'image/svg+xml',
+              type: 'image/png',
               purpose: 'any',
             },
             {
-              src: '/pwa-icon-maskable.svg',
-              sizes: '512x512',
-              type: 'image/svg+xml',
+              src: '/pwa-maskable-512x512.png',
+              sizes: '640x640',
+              type: 'image/png',
               purpose: 'maskable',
             },
           ],
         },
         workbox: {
+          // Cache app files only. Supabase requests are never cached.
           globPatterns: ['**/*.{html,js,css,svg,png,jpg,jpeg,webp,ico}'],
           maximumFileSizeToCacheInBytes: 6 * 1024 * 1024,
           navigateFallback: '/index.html',
@@ -53,10 +55,7 @@ export default defineConfig(() => {
       },
     },
     server: {
-      // HMR is disabled in AI Studio via DISABLE_HMR env var.
-      // Do not modifyâfile watching is disabled to prevent flickering during agent edits.
       hmr: process.env.DISABLE_HMR !== 'true',
-      // Disable file watching when DISABLE_HMR is true to save CPU during agent edits.
       watch: process.env.DISABLE_HMR === 'true' ? null : {},
     },
   };

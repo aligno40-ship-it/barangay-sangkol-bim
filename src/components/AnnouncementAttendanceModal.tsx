@@ -48,6 +48,7 @@ export const AnnouncementAttendanceModal: React.FC<AnnouncementAttendanceModalPr
     addWalkInAttendee,
     deleteAttendee,
   } = useBarangay();
+  const isAdmin = currentUser?.role === 'Administrator';
 
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('All');
@@ -524,18 +525,20 @@ export const AnnouncementAttendanceModal: React.FC<AnnouncementAttendanceModalPr
                     </span>
                   </div>
 
-                  <button
-                    onClick={() => {
-                      setSelectedResidentId('');
-                      setWalkInRemarks('');
-                      setWalkInMessage(null);
-                      setIsWalkInModalOpen(true);
-                    }}
-                    className="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-md cursor-pointer transition-all shrink-0"
-                  >
-                    <UserPlus className="w-3.5 h-3.5" />
-                    <span>+ Register Walk-In Resident</span>
-                  </button>
+                  {isAdmin && (
+                    <button
+                      onClick={() => {
+                        setSelectedResidentId('');
+                        setWalkInRemarks('');
+                        setWalkInMessage(null);
+                        setIsWalkInModalOpen(true);
+                      }}
+                      className="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-md cursor-pointer transition-all shrink-0"
+                    >
+                      <UserPlus className="w-3.5 h-3.5" />
+                      <span>+ Register Walk-In Resident</span>
+                    </button>
+                  )}
                 </div>
 
                 <p className="text-xs text-slate-300 leading-relaxed pt-2 border-t border-slate-800 line-clamp-2">
@@ -684,13 +687,13 @@ export const AnnouncementAttendanceModal: React.FC<AnnouncementAttendanceModalPr
                       <th className="py-3 px-3">Contact & Voter</th>
                       <th className="py-3 px-3">Registration Info</th>
                       <th className="py-3 px-3 text-center">Attendance Status</th>
-                      <th className="py-3 px-3 text-center">Quick Action</th>
+                      {isAdmin && <th className="py-3 px-3 text-center">Quick Action</th>}
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-800/60">
                     {filteredAttendees.length === 0 ? (
                       <tr>
-                        <td colSpan={8} className="py-10 text-center text-slate-500">
+                        <td colSpan={7 + (isAdmin ? 1 : 0)} className="py-10 text-center text-slate-500">
                           <div className="flex flex-col items-center justify-center gap-2">
                             <Users className="w-8 h-8 text-slate-600" />
                             <p className="font-bold text-slate-400">No matching registered attendees found.</p>
@@ -771,7 +774,7 @@ export const AnnouncementAttendanceModal: React.FC<AnnouncementAttendanceModalPr
                               )}
                             </td>
 
-                            <td className="py-3 px-3 text-center">
+                            {isAdmin && <td className="py-3 px-3 text-center">
                               <span
                                 className={`px-2.5 py-1 rounded-full text-[10px] font-bold inline-flex items-center gap-1 ${
                                   isPresent
@@ -788,7 +791,7 @@ export const AnnouncementAttendanceModal: React.FC<AnnouncementAttendanceModalPr
                                 {isPresent && <Check className="w-3 h-3 text-emerald-400" />}
                                 {att.attendanceStatus}
                               </span>
-                            </td>
+                            </td>}
 
                             {/* Quick Actions */}
                             <td className="py-3 px-3 text-center">
@@ -870,7 +873,7 @@ export const AnnouncementAttendanceModal: React.FC<AnnouncementAttendanceModalPr
       </div>
 
       {/* Inner Walk-In Registration Modal */}
-      {isWalkInModalOpen && (
+      {isAdmin && isWalkInModalOpen && (
         <div className="fixed inset-0 z-60 bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-3 sm:p-4">
           <div className="bg-slate-900 border border-slate-700 rounded-3xl max-w-lg w-full shadow-2xl overflow-hidden text-slate-100 space-y-4">
             <div className="p-4 bg-slate-800 border-b border-slate-700 flex items-center justify-between">

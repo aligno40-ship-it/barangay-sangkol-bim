@@ -3731,10 +3731,11 @@ export const BarangayProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     try {
       const { error } = await upsertSettings(updatedSettingsRecord);
       if (error) {
-        console.warn('Supabase updateSettings database notice:', error.message);
+        throw new Error(`Failed to save barangay settings: ${error.message}`);
       }
     } catch (err) {
-      console.warn('Supabase updateSettings notice:', err);
+      console.error('Failed to save barangay settings:', err);
+      throw err;
     }
 
     addAuditLog('SYSTEM_CONFIG', 'Settings', 'Updated Barangay Sangkol institutional configuration & fee schedule.');

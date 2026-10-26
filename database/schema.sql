@@ -95,6 +95,7 @@ CREATE TABLE barangay_settings (
     indigency_cert_fee NUMERIC(10, 2) DEFAULT 0.00,
     good_moral_fee NUMERIC(10, 2) DEFAULT 50.00,
     puroks TEXT[] DEFAULT ARRAY['Purok Pinya', 'Purok Lumboy', 'Purok Mangga', 'Purok Tambis', 'Purok Kaimito', 'Purok Bayabas'],
+    purok_map_boundaries JSONB DEFAULT '[]'::jsonb,
     term_start DATE,
     term_end DATE,
     tagline TEXT,
@@ -1843,4 +1844,3 @@ CREATE POLICY resident_manage_own_notifications ON system_notifications
   FOR ALL TO authenticated
   USING (recipient_id = public.get_current_resident_id() OR user_id = public.get_current_user_id())
   WITH CHECK (recipient_id = public.get_current_resident_id() OR user_id = public.get_current_user_id());
-

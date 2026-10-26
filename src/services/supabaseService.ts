@@ -1449,6 +1449,7 @@ export function settingsFromRow(row: any): BarangaySettings {
       'Good Moral Character': goodMoralFee,
     },
     puroks: Array.isArray(row.puroks) ? row.puroks : [],
+    purokMapBoundaries: Array.isArray(row.purok_map_boundaries) ? row.purok_map_boundaries : [],
     termStart: row.term_start || undefined,
     termEnd: row.term_end || undefined,
     tagline: row.tagline || undefined,
@@ -1490,6 +1491,7 @@ export function settingsToRow(s: BarangaySettings): any {
     indigency_cert_fee: indigencyFee,
     good_moral_fee: goodMoralFee,
     puroks: Array.isArray(s.puroks) ? s.puroks : [],
+    purok_map_boundaries: Array.isArray(s.purokMapBoundaries) ? s.purokMapBoundaries : [],
     term_start: toNullableString(s.termStart),
     term_end: toNullableString(s.termEnd),
     tagline: toNullableString(s.tagline),
@@ -2369,6 +2371,9 @@ export async function upsertSettings(settings: BarangaySettings) {
     const missingCol = colMatch ? (colMatch[1] || colMatch[2]) : null;
 
     if (missingCol && missingCol in row) {
+      if (missingCol === 'purok_map_boundaries') {
+        return { data: null, error: res.error };
+      }
       console.info(`Auto-pruning non-existent column "${missingCol}" from barangay_settings payload and retrying...`);
       delete row[missingCol];
       res = await supabase.from('barangay_settings').upsert(row, { onConflict: 'id' }).select();
@@ -2390,6 +2395,9 @@ export async function upsertSettings(settings: BarangaySettings) {
       const updColMatch = (updateError.message || '').match(/column "?([a-z0-9_]+)"? does not exist|'([a-z0-9_]+)' column/i);
       const updMissingCol = updColMatch ? (updColMatch[1] || updColMatch[2]) : null;
       if (updMissingCol && updMissingCol in row) {
+        if (updMissingCol === 'purok_map_boundaries') {
+          return { data: null, error: updateError };
+        }
         console.info(`Auto-pruning non-existent column "${updMissingCol}" from update payload and retrying...`);
         delete row[updMissingCol];
         res = await supabase.from('barangay_settings').upsert(row, { onConflict: 'id' }).select();

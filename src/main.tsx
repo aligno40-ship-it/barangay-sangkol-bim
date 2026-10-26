@@ -1,5 +1,6 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
+import { useEffect, useState } from 'react';
 import App from './App.tsx';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import './index.css';
@@ -19,11 +20,37 @@ if (typeof window !== 'undefined') {
   });
 }
 
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>
+function AppRoot() {
+  const [isOnline, setIsOnline] = useState(() => navigator.onLine);
+
+  useEffect(() => {
+    const updateConnectionStatus = () => setIsOnline(navigator.onLine);
+    window.addEventListener('online', updateConnectionStatus);
+    window.addEventListener('offline', updateConnectionStatus);
+
+    return () => {
+      window.removeEventListener('online', updateConnectionStatus);
+      window.removeEventListener('offline', updateConnectionStatus);
+    };
+  }, []);
+
+  if (!isOnline) {
+    return (
+      <main className="offline-page" role="status" aria-live="assertive">
+        <h1>No internet connection</h1>
+      </main>
+    );
+  }
+
+  return (
     <ErrorBoundary>
       <App />
     </ErrorBoundary>
+  );
+}
+
+createRoot(document.getElementById('root')!).render(
+  <StrictMode>
+    <AppRoot />
   </StrictMode>,
 );
-

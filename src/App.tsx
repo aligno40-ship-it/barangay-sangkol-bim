@@ -263,10 +263,10 @@ const MainLayout: React.FC = () => {
     }
 
     if (notif.category === 'registration' || notif.targetUserId) {
-      if (notif.targetUserId) {
+      if (currentUser.role === 'Administrator' && notif.targetUserId) {
         setTargetUserId(notif.targetUserId);
       }
-      setActiveModule('users');
+      setActiveModule(currentUser.role === 'Administrator' ? 'users' : 'dashboard');
       return;
     }
 
@@ -449,7 +449,9 @@ const MainLayout: React.FC = () => {
       case 'audit_trail':
         return isResident ? <AccessRestrictedView moduleName="System Security & Audit Trail Logs" /> : <AuditTrailView />;
       case 'users':
-        return isResident ? <AccessRestrictedView moduleName="User Management & Access Control" /> : <ManageUsersView />;
+        return currentUser?.role === 'Administrator'
+          ? <ManageUsersView />
+          : <AccessRestrictedView moduleName="User Management & Access Control" />;
       case 'settings':
         return isResident ? <ResidentPortalView initialTab="settings" /> : <SettingsView />;
       case 'barangay_map':

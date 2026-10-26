@@ -439,7 +439,9 @@ export const SettingsView: React.FC = () => {
     { id: 'branding', label: 'Official Seal & Branding', icon: ImageIcon },
     { id: 'fees', label: 'Fee Schedule (₱)', icon: DollarSign },
     { id: 'puroks', label: 'Purok & Sitio Zones', icon: MapPin, badge: String(puroksList.length) },
-    { id: 'users', label: 'Users & Access', icon: Users, badge: String(users.length) },
+    ...(currentUser.role === 'Administrator'
+      ? [{ id: 'users' as const, label: 'Users & Access', icon: Users, badge: String(users.length) }]
+      : []),
     { id: 'database', label: 'Backup & Recovery', icon: Database },
     { id: 'compliance', label: 'Privacy & Legal', icon: ShieldCheck },
   ];
@@ -1553,7 +1555,7 @@ export const SettingsView: React.FC = () => {
         {/* ========================================================================= */}
         {/* SECTION 7: USERS & ACCESS CONTROL                                         */}
         {/* ========================================================================= */}
-        {(viewMode === 'all' || activeTab === 'users') && (
+        {currentUser.role === 'Administrator' && (viewMode === 'all' || activeTab === 'users') && (
           <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs space-y-5">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 dark:border-slate-800 pb-4">
               <div className="flex items-center gap-3">

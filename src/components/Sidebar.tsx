@@ -550,7 +550,12 @@ export const Sidebar: React.FC<{
     },
   ];
 
-  const activeGroups = isResident ? residentNavGroups : adminNavGroups;
+  const activeGroups = isResident
+    ? residentNavGroups
+    : adminNavGroups.map((group) => ({
+        ...group,
+        items: group.items.filter((item) => item.id !== 'users' || currentUser.role === 'Administrator'),
+      }));
 
   const handleSelectModule = (id: ActiveModule, resTab?: ResidentPortalTab) => {
     setActiveModule(id);

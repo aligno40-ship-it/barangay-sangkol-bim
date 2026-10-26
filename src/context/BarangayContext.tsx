@@ -3418,6 +3418,10 @@ export const BarangayProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   };
 
   const switchRole = (role: UserRole) => {
+    if (role === 'Administrator' && currentUser.role !== 'Administrator') {
+      return;
+    }
+
     const match = users.find((u) => u.role === role) || {
       id: `USR-${Date.now()}`,
       username: role.toLowerCase().replace(/\s+/g, '_'),

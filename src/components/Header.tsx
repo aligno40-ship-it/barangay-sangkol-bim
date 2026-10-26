@@ -244,10 +244,10 @@ export const Header: React.FC<{ onOpenLoginModal: () => void }> = ({ onOpenLogin
 
     // 4. KYC Resident User Registration
     if (notif.category === 'registration' || notif.targetUserId) {
-      if (notif.targetUserId) {
+      if (currentUser.role === 'Administrator' && notif.targetUserId) {
         setTargetUserId(notif.targetUserId);
       }
-      setActiveModule('users');
+      setActiveModule(currentUser.role === 'Administrator' ? 'users' : 'dashboard');
       return;
     }
 
@@ -333,7 +333,10 @@ export const Header: React.FC<{ onOpenLoginModal: () => void }> = ({ onOpenLogin
     }
   };
 
-  const roles: UserRole[] = ['Administrator', 'Barangay Staff', 'Barangay Official'];
+  const roles: UserRole[] =
+    currentUser.role === 'Administrator'
+      ? ['Administrator', 'Barangay Staff', 'Barangay Official']
+      : ['Barangay Staff', 'Barangay Official'];
 
   return (
     <header className="sticky top-0 z-40 bg-slate-900/95 backdrop-blur-md border-b border-slate-800 text-white shadow-lg">
@@ -969,7 +972,7 @@ export const Header: React.FC<{ onOpenLoginModal: () => void }> = ({ onOpenLogin
                   </div>
 
                   <div className="p-2 border-t border-slate-800 bg-slate-950/50 space-y-1.5">
-                    {currentUser?.role !== 'Resident' && (
+                    {currentUser?.role === 'Administrator' && (
                       <button
                         onClick={() => {
                           setShowRoleMenu(false);
@@ -1008,4 +1011,3 @@ export const Header: React.FC<{ onOpenLoginModal: () => void }> = ({ onOpenLogin
     </header>
   );
 };
-

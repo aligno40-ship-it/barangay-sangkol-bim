@@ -94,6 +94,19 @@ export const LandingPage: React.FC<LandingPageProps> = ({
     return [...officials].sort((a, b) => (a.order || 99) - (b.order || 99));
   }, [officials]);
 
+  const configuredFees = settings.certificateFees;
+  const getConfiguredFee = (type: string, legacyFee: number, fallback: number) => {
+    const configuredFee = Number(configuredFees?.[type] ?? legacyFee ?? fallback);
+    return Number.isFinite(configuredFee) && configuredFee >= 0
+      ? configuredFee
+      : fallback;
+  };
+  const formatFee = (fee: number) =>
+    fee === 0 ? '₱0.00 (FREE)' : `₱${fee.toLocaleString('en-PH', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })}`;
+
   // 6 Primary Frontline Services
   const servicesData = [
     {
@@ -104,7 +117,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       icon: FileCheck2,
       badge: 'Most Requested',
       badgeColor: 'bg-emerald-100 text-emerald-800 border-emerald-200',
-      fee: '₱50.00',
+      fee: formatFee(getConfiguredFee('Barangay Clearance', settings.clearanceFeeRegular, 50)),
       feeNote: 'Official LGU Rate',
       turnaround: '15 - 30 Minutes',
       validity: '6 Months from issuance',
@@ -121,7 +134,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       icon: MapPin,
       badge: 'Standard E-Service',
       badgeColor: 'bg-blue-100 text-blue-800 border-blue-200',
-      fee: '₱50.00',
+      fee: formatFee(getConfiguredFee('Residency Certification', settings.residencyCertFee, 50)),
       feeNote: 'Official LGU Rate',
       turnaround: '15 Minutes',
       validity: '6 Months from issuance',
@@ -138,7 +151,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       icon: HeartPulse,
       badge: 'FREE of Charge',
       badgeColor: 'bg-amber-100 text-amber-800 border-amber-200',
-      fee: '₱0.00 (FREE)',
+      fee: formatFee(getConfiguredFee('Indigency Certificate', settings.indigencyCertFee, 0)),
       feeNote: 'Social Protection Law',
       turnaround: 'Immediate / Same Day',
       validity: '3 Months (Medical/Financial)',
@@ -155,8 +168,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       icon: Building2,
       badge: 'Commercial',
       badgeColor: 'bg-indigo-100 text-indigo-800 border-indigo-200',
-      fee: '₱150.00',
-      feeNote: 'Annual Barangay Ordinance',
+      fee: formatFee(getConfiguredFee('Business Clearance', settings.businessClearanceFee, 300)),
+      feeNote: 'Official LGU Rate',
       turnaround: '24 Hours',
       validity: '1 Calendar Year (Jan 1 - Dec 31)',
       description:

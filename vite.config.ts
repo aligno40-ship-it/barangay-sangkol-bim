@@ -34,9 +34,24 @@ export default defineConfig(() => {
             },
             {
               src: '/pwa-maskable-512x512.png',
-              sizes: '640x640',
+              sizes: '512x512',
               type: 'image/png',
               purpose: 'maskable',
+            },
+          ],
+          screenshots: [
+            {
+              src: '/pwa-wide.png',
+              sizes: '1280x720',
+              type: 'image/png',
+              form_factor: 'wide',
+              label: 'Barangay Sangkol BIMS desktop dashboard',
+            },
+            {
+              src: '/pwa-mobile.png',
+              sizes: '390x844',
+              type: 'image/png',
+              label: 'Barangay Sangkol BIMS mobile dashboard',
             },
           ],
         },

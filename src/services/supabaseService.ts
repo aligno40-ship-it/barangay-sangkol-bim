@@ -2390,8 +2390,16 @@ export async function upsertSettings(settings: BarangaySettings) {
     const missingCol = colMatch ? (colMatch[1] || colMatch[2]) : null;
 
     if (missingCol && missingCol in row) {
-      if (missingCol === 'purok_map_boundaries') {
-        return { data: null, error: res.error };
+      if (missingCol === 'purok_map_boundaries' || missingCol === 'emergency_hotlines') {
+        return {
+          data: null,
+          error: {
+            ...res.error,
+            message: missingCol === 'emergency_hotlines'
+              ? 'Emergency hotline settings require a database update. Run database/fix_barangay_settings.sql in the Supabase SQL Editor, then save Settings again.'
+              : res.error.message,
+          },
+        };
       }
       console.info(`Auto-pruning non-existent column "${missingCol}" from barangay_settings payload and retrying...`);
       delete row[missingCol];
@@ -2414,8 +2422,16 @@ export async function upsertSettings(settings: BarangaySettings) {
       const updColMatch = (updateError.message || '').match(/column "?([a-z0-9_]+)"? does not exist|'([a-z0-9_]+)' column/i);
       const updMissingCol = updColMatch ? (updColMatch[1] || updColMatch[2]) : null;
       if (updMissingCol && updMissingCol in row) {
-        if (updMissingCol === 'purok_map_boundaries') {
-          return { data: null, error: updateError };
+        if (updMissingCol === 'purok_map_boundaries' || updMissingCol === 'emergency_hotlines') {
+          return {
+            data: null,
+            error: {
+              ...updateError,
+              message: updMissingCol === 'emergency_hotlines'
+                ? 'Emergency hotline settings require a database update. Run database/fix_barangay_settings.sql in the Supabase SQL Editor, then save Settings again.'
+                : updateError.message,
+            },
+          };
         }
         console.info(`Auto-pruning non-existent column "${updMissingCol}" from update payload and retrying...`);
         delete row[updMissingCol];

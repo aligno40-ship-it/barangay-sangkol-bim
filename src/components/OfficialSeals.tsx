@@ -359,18 +359,17 @@ export const BarangaySangkolSeal: React.FC<{
   const ctxLogoUrl = ctx?.settings?.logoUrl;
   const finalUrl = customUrl || ctxLogoUrl;
 
-  if (finalUrl) {
-    return (
-      <img
-        src={finalUrl}
-        alt="Barangay Official Seal / Logo"
-        referrerPolicy="no-referrer"
-        style={{ width: size, height: size }}
-        className={`shrink-0 object-contain rounded-full shadow-xs ${className}`}
-      />
-    );
-  }
+  return (
+    <img
+      src={finalUrl || '/pwa-icon.svg'}
+      alt="Barangay Sangkol BIMS Logo"
+      referrerPolicy="no-referrer"
+      style={{ width: size, height: size }}
+      className={`shrink-0 object-contain rounded-[22%] shadow-xs ${className}`}
+    />
+  );
 
+  /* Legacy city-seal vector kept for reference; the configured app logo is preferred. */
   return (
     <svg
       width={size}

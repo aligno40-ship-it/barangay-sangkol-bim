@@ -1,7 +1,7 @@
 export interface FacilityReservation {
   id: string; // e.g. "RES-FAC-2026-001"
   facilityName: 'Multi-Purpose Gymnasium' | 'Covered Basketball Court' | 'Day Care Center Hall' | 'Barangay Session Hall' | 'Community Park Stage';
-  reservedByResidentId: string;
+  reservedByResidentId?: string;
   residentName: string;
   contactNumber: string;
   purok: string;
@@ -21,7 +21,7 @@ export interface EquipmentReservation {
   id: string; // e.g. "RES-EQP-2026-001"
   equipmentName: 'Heavy Duty Canopy Tent (Tolda)' | 'Monobloc Chairs Set (50 pcs)' | 'Foldable Banquet Tables (5 pcs)' | 'Public Address (PA) Sound System' | 'Mobile Electric Generator (5kVA)' | 'Heavy Duty Grass Cutter';
   quantity: number;
-  reservedByResidentId: string;
+  reservedByResidentId?: string;
   residentName: string;
   contactNumber: string;
   purok: string;
@@ -38,7 +38,7 @@ export interface EquipmentReservation {
 export interface ResidentIncidentReport {
   id: string; // e.g. "BLOT-RES-2026-001"
   incidentType: 'Noise & Late Night Karaoke Disturbance' | 'Property & Boundary Dispute' | 'Stray Animal & Pet Nuisance' | 'Neighborhood Quarrel / Altercation' | 'Public Drinking & Curfew Violation' | 'Uncollected Garbage / Illegal Dumping' | 'Other Civil Incident';
-  residentId: string;
+  residentId?: string;
   residentName: string;
   contactNumber: string;
   purok: string;
@@ -87,7 +87,7 @@ export interface VitalSigns {
 
 export interface HealthAppointment {
   id: string; // e.g. "HLTH-2026-001"
-  residentId: string;
+  residentId?: string;
   residentName: string;
   patientName: string;
   patientAge: number;
@@ -109,7 +109,7 @@ export interface ChildImmunizationTracker {
   childName: string;
   birthDate: string;
   childBirthDate?: string;
-  parentResidentId: string;
+  parentResidentId?: string;
   parentName: string;
   vaccineName: 'BCG (Tuberculosis)' | 'Hepatitis B' | 'Pentavalent (DTP-HepB-Hib)' | 'Oral Polio Vaccine (OPV)' | 'Inactivated Polio Vaccine (IPV)' | 'Pneumococcal Conjugate Vaccine (PCV)' | 'Measles, Mumps, Rubella (MMR)' | 'Vitamin A Supplement' | 'Deworming (Albendazole)' | string;
   doseNumber: 'Dose 1' | 'Dose 2' | 'Dose 3' | 'Booster 1' | 'Booster 2' | 'Semi-Annual' | string;
@@ -149,7 +149,7 @@ export interface PharmacyInventoryItem {
 
 export interface MedicineRefillRequest {
   id: string; // e.g. "MED-2026-001"
-  residentId: string;
+  residentId?: string;
   residentName: string;
   contactNumber: string;
   medicineName: string;
@@ -213,7 +213,7 @@ export interface JobApplicationRecord {
   jobId: string;
   jobTitle: string;
   employerName: string;
-  residentId: string;
+  residentId?: string;
   residentName: string;
   contactNumber: string;
   educationalAttainment: string;
@@ -248,7 +248,7 @@ export interface LivelihoodEnrollmentRecord {
   id: string;
   trainingId: string;
   trainingTitle: string;
-  residentId: string;
+  residentId?: string;
   residentName: string;
   contactNumber: string;
   purok: string;
@@ -267,7 +267,7 @@ export interface LivelihoodEnrollmentRecord {
 export interface LivelihoodAssistanceRequest {
   id: string; // e.g. "LIV-AST-2026-001"
   programType: 'Micro-Enterprise Starter Capital' | 'Agricultural Inputs & Seeds Grant' | 'Vocational Toolset Assistance' | 'Sari-Sari Store Expansion Kit' | 'Sewing & Tailoring Machine Package' | 'Food Processing & Cooking Equipment' | 'Welding & Fabrication Starter Package';
-  residentId: string;
+  residentId?: string;
   residentName: string;
   contactNumber: string;
   purok: string;
@@ -292,7 +292,7 @@ export interface AyudaClaimStub {
   id: string; // e.g. "AYUDA-2026-0042"
   title: string;
   category: 'Calamity Relief Goods Pack' | 'Department of Agriculture Seeds & Fertilizer' | 'Senior Citizen Nutrition Pack' | 'PWD Assistive Grocery Voucher' | '4Ps Supplemental Ration';
-  residentId: string;
+  residentId?: string;
   residentName: string;
   purok: string;
   householdNo?: string;
@@ -309,7 +309,7 @@ export interface AyudaClaimStub {
 export interface FinancialAssistanceRequest {
   id: string; // e.g. "AICS-2026-001"
   assistanceType: 'AICS - Medical & Hospitalization Subsidy' | 'AICS - Educational Assistance & School Grant' | 'AICS - Emergency Burial & Funeral Assistance' | 'AICS - Calamity & Fire Recovery Aid' | 'Solo Parent Subsidy Support';
-  residentId: string;
+  residentId?: string;
   residentName: string;
   contactNumber: string;
   purok: string;
@@ -339,7 +339,7 @@ export interface WasteCollectionSchedule {
 
 export interface BulkWastePickupRequest {
   id: string; // e.g. "BULK-2026-001"
-  residentId: string;
+  residentId?: string;
   residentName: string;
   contactNumber: string;
   purok: string;
@@ -380,7 +380,7 @@ export interface BayanihanVolunteerRecord {
   id: string;
   driveId: string;
   driveTitle: string;
-  residentId: string;
+  residentId?: string;
   residentName: string;
   contactNumber: string;
   purok: string;
@@ -395,7 +395,7 @@ export interface BayanihanVolunteerRecord {
 
 export interface IllegalDumpingReport {
   id: string; // e.g. "HOTSPOT-2026-001"
-  residentId: string;
+  residentId?: string;
   residentName: string;
   contactNumber: string;
   purok: string;
@@ -418,7 +418,7 @@ export interface IllegalDumpingReport {
 
 export interface MRFRecyclablesDropRecord {
   id: string; // e.g. "MRF-2026-001"
-  residentId: string;
+  residentId?: string;
   residentName: string;
   purok: string;
   itemCategory:
@@ -452,7 +452,7 @@ export interface SKRegistrationRecord {
   id: string;
   activityId: string;
   activityTitle: string;
-  residentId: string;
+  residentId?: string;
   residentName: string;
   age: number;
   purok: string;
@@ -474,7 +474,7 @@ export interface SeniorCitizenBenefitSchedule {
 
 export interface AssistiveDeviceRequest {
   id: string; // e.g. "AST-2026-001"
-  residentId: string;
+  residentId?: string;
   residentName: string;
   beneficiaryName: string;
   beneficiaryAge: number;

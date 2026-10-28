@@ -1412,6 +1412,13 @@ export function auditLogToRow(l: AuditLog): any {
   };
 }
 
+const DEFAULT_EMERGENCY_HOTLINES = [
+  { id: 'barangay_tanod', name: 'Barangay Tanod (BPAT Peace & Order)', description: 'Sangkol Incident Command Post', number: '0917-123-4567' },
+  { id: 'health_center', name: 'Sangkol Health Center & First Aid', description: 'Maternity & Ambulance Dispatch', number: '0928-765-4321' },
+  { id: 'police', name: 'Dipolog City Police Station (PNP)', description: 'National Police Hotline', number: '(065) 212-2525 / 166' },
+  { id: 'fire', name: 'Bureau of Fire Protection (BFP)', description: 'Dipolog Central Fire Station', number: '(065) 212-3111 / 911' },
+] as const;
+
 export function settingsFromRow(row: any): BarangaySettings {
   const clearanceFee = Number(row.clearance_fee_regular) || 0;
   const businessFee = Number(row.business_clearance_fee) || 0;
@@ -1433,6 +1440,17 @@ export function settingsFromRow(row: any): BarangaySettings {
     skChairperson: row.sk_chairperson || undefined,
     kagawads: Array.isArray(row.kagawads) ? row.kagawads : [],
     contactNumber: row.contact_number || '',
+    emergencyHotlines: Array.isArray(row.emergency_hotlines)
+      ? DEFAULT_EMERGENCY_HOTLINES.map((fallback) => {
+          const saved = row.emergency_hotlines.find((hotline: any) => hotline.id === fallback.id);
+          return {
+            id: fallback.id,
+            name: saved?.name || fallback.name,
+            description: saved?.description || fallback.description,
+            number: saved?.number || fallback.number,
+          };
+        })
+      : DEFAULT_EMERGENCY_HOTLINES.map((hotline) => ({ ...hotline })),
     email: row.email || '',
     hallAddress: row.hall_address || '',
     officeHours: row.office_hours || '',
@@ -1482,6 +1500,7 @@ export function settingsToRow(s: BarangaySettings): any {
     sk_chairperson: toNullableString(s.skChairperson),
     kagawads: Array.isArray(s.kagawads) ? s.kagawads : [],
     contact_number: s.contactNumber || '',
+    emergency_hotlines: s.emergencyHotlines || DEFAULT_EMERGENCY_HOTLINES,
     email: s.email || '',
     hall_address: s.hallAddress || '',
     office_hours: s.officeHours || 'Monday - Friday: 8:00 AM - 5:00 PM',

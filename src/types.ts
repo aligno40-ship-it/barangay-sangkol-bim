@@ -867,6 +867,13 @@ export type ComplaintStatus = ComplaintRecord['status'];
 export type BarangayDocument = DocumentRecord;
 export type TransactionRecord = FinancialTransaction;
 
+export interface EmergencyHotline {
+  id: 'barangay_tanod' | 'health_center' | 'police' | 'fire';
+  name: string;
+  description: string;
+  number: string;
+}
+
 export interface BarangaySettings {
   barangayName: string; // "Barangay Sangkol"
   municipality: string; // "Dipolog City" or "Sangkol District"
@@ -885,6 +892,7 @@ export interface BarangaySettings {
   barangaySecretary: string;
   barangayTreasurer: string;
   contactNumber: string;
+  emergencyHotlines?: EmergencyHotline[];
   email: string;
   hallAddress: string;
   officeHours: string;

@@ -94,6 +94,15 @@ export const LandingPage: React.FC<LandingPageProps> = ({
     return [...officials].sort((a, b) => (a.order || 99) - (b.order || 99));
   }, [officials]);
 
+  const emergencyHotlines = settings.emergencyHotlines || [
+    { id: 'barangay_tanod', name: 'Barangay Tanod (BPAT Peace & Order)', description: 'Sangkol Incident Command Post', number: '0917-123-4567' },
+    { id: 'health_center', name: 'Sangkol Health Center & First Aid', description: 'Maternity & Ambulance Dispatch', number: '0928-765-4321' },
+    { id: 'police', name: 'Dipolog City Police Station (PNP)', description: 'National Police Hotline', number: '(065) 212-2525 / 166' },
+    { id: 'fire', name: 'Bureau of Fire Protection (BFP)', description: 'Dipolog Central Fire Station', number: '(065) 212-3111 / 911' },
+  ];
+  const getEmergencyHotline = (id: 'barangay_tanod' | 'health_center' | 'police' | 'fire') =>
+    emergencyHotlines.find((hotline) => hotline.id === id);
+
   const configuredFees = settings.certificateFees;
   const getConfiguredFee = (type: string, legacyFee: number, fallback: number) => {
     const configuredFee = Number(configuredFees?.[type] ?? legacyFee ?? fallback);
@@ -955,41 +964,41 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 <div className="space-y-3">
                   <div className="flex items-center justify-between p-3.5 rounded-xl bg-slate-900/80 border border-slate-700/80">
                     <div>
-                      <span className="text-xs font-bold text-white block">Barangay Tanod (BPAT Peace & Order)</span>
-                      <span className="text-[11px] text-slate-400">Sangkol Incident Command Post</span>
+                      <span className="text-xs font-bold text-white block">{getEmergencyHotline('barangay_tanod')?.name}</span>
+                      <span className="text-[11px] text-slate-400">{getEmergencyHotline('barangay_tanod')?.description}</span>
                     </div>
                     <span className="text-sm font-mono font-bold text-emerald-400">
-                      0917-123-4567
+                      {getEmergencyHotline('barangay_tanod')?.number}
                     </span>
                   </div>
 
                   <div className="flex items-center justify-between p-3.5 rounded-xl bg-slate-900/80 border border-slate-700/80">
                     <div>
-                      <span className="text-xs font-bold text-white block">Sangkol Health Center & First Aid</span>
-                      <span className="text-[11px] text-slate-400">Maternity & Ambulance Dispatch</span>
+                      <span className="text-xs font-bold text-white block">{getEmergencyHotline('health_center')?.name}</span>
+                      <span className="text-[11px] text-slate-400">{getEmergencyHotline('health_center')?.description}</span>
                     </div>
                     <span className="text-sm font-mono font-bold text-emerald-400">
-                      0928-765-4321
+                      {getEmergencyHotline('health_center')?.number}
                     </span>
                   </div>
 
                   <div className="flex items-center justify-between p-3.5 rounded-xl bg-slate-900/80 border border-slate-700/80">
                     <div>
-                      <span className="text-xs font-bold text-white block">Dipolog City Police Station (PNP)</span>
-                      <span className="text-[11px] text-slate-400">National Police Hotline</span>
+                      <span className="text-xs font-bold text-white block">{getEmergencyHotline('police')?.name}</span>
+                      <span className="text-[11px] text-slate-400">{getEmergencyHotline('police')?.description}</span>
                     </div>
                     <span className="text-sm font-mono font-bold text-blue-400">
-                      (065) 212-2525 / 166
+                      {getEmergencyHotline('police')?.number}
                     </span>
                   </div>
 
                   <div className="flex items-center justify-between p-3.5 rounded-xl bg-slate-900/80 border border-slate-700/80">
                     <div>
-                      <span className="text-xs font-bold text-white block">Bureau of Fire Protection (BFP)</span>
-                      <span className="text-[11px] text-slate-400">Dipolog Central Fire Station</span>
+                      <span className="text-xs font-bold text-white block">{getEmergencyHotline('fire')?.name}</span>
+                      <span className="text-[11px] text-slate-400">{getEmergencyHotline('fire')?.description}</span>
                     </div>
                     <span className="text-sm font-mono font-bold text-amber-400">
-                      (065) 212-3111 / 911
+                      {getEmergencyHotline('fire')?.number}
                     </span>
                   </div>
                 </div>

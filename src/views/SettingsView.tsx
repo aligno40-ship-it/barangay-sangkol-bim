@@ -48,7 +48,7 @@ import {
   Trash2,
   Loader2,
 } from 'lucide-react';
-import { BarangaySettings } from '../types';
+import { BarangaySettings, EmergencyHotline } from '../types';
 import { compressSealImage } from '../utils/imageUtils';
 
 type SettingsTab =
@@ -101,6 +101,12 @@ export const SettingsView: React.FC = () => {
     termStart: settings.termStart || '',
     termEnd: settings.termEnd || '',
     puroks: settings.puroks || [],
+    emergencyHotlines: settings.emergencyHotlines || [
+      { id: 'barangay_tanod', name: 'Barangay Tanod (BPAT Peace & Order)', description: 'Sangkol Incident Command Post', number: '0917-123-4567' },
+      { id: 'health_center', name: 'Sangkol Health Center & First Aid', description: 'Maternity & Ambulance Dispatch', number: '0928-765-4321' },
+      { id: 'police', name: 'Dipolog City Police Station (PNP)', description: 'National Police Hotline', number: '(065) 212-2525 / 166' },
+      { id: 'fire', name: 'Bureau of Fire Protection (BFP)', description: 'Dipolog Central Fire Station', number: '(065) 212-3111 / 911' },
+    ],
     certificateFees: settings.certificateFees || {
       'Barangay Clearance': settings.clearanceFeeRegular || 50,
       'Business Clearance': settings.businessClearanceFee || 300,
@@ -243,6 +249,12 @@ export const SettingsView: React.FC = () => {
       termStart: settings.termStart || '',
       termEnd: settings.termEnd || '',
       puroks: settings.puroks || [],
+      emergencyHotlines: settings.emergencyHotlines || [
+        { id: 'barangay_tanod', name: 'Barangay Tanod (BPAT Peace & Order)', description: 'Sangkol Incident Command Post', number: '0917-123-4567' },
+        { id: 'health_center', name: 'Sangkol Health Center & First Aid', description: 'Maternity & Ambulance Dispatch', number: '0928-765-4321' },
+        { id: 'police', name: 'Dipolog City Police Station (PNP)', description: 'National Police Hotline', number: '(065) 212-2525 / 166' },
+        { id: 'fire', name: 'Bureau of Fire Protection (BFP)', description: 'Dipolog Central Fire Station', number: '(065) 212-3111 / 911' },
+      ],
       certificateFees: settings.certificateFees || {
         'Barangay Clearance': settings.clearanceFeeRegular || 50,
         'Business Clearance': settings.businessClearanceFee || 300,
@@ -391,6 +403,19 @@ export const SettingsView: React.FC = () => {
         (boundary) => boundary.purok !== purokToRemove
       ),
     });
+  };
+
+  const handleEmergencyHotlineChange = (
+    id: EmergencyHotline['id'],
+    field: 'name' | 'description' | 'number',
+    value: string,
+  ) => {
+    setFormData((current) => ({
+      ...current,
+      emergencyHotlines: (current.emergencyHotlines || []).map((hotline) =>
+        hotline.id === id ? { ...hotline, [field]: value } : hotline,
+      ),
+    }));
   };
 
   const handleFeeChange = (certType: string, newFee: number) => {
@@ -975,6 +1000,45 @@ export const SettingsView: React.FC = () => {
                   placeholder="e.g. Barangay Hall Complex, Purok Mangga"
                   className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-900 dark:text-slate-100 focus:outline-hidden focus:ring-2 focus:ring-indigo-500"
                 />
+              </div>
+            </div>
+
+            <div className="pt-5 border-t border-slate-100 dark:border-slate-800 space-y-4">
+              <div>
+                <h3 className="text-sm font-bold text-slate-900 dark:text-white">24/7 Emergency Hotlines</h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                  These numbers and labels appear on the public landing page.
+                </p>
+              </div>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                {(formData.emergencyHotlines || []).map((hotline) => (
+                  <div key={hotline.id} className="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 p-4 space-y-3">
+                    <input
+                      type="text"
+                      value={hotline.name}
+                      onChange={(e) => handleEmergencyHotlineChange(hotline.id, 'name', e.target.value)}
+                      placeholder="Agency or service name"
+                      aria-label="Emergency service name"
+                      className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-bold"
+                    />
+                    <input
+                      type="text"
+                      value={hotline.description}
+                      onChange={(e) => handleEmergencyHotlineChange(hotline.id, 'description', e.target.value)}
+                      placeholder="Department or dispatch description"
+                      aria-label="Emergency dispatch description"
+                      className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs"
+                    />
+                    <input
+                      type="text"
+                      value={hotline.number}
+                      onChange={(e) => handleEmergencyHotlineChange(hotline.id, 'number', e.target.value)}
+                      placeholder="Emergency number"
+                      aria-label="Emergency hotline number"
+                      className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-mono font-bold text-emerald-700 dark:text-emerald-400"
+                    />
+                  </div>
+                ))}
               </div>
             </div>
           </div>

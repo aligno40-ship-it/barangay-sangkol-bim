@@ -76,6 +76,7 @@ CREATE TABLE barangay_settings (
     residency_cert_fee NUMERIC(10, 2) DEFAULT 50.00,
     indigency_cert_fee NUMERIC(10, 2) DEFAULT 0.00,
     good_moral_fee NUMERIC(10, 2) DEFAULT 50.00,
+    emergency_hotlines JSONB DEFAULT '[]'::jsonb,
     puroks TEXT[] DEFAULT ARRAY['Purok Pinya', 'Purok Lumboy', 'Purok Mangga', 'Purok Tambis', 'Purok Kaimito', 'Purok Bayabas'],
     term_start DATE,
     term_end DATE,

@@ -13,6 +13,12 @@ export const INITIAL_SETTINGS: BarangaySettings = {
   barangaySecretary: '',
   barangayTreasurer: '',
   contactNumber: '',
+  emergencyHotlines: [
+    { id: 'barangay_tanod', name: 'Barangay Tanod (BPAT Peace & Order)', description: 'Sangkol Incident Command Post', number: '0917-123-4567' },
+    { id: 'health_center', name: 'Sangkol Health Center & First Aid', description: 'Maternity & Ambulance Dispatch', number: '0928-765-4321' },
+    { id: 'police', name: 'Dipolog City Police Station (PNP)', description: 'National Police Hotline', number: '(065) 212-2525 / 166' },
+    { id: 'fire', name: 'Bureau of Fire Protection (BFP)', description: 'Dipolog Central Fire Station', number: '(065) 212-3111 / 911' },
+  ],
   email: '',
   hallAddress: '',
   officeHours: '',

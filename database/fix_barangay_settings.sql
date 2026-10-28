@@ -16,6 +16,7 @@ ALTER TABLE barangay_settings ADD COLUMN IF NOT EXISTS kagawads TEXT[] DEFAULT A
 ALTER TABLE barangay_settings ADD COLUMN IF NOT EXISTS theme VARCHAR(50) DEFAULT 'light';
 ALTER TABLE barangay_settings ADD COLUMN IF NOT EXISTS is_dark_mode BOOLEAN DEFAULT FALSE;
 ALTER TABLE barangay_settings ADD COLUMN IF NOT EXISTS purok_map_boundaries JSONB DEFAULT '[]'::jsonb;
+ALTER TABLE barangay_settings ADD COLUMN IF NOT EXISTS emergency_hotlines JSONB DEFAULT '[]'::jsonb;
 
 -- 2. Update RLS policies to allow anon/authenticated read and update
 ALTER TABLE barangay_settings ENABLE ROW LEVEL SECURITY;

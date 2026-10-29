@@ -1770,6 +1770,7 @@ export const OfficialsView: React.FC = () => {
 
       {/* Official Directory & Profile Print Modal */}
       <OfficialsPrintModal
+        key={officialForPrint?.id || 'officials-directory'}
         isOpen={isPrintModalOpen}
         onClose={() => {
           setIsPrintModalOpen(false);

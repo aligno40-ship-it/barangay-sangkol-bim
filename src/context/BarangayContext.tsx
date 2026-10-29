@@ -2926,10 +2926,10 @@ export const BarangayProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       refreshFromSupabase().catch((err) => console.warn('Supabase post-login sync error:', err?.message || err));
     }
 
-    // If resident logs in, automatically switch tab to resident portal
+    // Route every successful login away from the login module.
     if (finalUser.role === 'Resident') {
       setActiveModule('resident_portal');
-    } else if (activeModule === 'resident_portal') {
+    } else {
       setActiveModule('dashboard');
     }
 
@@ -3372,7 +3372,7 @@ export const BarangayProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
     if (finalUser.role === 'Resident') {
       setActiveModule('resident_portal');
-    } else if (activeModule === 'resident_portal') {
+    } else {
       setActiveModule('dashboard');
     }
 
@@ -3459,6 +3459,8 @@ export const BarangayProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
     if (role === 'Resident') {
       setActiveModule('resident_portal');
+    } else {
+      setActiveModule('dashboard');
     }
   };
 
@@ -5552,13 +5554,6 @@ export const BarangayProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     setCertificates((prev) => [newCert, ...prev]);
     upsertCertificate(newCert).catch((err) => console.warn('Supabase issueCertificate error:', err?.message || err));
 
-    // Auto-send SMS/Email alert if certificate is issued ready
-    if (newCert.status !== 'Pending' && smsGatewaySettings.autoAlertCertificateReady) {
-      setTimeout(() => {
-        sendCertificateReadyAlert(newCert);
-      }, 200);
-    }
-
     // Record transaction if issued with fee
     if (newCert.status !== 'Pending' && (newCert.fee > 0 || newCert.orNumber)) {
       const tx: FinancialTransaction = {
@@ -5665,12 +5660,6 @@ export const BarangayProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
     setCertificates((prev) => prev.map((c) => (c.id === id ? updatedCert : c)));
 
-    // Auto-dispatch SMS / Email Alert if enabled in settings
-    if (smsGatewaySettings.autoAlertCertificateReady) {
-      setTimeout(() => {
-        sendCertificateReadyAlert(updatedCert);
-      }, 200);
-    }
 
     // Record transaction
     if (updatedFee > 0 || updatedOr) {
@@ -5771,26 +5760,6 @@ export const BarangayProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     setBlotters((prev) => [newBlotter, ...prev]);
     upsertBlotter(newBlotter).catch((err) => console.warn('Supabase addBlotter error:', err?.message || err));
     addAuditLog('CREATE', 'Blotter Management', `Recorded Blotter Case ${newBlotter.blotterNo} (${newBlotter.incidentType}) - Complainant: ${newBlotter.complainantName} (${isResident ? 'Resident Portal' : 'Desk'}).`);
-
-    // Dispatch SMS notification to resident complainant if contact number is available
-    if (newBlotter.complainantContact) {
-      try {
-        sendSMSAlert({
-          recipientName: newBlotter.complainantName,
-          recipientPhone: newBlotter.complainantContact,
-          purok: newBlotter.purok,
-          category: 'Peace & Order',
-          subject: `Blotter Report #${newBlotter.blotterNo} Received`,
-          smsMessage: `Magandang araw ${newBlotter.complainantName}. Your incident report regarding "${newBlotter.incidentType}" (Case #${newBlotter.blotterNo}) has been received by Barangay Tanod Desk. Status: Under Review.`,
-          channel: 'SMS',
-          sender: smsGatewaySettings.senderId || 'BRGY-SANGKOL',
-          relatedRecordId: newBlotter.id,
-          relatedRecordType: 'blotter',
-        });
-      } catch (err) {
-        console.warn('SMS dispatch skipped:', err);
-      }
-    }
 
     return newBlotter;
   };
@@ -6272,16 +6241,6 @@ export const BarangayProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     setAnnouncements((prev) => [newAnn, ...prev]);
     upsertAnnouncement(newAnn).catch((err) => console.warn('Supabase addAnnouncement error:', err?.message || err));
     addAuditLog('CREATE', 'Announcements', `Published announcement: "${newAnn.title}".`);
-
-    // Auto-broadcast Emergency SMS & Email if alert is Emergency or Pinned Advisory
-    if (
-      (newAnn.category === 'Emergency / Weather' || newAnn.isPinned) &&
-      smsGatewaySettings.autoAlertEmergencyAnnouncements
-    ) {
-      setTimeout(() => {
-        broadcastEmergencyAlert(newAnn, newAnn.targetAudience || 'All Puroks');
-      }, 200);
-    }
 
     return newAnn;
   };
@@ -6976,17 +6935,6 @@ export const BarangayProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       })
     );
 
-    // Auto-send citizen concern SMS update
-    const targetConcern = concerns.find((c) => c.id === id);
-    if (targetConcern && smsGatewaySettings.autoAlertCitizenConcerns) {
-      setTimeout(() => {
-        sendConcernUpdateAlert({
-          ...targetConcern,
-          ...actionDetails,
-        });
-      }, 200);
-    }
-
     addAuditLog(
       'UPDATE',
       'Citizen Concerns',
@@ -7146,12 +7094,6 @@ export const BarangayProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     upsertAppointment(newApt).catch((err) => console.warn('Supabase addAppointment error:', err?.message || err));
     addAuditLog('CREATE', 'Appointments', `Scheduled appointment: "${newApt.title}" for ${newApt.residentName} on ${newApt.date} ${newApt.time}.`);
 
-    // Auto-send appointment reminder SMS
-    if (smsGatewaySettings.autoAlertAppointments) {
-      setTimeout(() => {
-        sendAppointmentReminderAlert(newApt);
-      }, 200);
-    }
 
     return newApt;
   };
@@ -7764,95 +7706,13 @@ export const BarangayProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       sender: alertData.sender || smsGatewaySettings.senderId || 'BRGY-SANGKOL',
     };
 
-    setSmsAlerts((prev) => [newRecord, ...prev]);
-    upsertSMSAlert(newRecord).catch((err) => console.warn('Supabase sendSMSAlert error:', err?.message || err));
-
-    // Decrement SMS quota if not empty
-    setSmsGatewaySettings((prev) => ({
-      ...prev,
-      smsQuotaRemaining: Math.max(0, prev.smsQuotaRemaining - 1),
-    }));
-
-    // Asynchronously dispatch to real endpoints (Google Workspace / Gmail API & SMS Gateway API)
-    try {
-      const recipientEmail = newRecord.recipientEmail || '';
-      const emailBodyHtml =
-        newRecord.emailBody && newRecord.emailBody.includes('<html')
-          ? newRecord.emailBody
-          : buildOfficialBarangayHtmlEmail({
-              recipientName: newRecord.recipientName,
-              title: newRecord.subject,
-              category: newRecord.category,
-              messageContent: newRecord.emailBody || newRecord.smsMessage,
-            });
-
-      // 1. Post to Express backend email/gmail alert API
-      fetch('/api/v1/alerts/email/send', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(getCachedGmailToken() ? { Authorization: `Bearer ${getCachedGmailToken()}` } : {}),
-        },
-        body: JSON.stringify({
-          to: recipientEmail,
-          subject: newRecord.subject,
-          htmlBody: emailBodyHtml,
-          plainText: newRecord.smsMessage,
-          recipientName: newRecord.recipientName,
-          category: newRecord.category,
-        }),
-      }).catch((e) => console.warn('Backend email alert api notice:', e));
-
-      // 2. Direct Google Workspace / Gmail API integration
-      const token = getCachedGmailToken();
-      if (token || newRecord.channel === 'Email' || newRecord.channel === 'Both') {
-        sendRealGmail({
-          to: recipientEmail,
-          subject: newRecord.subject,
-          htmlBody: emailBodyHtml,
-          senderName: 'Barangay Sangkol BIMS',
-          accessToken: token || undefined,
-        }).catch((e) => console.warn('Direct Gmail API send notice:', e));
-      }
-    } catch (e) {
-      console.warn('Alert transmission notice:', e);
-    }
-
-    addAuditLog(
-      'CREATE',
-      'SMS/Email Dispatcher',
-      `Dispatched ${newRecord.category} alert (${newRecord.channel}) to ${newRecord.recipientName} (${newRecord.recipientPhone}). ID: ${newRecord.id}`
-    );
-
+    // SMS notifications are disabled across the system. Do not persist or dispatch
+    // alert records or decrement SMS quotas from this compatibility method.
     return newRecord;
   };
 
-  const resendSMSAlert = (alertId: string) => {
-    const target = smsAlerts.find((a) => a.id === alertId);
-    if (!target) return;
-    const updated: SMSAlertRecord = {
-      ...target,
-      timestamp: new Date().toISOString().replace('T', ' ').slice(0, 19),
-      status: 'Delivered',
-    };
-    setSmsAlerts((prev) => [updated, ...prev.filter((a) => a.id !== alertId)]);
-
-    // Also trigger background real notification dispatch
-    try {
-      fetch('/api/v1/alerts/email/send', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          to: updated.recipientEmail || '',
-          subject: `[RESENT] ${updated.subject}`,
-          plainText: updated.smsMessage,
-          recipientName: updated.recipientName,
-          category: updated.category,
-        }),
-      }).catch(() => {});
-    } catch {}
-
-    addAuditLog('CREATE', 'SMS/Email Dispatcher', `Resent ${target.category} alert to ${target.recipientName}.`);
+  const resendSMSAlert = (_alertId: string) => {
+    // SMS and email re-dispatch is disabled across the system.
   };
 
   const deleteSMSAlert = (alertId: string) => {

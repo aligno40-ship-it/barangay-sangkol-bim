@@ -46,7 +46,6 @@ export const AnnouncementsView: React.FC = () => {
     currentUser,
     settings,
     broadcastEmergencyAlert,
-    setIsSMSDispatchModalOpen,
   } = useBarangay();
 
   const isResident = currentUser.role === 'Resident';
@@ -240,15 +239,6 @@ export const AnnouncementsView: React.FC = () => {
 
         {canManage && (
           <div className="flex items-center gap-2 shrink-0">
-            <button
-              onClick={() => setIsSMSDispatchModalOpen(true)}
-              className="px-3.5 py-2 bg-gradient-to-r from-sky-600 to-blue-700 hover:from-sky-500 hover:to-blue-600 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-md shadow-sky-950/40 cursor-pointer transition-all active:scale-95 border border-sky-400/30"
-              title="Broadcast Emergency SMS & Email Advisories to all Puroks"
-            >
-              <Radio className="w-4 h-4 text-sky-200 animate-pulse" />
-              <span>SMS / Email Broadcast</span>
-            </button>
-
             <button
               onClick={handleOpenAdd}
               className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-md cursor-pointer transition-all"

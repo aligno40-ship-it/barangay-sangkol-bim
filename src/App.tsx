@@ -16,7 +16,6 @@ import { ResidentRegistrationModal } from './components/ResidentRegistrationModa
 import { AccessRestrictedView } from './components/AccessRestrictedView';
 import { SessionTimeoutModal } from './components/SessionTimeoutModal';
 import { CertificateVerificationModal } from './components/CertificateVerificationModal';
-import { SMSDispatchCenterModal } from './components/SMSDispatchCenterModal';
 import { CookieConsentBanner } from './components/CookieConsentBanner';
 import { LegalPoliciesModal, LegalPolicyTab } from './components/LegalPoliciesModal';
 import { TrackingAnalyticsModal } from './components/TrackingAnalyticsModal';
@@ -123,9 +122,15 @@ const MainLayout: React.FC = () => {
   const [legalModalTab, setLegalModalTab] = useState<LegalPolicyTab>('privacy');
   const [isAnalyticsModalOpen, setIsAnalyticsModalOpen] = useState(false);
   const [authView, setAuthView] = useState<'landing' | 'login'>('login');
-  const [loginInitialMode, setLoginInitialMode] = useState<'resident' | 'official'>('resident');
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
   const [registrationSubmitted, setRegistrationSubmitted] = useState(false);
+
+  // Never leave the account-switch login overlay open after authentication succeeds.
+  useEffect(() => {
+    if (isAuthenticated) {
+      setIsLoginModalOpen(false);
+    }
+  }, [isAuthenticated]);
 
   // Automatically ensure Login Portal view is active whenever activeModule is 'login'
   useEffect(() => {
@@ -154,9 +159,6 @@ const MainLayout: React.FC = () => {
       }
       if (params.get('login') === 'true' || params.get('auth') === 'login') {
         setAuthView('login');
-        if (params.get('mode') === 'official') {
-          setLoginInitialMode('official');
-        }
       }
     } catch {}
 
@@ -325,11 +327,7 @@ const MainLayout: React.FC = () => {
       return (
         <div className="min-h-screen bg-slate-100 flex flex-col font-sans selection:bg-emerald-700 selection:text-white">
           <LoginPage
-            initialMode={loginInitialMode}
             onBackToLanding={() => setAuthView('landing')}
-            onSuccess={() => {
-              setActiveModule('dashboard');
-            }}
           />
           {/* Global Modals for password resets / support if needed */}
           <CertificatePrintModal />
@@ -346,8 +344,7 @@ const MainLayout: React.FC = () => {
     return (
       <div className="min-h-screen bg-slate-50 flex flex-col font-sans selection:bg-emerald-700 selection:text-white">
         <LandingPage
-          onGoToLogin={(mode = 'resident') => {
-            setLoginInitialMode(mode);
+          onGoToLogin={() => {
             setAuthView('login');
           }}
           onOpenRegister={() => {
@@ -373,7 +370,6 @@ const MainLayout: React.FC = () => {
           }}
           onSuccess={() => {
             setRegistrationSubmitted(true);
-            setLoginInitialMode('resident');
           }}
         />
         <CertificateVerificationModal
@@ -457,7 +453,9 @@ const MainLayout: React.FC = () => {
       case 'barangay_map':
         return <BarangayMapView />;
       case 'login':
-        return <LoginPage onSuccess={() => setActiveModule('dashboard')} />;
+        return isAuthenticated
+          ? (isResident ? <ResidentPortalView /> : <DashboardView />)
+          : <LoginPage />;
       default:
         return isResident ? <ResidentPortalView /> : <DashboardView />;
     }
@@ -1005,7 +1003,7 @@ const MainLayout: React.FC = () => {
 
       {/* Global Modals */}
       <SessionTimeoutModal timeoutSeconds={15 * 60} warningSeconds={60} />
-      <LoginModal isOpen={isLoginModalOpen} onClose={() => setIsLoginModalOpen(false)} />
+      <LoginModal isOpen={!isAuthenticated && isLoginModalOpen} onClose={() => setIsLoginModalOpen(false)} />
       <LogoutModal
         isOpen={isLogoutModalOpen}
         onClose={() => setIsLogoutModalOpen(false)}
@@ -1025,8 +1023,6 @@ const MainLayout: React.FC = () => {
         isOpen={isRegisterModalOpen}
         onClose={() => setIsRegisterModalOpen(false)}
       />
-      <SMSDispatchCenterModal />
-
       {/* Cookie Consent & Legal Policies Modals */}
       <CookieConsentBanner
         onOpenLegalModal={handleOpenLegalModal}

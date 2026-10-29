@@ -57,7 +57,6 @@ export const CertificatesView: React.FC = () => {
     targetCertificateId,
     setTargetCertificateId,
     sendCertificateReadyAlert,
-    setIsSMSDispatchModalOpen,
   } = useBarangay();
 
   // Strict Role Guard: Only Administrators, Barangay Staff, and Barangay Officials can approve or issue official documents

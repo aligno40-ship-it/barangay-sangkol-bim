@@ -289,7 +289,7 @@ export const AnimatedLogoLoader: React.FC<AnimatedLogoLoaderProps> = ({
           {/* Security Seal Verification Tag */}
           <div className="mt-5 flex items-center gap-1.5 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
             <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
-            <span>256-Bit Encrypted BIMS Core</span>
+            <span>Mabuhay Barangay Sangkol</span>
           </div>
         </motion.div>
     );

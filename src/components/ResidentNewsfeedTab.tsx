@@ -1375,55 +1375,6 @@ export const ResidentNewsfeedTab: React.FC<ResidentNewsfeedTabProps> = ({
             )}
           </div>
 
-          {/* Card 3: Direct SMS & Mobile Alerts Feed */}
-          <div className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-xs space-y-3.5">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="p-1.5 bg-sky-50 text-sky-600 rounded-lg">
-                  <Smartphone className="w-4 h-4" />
-                </div>
-                <div>
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-slate-800">
-                    SMS & Email Alerts ({userSMSAlerts.length})
-                  </h3>
-                  <p className="text-[10px] text-slate-400">Personal notices sent to your phone</p>
-                </div>
-              </div>
-            </div>
-
-            {userSMSAlerts.length === 0 ? (
-              <div className="p-4 rounded-xl bg-slate-50 border border-slate-100 text-center text-xs text-slate-500">
-                <p className="font-medium text-slate-600">No recent alerts</p>
-                <p className="text-[10px] text-slate-400 mt-0.5">
-                  System notifications will appear here.
-                </p>
-              </div>
-            ) : (
-              <div className="space-y-2">
-                {userSMSAlerts.slice(0, 2).map((alert) => (
-                  <div
-                    key={alert.id}
-                    onClick={() => setSelectedAlertForDetail(alert)}
-                    className="p-3 bg-slate-50 hover:bg-sky-50/60 border border-slate-200/80 hover:border-sky-300 rounded-xl transition-all cursor-pointer space-y-1"
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-sky-100 text-sky-800">
-                        {alert.category}
-                      </span>
-                      <span className="text-[10px] text-slate-400 font-mono">
-                        {alert.timestamp.slice(11, 16)}
-                      </span>
-                    </div>
-                    <p className="text-xs font-bold text-slate-900 line-clamp-1">{alert.subject}</p>
-                    <p className="text-[11px] text-slate-600 line-clamp-2 leading-relaxed">
-                      {alert.smsMessage}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
           {/* Card 4: Quick Barangay Contact & Tanod Desk */}
           <div className="bg-slate-900 text-white rounded-2xl p-4 shadow-xs space-y-2">
             <div className="flex items-center justify-between">

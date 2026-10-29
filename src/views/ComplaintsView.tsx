@@ -60,7 +60,6 @@ export const ComplaintsView: React.FC = () => {
     setTargetRecordId,
     officials,
     sendHearingSummonsAlert,
-    setIsSMSDispatchModalOpen,
     arePuroksMatching,
   } = useBarangay();
 
@@ -963,28 +962,6 @@ export const ComplaintsView: React.FC = () => {
                   </div>
 
                   <div className="flex items-center gap-1.5">
-                    <button
-                      onClick={() =>
-                        sendHearingSummonsAlert({
-                          caseNumber: c.caseNumber,
-                          caseTitle: c.caseType,
-                          recipientName: c.complainantName,
-                          recipientPhone: c.contactNumber,
-                          hearingDate: c.hearingDate || new Date().toISOString().split('T')[0],
-                          hearingTime: c.hearingTime || '09:00 AM',
-                          hearingStage: c.stage,
-                          venue: 'Barangay Sangkol Lupon Mediation Hall',
-                          mediator: c.mediatorOfficial,
-                          role: 'Complainant',
-                          complaintOrBlotterId: c.id,
-                        })
-                      }
-                      className="px-2.5 py-1.5 bg-sky-50 hover:bg-sky-100 text-sky-700 rounded-xl text-xs font-bold border border-sky-200 flex items-center gap-1 cursor-pointer transition-colors active:scale-95"
-                      title="Send Hearing Summons & Notice of Conciliation via SMS & Email"
-                    >
-                      <Send className="w-3 h-3 text-sky-600" />
-                      <span>Dispatch Summons</span>
-                    </button>
 
                     <button
                       onClick={() => handleOpenEdit(c)}

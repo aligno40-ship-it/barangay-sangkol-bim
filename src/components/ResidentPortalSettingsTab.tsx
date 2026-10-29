@@ -262,7 +262,7 @@ export const ResidentPortalSettingsTab: React.FC<ResidentPortalSettingsTabProps>
               Portal Preferences & Display Settings
             </h2>
             <p className="text-xs text-emerald-100/90 max-w-2xl leading-relaxed">
-              Customize your personal appearance mode, password credentials, SMS notifications, and privacy options. Theme preferences apply only to your resident account and do not affect barangay administrators or other citizens.
+              Customize your personal appearance mode, password credentials, email notifications, and privacy options. Theme preferences apply only to your resident account and do not affect barangay administrators or other citizens.
             </p>
           </div>
 
@@ -701,62 +701,6 @@ export const ResidentPortalSettingsTab: React.FC<ResidentPortalSettingsTabProps>
             </div>
 
             <div className="space-y-3.5 text-xs">
-              {/* SMS Pickup Ready */}
-              <div className="flex items-start justify-between gap-3">
-                <div className="space-y-0.5">
-                  <p className="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1">
-                    <Smartphone className="w-3.5 h-3.5 text-indigo-500" />
-                    <span>Certificate Pickup SMS</span>
-                  </p>
-                  <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                    Receive text when your clearance or certificate is approved.
-                  </p>
-                </div>
-                <input
-                  type="checkbox"
-                  checked={notifPrefs.smsReady}
-                  onChange={() => handleToggleNotif('smsReady')}
-                  className="w-4 h-4 mt-1 accent-indigo-600 rounded cursor-pointer"
-                />
-              </div>
-
-              {/* Disaster Warnings */}
-              <div className="flex items-start justify-between gap-3 pt-2 border-t border-slate-100 dark:border-slate-800">
-                <div className="space-y-0.5">
-                  <p className="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1">
-                    <Radio className="w-3.5 h-3.5 text-rose-500" />
-                    <span>Emergency Weather & Flood Broadcasts</span>
-                  </p>
-                  <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                    Urgent typhoon alerts and evacuation advisories from MDRRMO.
-                  </p>
-                </div>
-                <input
-                  type="checkbox"
-                  checked={notifPrefs.smsDisaster}
-                  onChange={() => handleToggleNotif('smsDisaster')}
-                  className="w-4 h-4 mt-1 accent-indigo-600 rounded cursor-pointer"
-                />
-              </div>
-
-              {/* Barangay Assembly */}
-              <div className="flex items-start justify-between gap-3 pt-2 border-t border-slate-100 dark:border-slate-800">
-                <div className="space-y-0.5">
-                  <p className="font-bold text-slate-800 dark:text-slate-200">
-                    Assembly & Purok Reminders
-                  </p>
-                  <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                    Notices on clean-up drives, health missions, and meetings.
-                  </p>
-                </div>
-                <input
-                  type="checkbox"
-                  checked={notifPrefs.smsEvents}
-                  onChange={() => handleToggleNotif('smsEvents')}
-                  className="w-4 h-4 mt-1 accent-indigo-600 rounded cursor-pointer"
-                />
-              </div>
-
               {/* Email Receipts */}
               <div className="flex items-start justify-between gap-3 pt-2 border-t border-slate-100 dark:border-slate-800">
                 <div className="space-y-0.5">

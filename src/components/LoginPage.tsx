@@ -21,12 +21,9 @@ import {
   UserPlus,
   Clock,
   CheckCircle2,
-  Users,
-  Building2,
   FileCheck2,
   MapPin,
   Sparkles,
-  ArrowRightLeft,
   Scale,
   ArrowLeft,
   KeyRound,
@@ -37,7 +34,6 @@ interface LoginPageProps {
   isModal?: boolean;
   onClose?: () => void;
   onBackToLanding?: () => void;
-  initialMode?: 'resident' | 'official';
 }
 
 export const LoginPage: React.FC<LoginPageProps> = ({
@@ -45,18 +41,13 @@ export const LoginPage: React.FC<LoginPageProps> = ({
   isModal = false,
   onClose,
   onBackToLanding,
-  initialMode,
 }) => {
   const { login, settings, users, resetPassword } = useBarangay();
 
   // Authentication Mode: 'resident' or 'official'
-  const [authMode, setAuthMode] = useState<'resident' | 'official'>(initialMode || 'resident');
-
-  useEffect(() => {
-    if (initialMode) {
-      setAuthMode(initialMode);
-    }
-  }, [initialMode]);
+  // The login form has no portal selector. The account role determined during authentication
+  // controls whether the resident or official experience is opened.
+  const [authMode, setAuthMode] = useState<'resident' | 'official'>('resident');
 
   // Form State
   const [username, setUsername] = useState('');
@@ -165,28 +156,6 @@ export const LoginPage: React.FC<LoginPageProps> = ({
     }
   }, []);
 
-  const handleSwitchMode = (
-    mode: 'resident' | 'official',
-    retainedUsername?: string,
-    retainedPassword?: string
-  ) => {
-    setAuthMode(mode);
-    setErrorMessage('');
-    setPortalMismatchInfo(null);
-    setPendingStatusInfo(null);
-    setRejectedStatusInfo(null);
-
-    if (retainedUsername !== undefined) {
-      setUsername(retainedUsername);
-      if (retainedPassword !== undefined) {
-        setPassword(retainedPassword);
-      }
-      return;
-    }
-
-    setUsername('');
-    setPassword('');
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -342,46 +311,10 @@ export const LoginPage: React.FC<LoginPageProps> = ({
           </p>
         </div>
 
-        {/* 3. Role Mode Switcher Tab (Resident vs Officials) */}
-        <div className="mt-4 p-1 bg-slate-100/90 rounded-2xl grid grid-cols-2 gap-1 border border-slate-200/80">
-          <button
-            type="button"
-            onClick={() => handleSwitchMode('resident')}
-            className={`py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
-              authMode === 'resident'
-                ? 'bg-white text-emerald-800 shadow-sm border border-slate-200/60'
-                : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'
-            }`}
-          >
-            <Users className="w-3.5 h-3.5 text-emerald-600" />
-            <span>Resident Sign-In</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => handleSwitchMode('official')}
-            className={`py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
-              authMode === 'official'
-                ? 'bg-white text-blue-900 shadow-sm border border-slate-200/60'
-                : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'
-            }`}
-          >
-            <Building2 className="w-3.5 h-3.5 text-blue-600" />
-            <span>Officials & Staff</span>
-          </button>
-        </div>
-
-        {/* Mode Description Banner */}
-        <div className="mt-3 text-center">
-          {authMode === 'resident' ? (
-            <p className="text-[11px] text-emerald-800 bg-emerald-50/70 py-1.5 px-3 rounded-xl border border-emerald-200/60 font-medium">
-              Citizen portal for Sangkol residents. New accounts submit to Admin for verification.
-            </p>
-          ) : (
-            <p className="text-[11px] text-blue-900 bg-blue-50/70 py-1.5 px-3 rounded-xl border border-blue-200/60 font-medium">
-              Direct sign-in for Punong Barangay, Secretary, Treasurer, Tanods, and Staff.
-            </p>
-          )}
+        <div className="mt-4 text-center">
+          <p className="text-[11px] text-slate-600 bg-slate-50 py-1.5 px-3 rounded-xl border border-slate-200 font-medium">
+            Sign in with your account credentials. Your role will determine your destination.
+          </p>
         </div>
 
         {/* Session Timeout Expiry Notice Banner */}
@@ -433,40 +366,10 @@ export const LoginPage: React.FC<LoginPageProps> = ({
             </div>
 
             {/* Quick Switch Action */}
-            <div className="pt-2 border-t border-rose-200/80 flex items-center justify-between gap-2">
-              <span className="text-[10px] text-rose-700 font-medium">
-                {portalMismatchInfo.suggestedPortal === 'resident'
-                  ? 'Switch to Resident Portal'
-                  : 'Switch to Officials & Staff Portal'}
-              </span>
-              <button
-                type="button"
-                onClick={async () => {
-                  const targetPortal = portalMismatchInfo.suggestedPortal;
-                  handleSwitchMode(targetPortal, username, password);
-                  if (username && password) {
-                    setIsLoading(true);
-                    try {
-                      const res = await login(username.trim(), password.trim(), undefined, targetPortal);
-                      setIsLoading(false);
-                      if (res.success) {
-                        if (onSuccess) onSuccess();
-                        if (onClose) onClose();
-                      } else {
-                        setErrorMessage(res.message);
-                      }
-                    } catch {
-                      setIsLoading(false);
-                    }
-                  }
-                }}
-                className="px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl font-bold text-[11px] flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs"
-              >
-                <ArrowRightLeft className="w-3.5 h-3.5" />
-                <span>
-                  Go to {portalMismatchInfo.suggestedPortal === 'resident' ? 'Resident Sign-In' : 'Officials Sign-In'}
-                </span>
-              </button>
+            <div className="pt-2 border-t border-rose-200/80">
+              <p className="text-[10px] text-rose-700 font-medium">
+                Use your role-appropriate account credentials; the system routes automatically.
+              </p>
             </div>
           </div>
         )}
@@ -556,7 +459,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
               htmlFor="bims-username"
               className="block text-xs font-semibold text-slate-700"
             >
-              {authMode === 'resident' ? 'Username or Email' : 'Username'}
+              Username or Email
             </label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
@@ -575,7 +478,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                   setPendingStatusInfo(null);
                   setRejectedStatusInfo(null);
                 }}
-                placeholder={authMode === 'resident' ? 'Enter username or email' : 'Enter username'}
+                placeholder="Enter username or email"
                 disabled={isLoading}
                 className="w-full pl-10 pr-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs sm:text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-transparent focus:bg-white transition-all font-medium disabled:opacity-60 disabled:cursor-not-allowed"
               />
@@ -655,39 +558,33 @@ export const LoginPage: React.FC<LoginPageProps> = ({
           <button
             type="submit"
             disabled={isLoading}
-            className={`w-full py-2.5 px-4 text-white font-semibold rounded-xl text-xs sm:text-sm transition-all duration-150 flex items-center justify-center gap-2 shadow-sm cursor-pointer mt-2 disabled:opacity-60 disabled:cursor-not-allowed ${
-              authMode === 'resident'
-                ? 'bg-emerald-700 hover:bg-emerald-800 shadow-emerald-700/20'
-                : 'bg-blue-700 hover:bg-blue-800 shadow-blue-700/20'
-            }`}
+            className="w-full py-2.5 px-4 text-white font-semibold rounded-xl text-xs sm:text-sm transition-all duration-150 flex items-center justify-center gap-2 shadow-sm cursor-pointer mt-2 disabled:opacity-60 disabled:cursor-not-allowed bg-emerald-700 hover:bg-emerald-800 shadow-emerald-700/20"
           >
             {isLoading ? (
               <AnimatedLogoLoader mode="inline" label="Authenticating Secure Session..." />
             ) : (
               <>
-                <span>Sign In to {authMode === 'resident' ? 'Resident Portal' : 'Administration'}</span>
+                <span>Sign In</span>
                 <ArrowRight className="w-4 h-4" />
               </>
             )}
           </button>
         </form>
 
-        {/* Resident Registration Link Trigger (Strictly for Residents Only) */}
-        {authMode === 'resident' && (
-          <div className="mt-4 pt-4 border-t border-slate-100 text-center space-y-2">
-            <p className="text-xs text-slate-600">
-              Not yet registered in the Resident Portal?
-            </p>
-            <button
-              type="button"
-              onClick={() => setIsRegisterModalOpen(true)}
-              className="w-full py-2 px-3 rounded-xl border border-emerald-300 bg-emerald-50 hover:bg-emerald-100 text-emerald-900 text-xs font-bold transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
-            >
-              <UserPlus className="w-3.5 h-3.5 text-emerald-700" />
-              <span>Register Resident Account (Admin Approval Required)</span>
-            </button>
-          </div>
-        )}
+        {/* Resident Registration Link */}
+        <div className="mt-4 pt-4 border-t border-slate-100 text-center space-y-2">
+          <p className="text-xs text-slate-600">
+            Not yet registered in the Resident Portal?
+          </p>
+          <button
+            type="button"
+            onClick={() => setIsRegisterModalOpen(true)}
+            className="w-full py-2 px-3 rounded-xl border border-emerald-300 bg-emerald-50 hover:bg-emerald-100 text-emerald-900 text-xs font-bold transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+          >
+            <UserPlus className="w-3.5 h-3.5 text-emerald-700" />
+            <span>Register Resident Account (Admin Approval Required)</span>
+          </button>
+        </div>
 
       </div>
 
@@ -814,7 +711,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
         <div className="text-[11px] text-slate-400 flex flex-wrap items-center justify-center gap-2">
           <span>Republic of the Philippines • Barangay Sangkol, Dipolog City</span>
           <span>•</span>
-          <span>Official LGU Portal • TLS 1.3 Encrypted</span>
+          <span>Official LGU Portal • PMA</span>
         </div>
       </footer>
 

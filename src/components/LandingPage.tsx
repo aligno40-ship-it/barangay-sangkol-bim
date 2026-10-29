@@ -23,7 +23,6 @@ import {
   Check,
   Shield,
   HeartPulse,
-  Scale,
   Trash2,
   HelpCircle,
   Menu,
@@ -35,7 +34,6 @@ import {
   Lock,
   ArrowUpRight,
   Layers,
-  Activity,
   Megaphone,
   Briefcase,
   Share2,
@@ -60,6 +58,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({
     announcements,
     activities,
   } = useBarangay();
+
+  const hallAddress = settings.hallAddress?.trim() || 'Not configured in General Jurisdiction settings';
+  const officeHours = settings.officeHours?.trim() || 'Not configured in General Jurisdiction settings';
+  const officialEmail = settings.email?.trim() || 'Not configured in General Jurisdiction settings';
+  const contactNumber = settings.contactNumber?.trim() || 'Not configured in General Jurisdiction settings';
 
   // Category filter for Frontline Public Services
   const [selectedServiceCategory, setSelectedServiceCategory] = useState<
@@ -186,40 +189,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       uses: ['New Business Permit Application', 'Annual Mayor’s Permit Renewal', 'DTI / SEC Business Registration Compliance', 'Commercial Bank Accounts'],
       requirements: ['DTI / SEC Certificate of Registration', 'Lease Contract or Land Title', 'Barangay Sanitary / Safety Inspection Clearance'],
     },
-    {
-      id: 'lupon',
-      title: 'Katarungang Pambarangay',
-      localTitle: 'Lupon Tagapamayapa Mediation & Conciliation',
-      category: 'justice',
-      icon: Scale,
-      badge: 'Community Justice',
-      badgeColor: 'bg-purple-100 text-purple-800 border-purple-200',
-      fee: '₱0.00 (FREE)',
-      feeNote: 'Sovereign Conciliation',
-      turnaround: '3-Day Summons Period',
-      validity: 'Binding Amicable Settlement',
-      description:
-        'Neighborhood dispute resolution and mediation under RA 7160. Amicable settlement of civil and light criminal disputes before court filing.',
-      uses: ['Neighborhood boundary and noise disputes', 'Unpaid personal debts and financial claims', 'Light physical injuries & slander conciliation', 'Issuance of Certificate to File Action (CFA)'],
-      requirements: ['Filing of formal incident complaint narrative', 'Personal appearance of complainant and respondent', 'Purok settlement attempt record'],
-    },
-    {
-      id: 'health',
-      title: 'Sangkol Health & Nutrition Center',
-      localTitle: 'Pangkalusugan at Bakuna sa Barangay',
-      category: 'social',
-      icon: Activity,
-      badge: 'Frontline Healthcare',
-      badgeColor: 'bg-teal-100 text-teal-800 border-teal-200',
-      fee: '₱0.00 (FREE)',
-      feeNote: 'Universal Health Care',
-      turnaround: 'Walk-in / Mon - Fri',
-      validity: 'Continuous Clinical Care',
-      description:
-        'Primary healthcare facility providing free infant immunizations, maternal prenatal checks, vital signs monitoring, and maintenance medicines.',
-      uses: ['Infant & Child Expanded Immunization (EPI)', 'Maternal Prenatal & Postpartum Checkups', 'Hypertension & Diabetes maintenance medicines', 'First-aid, wound dressing, and referral to Dipolog City Health'],
-      requirements: ['Barangay Sangkol Resident Health Card (Yellow Card)', 'Valid ID or PhilHealth Number', 'Immunization Baby Book'],
-    },
   ];
 
   const filteredServices = servicesData.filter((s) => {
@@ -246,12 +215,12 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           <div className="flex items-center gap-4 text-[11px] text-slate-400">
             <div className="flex items-center gap-1.5">
               <Clock className="w-3.5 h-3.5 text-emerald-400" />
-              <span>Mon - Fri: 8:00 AM - 5:00 PM (No Noon Break)</span>
+              <span>{officeHours}</span>
             </div>
             <span className="hidden lg:inline text-slate-600">|</span>
             <div className="hidden lg:flex items-center gap-1.5 text-slate-300">
               <Phone className="w-3.5 h-3.5 text-emerald-400" />
-              <span>Desk: {settings.contactNumber || '(065) 212-3456'}</span>
+              <span>Desk: {contactNumber}</span>
             </div>
           </div>
         </div>
@@ -289,21 +258,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             <div className="flex items-center gap-2 sm:gap-3">
               <button
                 type="button"
-                onClick={() => onGoToLogin('official')}
-                className="px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-pointer hidden sm:flex items-center gap-1.5"
-                title="Barangay Kagawad, Secretary, & Staff Login"
-              >
-                <Lock className="w-3.5 h-3.5 text-slate-500" />
-                <span>Staff Login</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => onGoToLogin('resident')}
+                onClick={() => onGoToLogin()}
                 className="px-4 py-2 sm:px-5 sm:py-2.5 rounded-xl text-xs sm:text-sm font-bold text-white bg-emerald-700 hover:bg-emerald-800 shadow-xs hover:shadow transition-all cursor-pointer flex items-center gap-1.5"
               >
                 <LogIn className="w-4 h-4" />
-                <span>Resident Portal</span>
+                <span>Sign In</span>
               </button>
             </div>
           </div>
@@ -344,11 +303,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               <div className="flex flex-wrap items-center gap-3 pt-2">
                 <button
                   type="button"
-                  onClick={() => onGoToLogin('resident')}
+                  onClick={() => onGoToLogin()}
                   className="px-6 py-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm shadow-md hover:shadow-lg transition-all cursor-pointer flex items-center gap-2 group"
                 >
                   <LogIn className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
-                  <span>Enter Resident Portal</span>
+                  <span>Sign In</span>
                   <ArrowRight className="w-4 h-4 ml-1 opacity-80" />
                 </button>
 
@@ -361,14 +320,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                   <span>Register as Resident</span>
                 </button>
 
-                <button
-                  type="button"
-                  onClick={() => onGoToLogin('official')}
-                  className="px-4 py-3.5 rounded-xl text-slate-400 hover:text-white text-xs font-semibold transition-colors cursor-pointer flex items-center gap-1.5"
-                >
-                  <Lock className="w-3.5 h-3.5" />
-                  <span>Barangay Staff Access</span>
-                </button>
               </div>
 
               {/* Citizen Trust Badges */}
@@ -383,7 +334,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 </div>
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="w-4 h-4 text-amber-400" />
-                  <span>Automated SMS Status Dispatch</span>
+                  <span>Citizen Service Status Tracking</span>
                 </div>
               </div>
             </div>
@@ -842,7 +793,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
 
                 <div className="mt-auto pt-2 text-[11px] text-slate-400 border-t border-slate-100 w-full flex items-center justify-center gap-1.5">
                   <Phone className="w-3 h-3 text-slate-400" />
-                  <span>{off.contactNumber || '(065) 212-3456'}</span>
+                  <span>{off.contactNumber?.trim() || 'Contact not available'}</span>
                 </div>
               </div>
             ))}
@@ -881,10 +832,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               <div className="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-800 mx-auto flex items-center justify-center font-bold text-lg">
                 2
               </div>
-              <h3 className="text-base font-bold text-slate-900">Hakbang 2: Pagsusuri at SMS Alert</h3>
+              <h3 className="text-base font-bold text-slate-900">Hakbang 2: Pagsusuri ng Rekord</h3>
               <p className="text-xs text-slate-600 leading-relaxed">
-                Awtomatikong sinusuri ng Barangay Secretary ang inyong rekord sa civil registry. Makakatanggap
-                kayo ng instant SMS text alert sa inyong mobile number kapag handa na ang inyong dokumento.
+                Sinusuri ng Barangay Secretary ang inyong rekord sa civil registry. Sundan ang status sa Resident Portal kapag handa na ang inyong dokumento.
               </p>
             </div>
 
@@ -915,8 +865,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 Barangay Hall ng Sangkol
               </h2>
               <p className="text-sm text-slate-300 leading-relaxed font-normal">
-                Bukas ang tanggapan mula Lunes hanggang Biyernes upang maglingkod sa inyo. Walang noon break
-                alinsunod sa batas ng serbisyo publiko.
+                Ang opisyal na oras at serbisyo ng Barangay Hall ay ibinabase sa General Jurisdiction settings.
               </p>
 
               <div className="space-y-3 text-sm">
@@ -925,7 +874,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                   <div>
                     <span className="font-bold text-white block">Tirahan at Lokasyon:</span>
                     <span className="text-slate-300">
-                      {settings.hallAddress || 'Purok 3 (Sentro), Barangay Sangkol, Dipolog City, 7100 Zamboanga del Norte'}
+                      {hallAddress}
                     </span>
                   </div>
                 </div>
@@ -934,7 +883,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                   <Clock className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
                   <div>
                     <span className="font-bold text-white block">Oras ng Serbisyo:</span>
-                    <span className="text-slate-300">Lunes - Biyernes: 8:00 AM - 5:00 PM (Continuous Service)</span>
+                    <span className="text-slate-300">{officeHours}</span>
                   </div>
                 </div>
 
@@ -943,7 +892,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                   <div>
                     <span className="font-bold text-white block">Opisyal na Email:</span>
                     <span className="text-slate-300">
-                      {settings.email || 'barangay.sangkol@dipologcity.gov.ph'}
+                      {officialEmail}
                     </span>
                   </div>
                 </div>
@@ -1084,19 +1033,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 <li>
                   <button
                     type="button"
-                    onClick={() => onGoToLogin('resident')}
+                    onClick={() => onGoToLogin()}
                     className="text-emerald-400 font-semibold hover:underline cursor-pointer"
                   >
-                    Resident Portal Sign In
-                  </button>
-                </li>
-                <li>
-                  <button
-                    type="button"
-                    onClick={() => onGoToLogin('official')}
-                    className="hover:text-slate-200 transition-colors cursor-pointer"
-                  >
-                    Staff & Admin Access
+                    Sign In
                   </button>
                 </li>
                 <li>

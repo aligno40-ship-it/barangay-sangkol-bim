@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useBarangay } from '../context/BarangayContext';
 import { BarangayOfficial } from '../types';
 import { RepublicSeal, BarangaySangkolSeal } from './OfficialSeals';
@@ -22,6 +22,18 @@ export const OfficialsPrintModal: React.FC<OfficialsPrintModalProps> = ({
   const [selectedOfficialId, setSelectedOfficialId] = useState<string>(
     initialOfficial?.id || (officials[0]?.id ?? '')
   );
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    if (initialOfficial) {
+      setPrintMode('individual');
+      setSelectedOfficialId(initialOfficial.id);
+    } else {
+      setPrintMode('directory');
+      setSelectedOfficialId(officials[0]?.id ?? '');
+    }
+  }, [isOpen, initialOfficial]);
 
   if (!isOpen) return null;
 
@@ -275,26 +287,7 @@ export const OfficialsPrintModal: React.FC<OfficialsPrintModalProps> = ({
                   </div>
                 </div>
 
-                {/* Section IV: Emergency Directory */}
-                <div className="p-3 bg-slate-50 border border-slate-300 rounded-lg text-xs space-y-1">
-                  <span className="font-bold text-slate-900 uppercase font-serif text-[10px] block">
-                    Barangay Emergency & Public Assistance Hotlines
-                  </span>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-[11px]">
-                    <div>
-                      <span className="text-slate-500">Barangay Hall:</span>{' '}
-                      <span className="font-mono font-bold text-slate-900">{settings.contactNumber || '0917-889-2231'}</span>
-                    </div>
-                    <div>
-                      <span className="text-slate-500">MDRRMO / Rescue:</span>{' '}
-                      <span className="font-mono font-bold text-slate-900">0917-890-4421</span>
-                    </div>
-                    <div>
-                      <span className="text-slate-500">Sinacaban PNP:</span>{' '}
-                      <span className="font-mono font-bold text-slate-900">0998-598-7321</span>
-                    </div>
-                  </div>
-                </div>
+
 
                 {/* Authentication & Signatures */}
                 <div className="pt-8 grid grid-cols-2 gap-8 text-center text-xs">

@@ -718,6 +718,20 @@ export const areNamesMatching = (nameA: string = '', nameB: string = ''): boolea
   return false;
 };
 
+export const resolveCollectingOfficer = (
+  settings: BarangaySettings,
+  officials: BarangayOfficial[] = [],
+): string => {
+  const configuredTreasurer = settings.barangayTreasurer?.trim();
+  if (configuredTreasurer) return configuredTreasurer;
+
+  const treasurerOfficial = officials.find((official) =>
+    /treasurer/i.test(official.position || '')
+  );
+  const officialName = treasurerOfficial?.name?.trim();
+  return officialName || 'Barangay Treasurer';
+};
+
 const resolveResidentForUser = (user: SystemUser, residentRecords: Resident[]): Resident | undefined => {
   return resolveResidentForProfile(user, residentRecords).resident;
 };
@@ -1201,7 +1215,7 @@ export const BarangayProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         list.push({
           id: `notif-tx-${tx.id}`,
           title: `Payment Received: OR #${tx.orNumber} (₱${tx.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })})`,
-          message: `Official Receipt issued to ${tx.payorName} for ${tx.serviceType} via ${tx.paymentMethod}. Cashier: ${tx.cashierName || settings.barangayTreasurer || 'Barangay Treasury'}.${tx.remarks ? ` Note: ${tx.remarks}` : ''}`,
+          message: `Official Receipt issued to ${tx.payorName} for ${tx.serviceType} via ${tx.paymentMethod}. Collecting Officer: ${resolveCollectingOfficer(settings, officials)}.${tx.remarks ? ` Note: ${tx.remarks}` : ''}`,
           timestamp: tx.date.includes(':') ? tx.date : `${tx.date} 09:30:00`,
           type: 'success',
           category: 'financial',
@@ -1212,7 +1226,7 @@ export const BarangayProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           payorName: tx.payorName,
           serviceType: tx.serviceType,
           paymentMethod: tx.paymentMethod,
-          cashierName: tx.cashierName || settings.barangayTreasurer,
+          cashierName: resolveCollectingOfficer(settings, officials),
           linkModule: 'transactions',
           actionText: 'Print Official Receipt',
         });
@@ -5555,7 +5569,7 @@ export const BarangayProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         serviceType: newCert.type === 'Business Clearance' ? 'Business Permit' : newCert.type === 'Certificate of Residency' ? 'Residency Certification' : newCert.type === 'Certificate of Indigency' ? 'Indigency (Waived)' : 'Barangay Clearance',
         amount: newCert.fee,
         paymentMethod: newCert.fee === 0 ? 'Waived (Exempted)' : 'Cash',
-        cashierName: currentUser.name,
+        cashierName: resolveCollectingOfficer(settings, officials),
         remarks: `${newCert.type} for ${newCert.purpose}`,
       };
       setTransactions((prev) => [tx, ...prev]);
@@ -5668,7 +5682,7 @@ export const BarangayProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         serviceType: updatedCert.type === 'Business Clearance' ? 'Business Permit' : updatedCert.type === 'Certificate of Residency' ? 'Residency Certification' : updatedCert.type === 'Certificate of Indigency' ? 'Indigency (Waived)' : 'Barangay Clearance',
         amount: updatedFee,
         paymentMethod: updatedFee === 0 ? 'Waived (Exempted)' : 'Cash',
-        cashierName: currentUser.name,
+        cashierName: resolveCollectingOfficer(settings, officials),
         remarks: `Approved online application: ${updatedCert.type} (Control: ${updatedCert.controlNumber})`,
       };
       setTransactions((prev) => [tx, ...prev]);
@@ -6220,7 +6234,7 @@ export const BarangayProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         serviceType: 'Business Permit',
         amount: newBusiness.feePaid,
         paymentMethod: 'Cash',
-        cashierName: currentUser.name,
+        cashierName: resolveCollectingOfficer(settings, officials),
         remarks: `Clearance for ${newBusiness.businessName}`,
       };
       setTransactions((prev) => [tx, ...prev]);
@@ -7357,7 +7371,11 @@ export const BarangayProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   // Transactions
   const addTransaction = (txData: Omit<FinancialTransaction, 'id'>): FinancialTransaction => {
     const id = `TXN-${Date.now()}`;
-    const newTx: FinancialTransaction = { ...txData, id };
+    const newTx: FinancialTransaction = {
+      ...txData,
+      id,
+      cashierName: resolveCollectingOfficer(settings, officials),
+    };
     setTransactions((prev) => [newTx, ...prev]);
     upsertTransaction(newTx).catch((err) => console.warn('Supabase addTransaction error:', err?.message || err));
     addAuditLog('CREATE', 'Financial Transactions', `Recorded OR #${newTx.orNumber} - ₱${newTx.amount.toLocaleString()} from ${newTx.payorName}.`);

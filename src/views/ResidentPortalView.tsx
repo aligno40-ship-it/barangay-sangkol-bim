@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { useBarangay, areNamesMatching } from '../context/BarangayContext';
+import { useBarangay, areNamesMatching, resolveCollectingOfficer } from '../context/BarangayContext';
 import { BarangaySangkolSeal, RepublicSeal, QRCodeBox } from '../components/OfficialSeals';
 import { UserProfilePhotoModal } from '../components/UserProfilePhotoModal';
 import { CertificateDetailModal } from '../components/CertificateDetailModal';
@@ -152,6 +152,7 @@ export const ResidentPortalView: React.FC<ResidentPortalViewProps> = ({ initialT
 
   const activeTab = residentTab || initialTab || 'overview';
   const setActiveTab = setResidentTab;
+  const collectingOfficer = resolveCollectingOfficer(settings, officials);
   const [newsfeedFilter, setNewsfeedFilter] = useState<'all' | 'purok' | 'registered' | 'advisories' | 'trabaho' | 'ayuda'>('all');
   const [newsfeedSearch, setNewsfeedSearch] = useState('');
   const [selectedAlertForDetail, setSelectedAlertForDetail] = useState<SMSAlertRecord | null>(null);
@@ -3052,7 +3053,7 @@ export const ResidentPortalView: React.FC<ResidentPortalViewProps> = ({ initialT
                         <div className="flex items-center justify-between text-[11px]">
                           <span className="text-slate-400">Treasury Officer:</span>
                           <span className="font-medium text-slate-800 truncate max-w-[140px]">
-                            {tx.cashierName || settings.barangayTreasurer || 'Barangay Treasurer'}
+                            {collectingOfficer}
                           </span>
                         </div>
                       </div>
@@ -3129,7 +3130,7 @@ export const ResidentPortalView: React.FC<ResidentPortalViewProps> = ({ initialT
                           </td>
                           <td className="py-3.5 px-4 whitespace-nowrap">
                             <span className="text-slate-700 font-medium">
-                              {tx.cashierName || settings.barangayTreasurer || 'Barangay Treasurer'}
+                              {collectingOfficer}
                             </span>
                           </td>
                           <td className="py-3.5 px-4 text-right whitespace-nowrap">

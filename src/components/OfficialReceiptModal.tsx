@@ -1,14 +1,15 @@
 import React from 'react';
-import { useBarangay, areNamesMatching } from '../context/BarangayContext';
+import { useBarangay, areNamesMatching, resolveCollectingOfficer } from '../context/BarangayContext';
 import { RepublicSeal, BarangaySangkolSeal, QRCodeBox } from './OfficialSeals';
 import { Printer, X, Receipt, CheckCircle } from 'lucide-react';
 
 export const OfficialReceiptModal: React.FC = () => {
-  const { currentUser, selectedReceiptForPrint, setSelectedReceiptForPrint, settings, certificates } = useBarangay();
+  const { currentUser, selectedReceiptForPrint, setSelectedReceiptForPrint, settings, officials, certificates } = useBarangay();
 
   if (!selectedReceiptForPrint) return null;
 
   const tx = selectedReceiptForPrint;
+  const collectingOfficer = resolveCollectingOfficer(settings, officials);
 
   // Strict Resident Access Guard: Residents can only view/print their own receipts
   if (currentUser.role === 'Resident') {
@@ -114,10 +115,10 @@ export const OfficialReceiptModal: React.FC = () => {
             <div className="pt-2 flex items-center justify-between text-[9px]">
               <div>
                 <p className="text-slate-500">Collecting Officer:</p>
-                <p className="font-bold uppercase text-slate-900 mt-3">{tx.cashierName || settings.barangayTreasurer}</p>
+                <p className="font-bold uppercase text-slate-900 mt-3">{collectingOfficer}</p>
                 <p className="text-slate-500">Barangay Treasurer / Staff</p>
               </div>
-              <QRCodeBox code={tx.orNumber} size={48} />
+              <QRCodeBox code={`OR:${tx.orNumber}|COLLECTING-OFFICER:${collectingOfficer}`} size={48} />
             </div>
 
             <div className="text-center pt-2 text-[8px] text-slate-400 border-t border-slate-200">

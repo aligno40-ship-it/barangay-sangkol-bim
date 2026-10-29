@@ -1,18 +1,19 @@
 import React, { useState } from 'react';
-import { useBarangay, areNamesMatching } from '../context/BarangayContext';
+import { useBarangay, areNamesMatching, resolveCollectingOfficer } from '../context/BarangayContext';
 import { TransactionRecord } from '../types';
 import { Receipt, Search, Printer, Plus, DollarSign, Calendar, Filter, FileText } from 'lucide-react';
 import { RecentSearchesInput } from '../components/RecentSearchesInput';
 import { InfoButton } from '../components/InfoButton';
 
 export const TransactionsView: React.FC = () => {
-  const { transactions, setSelectedReceiptForPrint, settings, currentUser, certificates } = useBarangay();
+  const { transactions, setSelectedReceiptForPrint, settings, officials, currentUser, certificates } = useBarangay();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedService, setSelectedService] = useState('All');
 
   const isResident = currentUser.role === 'Resident';
   const userFullName = currentUser.name.trim().toLowerCase();
   const userResidentId = currentUser.residentId;
+  const collectingOfficer = resolveCollectingOfficer(settings, officials);
 
   // Strict Scope: Residents can ONLY view their own transactions and never other accounts' transactions
   const scopedTransactions = isResident
@@ -161,7 +162,7 @@ export const TransactionsView: React.FC = () => {
                       ₱{tx.amount.toFixed(2)}
                     </td>
                     <td className="px-4 py-3 text-slate-300">
-                      {tx.cashierName || settings.barangayTreasurer}
+                      {collectingOfficer}
                     </td>
                     <td className="px-4 py-3 text-right">
                       <button

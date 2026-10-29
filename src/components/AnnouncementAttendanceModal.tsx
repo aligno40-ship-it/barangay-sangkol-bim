@@ -707,11 +707,26 @@ export const AnnouncementAttendanceModal: React.FC<AnnouncementAttendanceModalPr
                       </tr>
                     ) : (
                       filteredAttendees.map((att, index) => {
+                        const rawStatus = String(att.attendanceStatus || '').trim().toLowerCase();
+                        const normalizedStatus: AnnouncementAttendee['attendanceStatus'] =
+                          rawStatus === 'present / attended' || rawStatus === 'present' || rawStatus === 'attended'
+                            ? 'Present / Attended'
+                            : rawStatus === 'walk-in'
+                              ? 'Walk-In'
+                              : rawStatus === 'absent'
+                                ? 'Absent'
+                                : rawStatus === 'cancelled'
+                                  ? 'Cancelled'
+                                  : rawStatus === 'excused'
+                                    ? 'Excused'
+                                    : att.attendedAt
+                                      ? 'Present / Attended'
+                                      : 'Registered';
                         const isPresent =
-                          att.attendanceStatus === 'Present / Attended' || att.attendanceStatus === 'Walk-In';
-                        const isWalkIn = att.attendanceStatus === 'Walk-In';
-                        const isPreReg = att.attendanceStatus === 'Registered';
-                        const isAbsent = att.attendanceStatus === 'Absent';
+                          normalizedStatus === 'Present / Attended' || normalizedStatus === 'Walk-In';
+                        const isWalkIn = normalizedStatus === 'Walk-In';
+                        const isPreReg = normalizedStatus === 'Registered';
+                        const isAbsent = normalizedStatus === 'Absent';
 
                         return (
                           <tr
@@ -774,7 +789,7 @@ export const AnnouncementAttendanceModal: React.FC<AnnouncementAttendanceModalPr
                               )}
                             </td>
 
-                            {isAdmin && <td className="py-3 px-3 text-center">
+                            <td className="py-3 px-3 text-center">
                               <span
                                 className={`px-2.5 py-1 rounded-full text-[10px] font-bold inline-flex items-center gap-1 ${
                                   isPresent
@@ -789,16 +804,16 @@ export const AnnouncementAttendanceModal: React.FC<AnnouncementAttendanceModalPr
                                 }`}
                               >
                                 {isPresent && <Check className="w-3 h-3 text-emerald-400" />}
-                                {att.attendanceStatus}
+                                {normalizedStatus}
                               </span>
-                            </td>}
+                            </td>
 
                             {/* Quick Actions: Administrator only */}
                             {isAdmin && (
                               <td className="py-3 px-3 text-center">
                                 <div className="flex items-center justify-center gap-1">
-                                  {att.attendanceStatus !== 'Present / Attended' &&
-                                  att.attendanceStatus !== 'Walk-In' ? (
+                                  {normalizedStatus !== 'Present / Attended' &&
+                                  normalizedStatus !== 'Walk-In' ? (
                                     <button
                                       onClick={() => handleMarkStatus(att.id, 'Present / Attended')}
                                       className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-[10px] font-bold flex items-center gap-1 cursor-pointer transition-colors"

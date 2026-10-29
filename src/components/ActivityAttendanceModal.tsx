@@ -570,9 +570,24 @@ export const ActivityAttendanceModal: React.FC<ActivityAttendanceModalProps> = (
                         </tr>
                       ) : (
                         filteredAttendees.map((attendee, index) => {
+                          const rawStatus = String(attendee.attendanceStatus || '').trim().toLowerCase();
+                          const normalizedStatus: ActivityAttendee['attendanceStatus'] =
+                            rawStatus === 'present / attended' || rawStatus === 'present' || rawStatus === 'attended'
+                              ? 'Present / Attended'
+                              : rawStatus === 'walk-in'
+                                ? 'Walk-In'
+                                : rawStatus === 'absent'
+                                  ? 'Absent'
+                                  : rawStatus === 'cancelled'
+                                    ? 'Cancelled'
+                                    : rawStatus === 'excused'
+                                      ? 'Excused'
+                                      : attendee.attendedAt
+                                        ? 'Present / Attended'
+                                        : 'Registered';
                           const isPresent =
-                            attendee.attendanceStatus === 'Present / Attended' ||
-                            attendee.attendanceStatus === 'Walk-In';
+                            normalizedStatus === 'Present / Attended' ||
+                            normalizedStatus === 'Walk-In';
 
                           return (
                             <tr
@@ -637,20 +652,20 @@ export const ActivityAttendanceModal: React.FC<ActivityAttendanceModalProps> = (
                               <td className="py-3.5 px-4">
                                 <span
                                   className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold ${
-                                    attendee.attendanceStatus === 'Present / Attended'
+                                    normalizedStatus === 'Present / Attended'
                                       ? 'bg-emerald-100 text-emerald-800 border border-emerald-200'
-                                      : attendee.attendanceStatus === 'Walk-In'
+                                      : normalizedStatus === 'Walk-In'
                                       ? 'bg-purple-100 text-purple-800 border border-purple-200'
-                                      : attendee.attendanceStatus === 'Registered'
+                                      : normalizedStatus === 'Registered'
                                       ? 'bg-indigo-100 text-indigo-800 border border-indigo-200'
-                                      : attendee.attendanceStatus === 'Absent'
+                                      : normalizedStatus === 'Absent'
                                       ? 'bg-amber-100 text-amber-800 border border-amber-200'
                                       : 'bg-rose-100 text-rose-800 border border-rose-200'
                                   }`}
                                 >
-                                  {attendee.attendanceStatus === 'Present / Attended' && <Check className="w-3.5 h-3.5" />}
-                                  {attendee.attendanceStatus === 'Walk-In' && <Sparkles className="w-3.5 h-3.5" />}
-                                  {attendee.attendanceStatus}
+                                  {normalizedStatus === 'Present / Attended' && <Check className="w-3.5 h-3.5" />}
+                                  {normalizedStatus === 'Walk-In' && <Sparkles className="w-3.5 h-3.5" />}
+                                  {normalizedStatus}
                                 </span>
                                 {attendee.verifiedBy && (
                                   <div className="text-[10px] text-slate-400 mt-0.5">
@@ -680,7 +695,7 @@ export const ActivityAttendanceModal: React.FC<ActivityAttendanceModalProps> = (
                                     </button>
                                   )}
 
-                                  {attendee.attendanceStatus !== 'Absent' && !isPresent && (
+                                  {normalizedStatus !== 'Absent' && !isPresent && (
                                     <button
                                       onClick={() => handleMarkStatus(attendee.id, 'Absent')}
                                       className="p-1.5 bg-amber-50 hover:bg-amber-100 text-amber-700 rounded-lg transition-colors"

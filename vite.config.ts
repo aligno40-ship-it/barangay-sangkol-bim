@@ -57,6 +57,9 @@ export default defineConfig(() => {
         },
         workbox: {
           // Cache app files only. Supabase requests are never cached.
+          cleanupOutdatedCaches: true,
+          clientsClaim: true,
+          skipWaiting: true,
           globPatterns: ['**/*.{html,js,css,svg,png,jpg,jpeg,webp,ico}'],
           maximumFileSizeToCacheInBytes: 6 * 1024 * 1024,
           navigateFallback: '/index.html',

@@ -48,7 +48,7 @@ export const AnnouncementAttendanceModal: React.FC<AnnouncementAttendanceModalPr
     addWalkInAttendee,
     deleteAttendee,
   } = useBarangay();
-  const isAdmin = currentUser?.role === 'Administrator';
+  const isAdmin = String(currentUser?.role || '').trim().toLowerCase() === 'administrator';
 
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('All');
@@ -793,50 +793,52 @@ export const AnnouncementAttendanceModal: React.FC<AnnouncementAttendanceModalPr
                               </span>
                             </td>}
 
-                            {/* Quick Actions */}
-                            <td className="py-3 px-3 text-center">
-                              <div className="flex items-center justify-center gap-1">
-                                {att.attendanceStatus !== 'Present / Attended' &&
-                                att.attendanceStatus !== 'Walk-In' ? (
-                                  <button
-                                    onClick={() => handleMarkStatus(att.id, 'Present / Attended')}
-                                    className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-[10px] font-bold flex items-center gap-1 cursor-pointer transition-colors"
-                                    title="Mark Attendee as Present"
-                                  >
-                                    <Check className="w-3 h-3" />
-                                    <span>Mark Present</span>
-                                  </button>
-                                ) : (
-                                  <button
-                                    onClick={() => handleMarkStatus(att.id, 'Registered')}
-                                    className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-[10px] font-semibold border border-slate-700 cursor-pointer"
-                                    title="Revert to Pre-Registered"
-                                  >
-                                    <span>Revert</span>
-                                  </button>
-                                )}
+                            {/* Quick Actions: Administrator only */}
+                            {isAdmin && (
+                              <td className="py-3 px-3 text-center">
+                                <div className="flex items-center justify-center gap-1">
+                                  {att.attendanceStatus !== 'Present / Attended' &&
+                                  att.attendanceStatus !== 'Walk-In' ? (
+                                    <button
+                                      onClick={() => handleMarkStatus(att.id, 'Present / Attended')}
+                                      className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-[10px] font-bold flex items-center gap-1 cursor-pointer transition-colors"
+                                      title="Mark Attendee as Present"
+                                    >
+                                      <Check className="w-3 h-3" />
+                                      <span>Mark Present</span>
+                                    </button>
+                                  ) : (
+                                    <button
+                                      onClick={() => handleMarkStatus(att.id, 'Registered')}
+                                      className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-[10px] font-semibold border border-slate-700 cursor-pointer"
+                                      title="Revert to Pre-Registered"
+                                    >
+                                      <span>Revert</span>
+                                    </button>
+                                  )}
 
-                                <button
-                                  onClick={() => handleMarkStatus(att.id, 'Absent')}
-                                  className="p-1 bg-slate-800 hover:bg-rose-950/60 text-slate-400 hover:text-rose-400 rounded-lg border border-slate-700 cursor-pointer"
-                                  title="Mark Absent"
-                                >
-                                  <XCircle className="w-3.5 h-3.5" />
-                                </button>
+                                  <button
+                                    onClick={() => handleMarkStatus(att.id, 'Absent')}
+                                    className="p-1 bg-slate-800 hover:bg-rose-950/60 text-slate-400 hover:text-rose-400 rounded-lg border border-slate-700 cursor-pointer"
+                                    title="Mark Absent"
+                                  >
+                                    <XCircle className="w-3.5 h-3.5" />
+                                  </button>
 
-                                <button
-                                  onClick={() => {
-                                    if (confirm(`Remove attendee registration record for ${att.residentName}?`)) {
-                                      deleteAttendee(att.id);
-                                    }
-                                  }}
-                                  className="p-1 bg-slate-800 hover:bg-rose-950/80 text-slate-400 hover:text-rose-400 rounded-lg border border-slate-700 cursor-pointer"
-                                  title="Delete Registration Record"
-                                >
-                                  <Trash2 className="w-3.5 h-3.5" />
-                                </button>
-                              </div>
-                            </td>
+                                  <button
+                                    onClick={() => {
+                                      if (confirm(`Remove attendee registration record for ${att.residentName}?`)) {
+                                        deleteAttendee(att.id);
+                                      }
+                                    }}
+                                    className="p-1 bg-slate-800 hover:bg-rose-950/80 text-slate-400 hover:text-rose-400 rounded-lg border border-slate-700 cursor-pointer"
+                                    title="Delete Registration Record"
+                                  >
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                  </button>
+                                </div>
+                              </td>
+                            )}
                           </tr>
                         );
                       })

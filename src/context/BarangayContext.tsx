@@ -6431,7 +6431,7 @@ export const BarangayProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     status: AnnouncementAttendee['attendanceStatus'],
     remarks?: string
   ) => {
-    if (currentUser?.role !== 'Administrator') {
+    if (String(currentUser?.role || '').trim().toLowerCase() !== 'administrator') {
       addAuditLog('SECURITY_ALERT', 'Authorization', `Blocked unauthorized announcement attendance update attempt by @${currentUser?.username || 'user'}.`);
       return;
     }
@@ -6471,7 +6471,7 @@ export const BarangayProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     residentId: string,
     remarks?: string
   ): { success: boolean; message: string; attendee?: AnnouncementAttendee } => {
-    if (currentUser?.role !== 'Administrator') {
+    if (String(currentUser?.role || '').trim().toLowerCase() !== 'administrator') {
       addAuditLog('SECURITY_ALERT', 'Authorization', `Blocked unauthorized announcement walk-in registration attempt by @${currentUser?.username || 'user'}.`);
       return { success: false, message: 'Only an administrator can register walk-in attendees.' };
     }
@@ -6495,7 +6495,7 @@ export const BarangayProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   };
 
   const deleteAttendee = (attendeeId: string) => {
-    if (currentUser?.role !== 'Administrator') {
+    if (String(currentUser?.role || '').trim().toLowerCase() !== 'administrator') {
       addAuditLog('SECURITY_ALERT', 'Authorization', `Blocked unauthorized announcement attendee deletion attempt by @${currentUser?.username || 'user'}.`);
       return;
     }
@@ -6720,7 +6720,7 @@ export const BarangayProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     status: ActivityAttendee['attendanceStatus'],
     remarks?: string
   ) => {
-    if (currentUser?.role !== 'Administrator') {
+    if (String(currentUser?.role || '').trim().toLowerCase() !== 'administrator') {
       addAuditLog('SECURITY_ALERT', 'Authorization', `Blocked unauthorized activity attendance update attempt by @${currentUser?.username || 'user'}.`);
       return;
     }
@@ -6760,7 +6760,7 @@ export const BarangayProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     residentId: string,
     remarks?: string
   ): { success: boolean; message: string; attendee?: ActivityAttendee } => {
-    if (currentUser?.role !== 'Administrator') {
+    if (String(currentUser?.role || '').trim().toLowerCase() !== 'administrator') {
       addAuditLog('SECURITY_ALERT', 'Authorization', `Blocked unauthorized activity walk-in registration attempt by @${currentUser?.username || 'user'}.`);
       return { success: false, message: 'Only an administrator can register walk-in attendees.' };
     }
@@ -6784,7 +6784,7 @@ export const BarangayProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   };
 
   const deleteActivityAttendee = (attendeeId: string) => {
-    if (currentUser?.role !== 'Administrator') {
+    if (String(currentUser?.role || '').trim().toLowerCase() !== 'administrator') {
       addAuditLog('SECURITY_ALERT', 'Authorization', `Blocked unauthorized activity attendee deletion attempt by @${currentUser?.username || 'user'}.`);
       return;
     }

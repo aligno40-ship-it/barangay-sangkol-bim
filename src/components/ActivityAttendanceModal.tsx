@@ -48,7 +48,7 @@ export const ActivityAttendanceModal: React.FC<ActivityAttendanceModalProps> = (
     addActivityWalkIn,
     deleteActivityAttendee,
   } = useBarangay();
-  const isAdmin = currentUser?.role === 'Administrator';
+  const isAdmin = String(currentUser?.role || '').trim().toLowerCase() === 'administrator';
 
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('All');

@@ -3,7 +3,18 @@ import { createRoot } from 'react-dom/client';
 import { useEffect, useState } from 'react';
 import App from './App.tsx';
 import { ErrorBoundary } from './components/ErrorBoundary';
+import { registerSW } from 'virtual:pwa-register';
 import './index.css';
+
+// Activate new deployments immediately so users do not continue using stale
+// cached attendance controls after an update.
+let reloadPwaApp: (reloadPage?: boolean) => void;
+reloadPwaApp = registerSW({
+  immediate: true,
+  onNeedRefresh() {
+    reloadPwaApp(true);
+  },
+});
 
 // Global error traps to avoid unhandled async promise rejections crashing the runtime in iframe
 if (typeof window !== 'undefined') {

@@ -94,7 +94,7 @@ export const LogoutModal: React.FC<LogoutModalProps> = ({
             </div>
 
             <div className="flex items-center justify-between text-[11px] text-slate-500 font-medium">
-              <span>Security Level:</span>
+              <span>Developed By:</span>
               <span className="text-emerald-700 font-semibold flex items-center gap-1">
                 <ShieldCheck className="w-3.5 h-3.5" /> PMA
               </span>

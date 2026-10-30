@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { BarangayProvider, useBarangay } from './context/BarangayContext';
-import { CommunityServicesProvider } from './context/CommunityServicesContext';
+import { CommunityServicesProvider, useCommunityServices } from './context/CommunityServicesContext';
 import { Sidebar } from './components/Sidebar';
 import { LoginModal } from './components/LoginModal';
 import { LogoutModal } from './components/LogoutModal';
@@ -85,8 +85,7 @@ const MainLayout: React.FC = () => {
     setActiveModule,
     currentUser,
     settings,
-    notifications,
-    unreadNotifCount,
+    notifications: barangayNotifications,
     unreadTransactionCount,
     markNotificationAsRead,
     markNotificationAsUnread,
@@ -142,6 +141,16 @@ const MainLayout: React.FC = () => {
   const notifDropdownRef = useRef<HTMLDivElement>(null);
 
   const isResident = currentUser?.role === 'Resident';
+  const { communityNotifications } = useCommunityServices();
+
+  const notifications = [
+    ...barangayNotifications,
+    ...communityNotifications,
+  ]
+    .filter((notification, index, list) => list.findIndex((item) => item.id === notification.id) === index)
+    .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+
+  const unreadNotifCount = notifications.filter((notification) => !notification.read).length;
 
   const handleOpenLegalModal = (tab: LegalPolicyTab) => {
     setLegalModalTab(tab);

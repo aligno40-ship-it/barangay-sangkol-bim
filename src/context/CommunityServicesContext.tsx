@@ -29,7 +29,8 @@ import {
 } from '../types/residentServices';
 import { SystemNotification } from '../types';
 import { purgeLegacyAppStorageData } from '../utils/storageUtils';
-import { useBarangay, areNamesMatching } from './BarangayContext';
+import { useBarangay } from './BarangayContext';
+import { isResidentRecordOwner } from '../utils/residentAccountFilter';
 import {
   fetchFullCommunityDatabase,
   upsertFacilityReservation,
@@ -1444,38 +1445,22 @@ export const CommunityServicesProvider: React.FC<{ children: React.ReactNode }> 
       recEmail?: string
     ): boolean => {
       if (!currentUser) return false;
-      const curName = currentUser.name || '';
-      const curEmail = (currentUser.email || '').toLowerCase();
-      if (
-        recResidentId &&
-        (recResidentId === currentUser.residentId ||
-          recResidentId === currentUser.id ||
-          recResidentId === currentUser.matchedResidentId ||
-          (currentUser.role === 'Resident' &&
-            residents.some(
-              (r) =>
-                r.id === recResidentId &&
-                ((curName && areNamesMatching(`${r.firstName} ${r.lastName}`, curName)) ||
-                  (r.email && curEmail && r.email.toLowerCase() === curEmail))
-            )))
-      ) {
-        return true;
-      }
-      if (recName) {
-        if (curName && areNamesMatching(recName, curName)) return true;
-        if (curName && recName.trim().toLowerCase() === curName.trim().toLowerCase()) return true;
-        if (currentUser.username && recName.trim().toLowerCase().includes(currentUser.username.trim().toLowerCase())) return true;
-      }
-      const userPhone = (currentUser.contactNumber || (currentUser as any).phone || '').replace(/\D/g, '');
-      const recCleanPhone = (recPhone || '').replace(/\D/g, '');
-      if (userPhone && recCleanPhone) {
-        if (userPhone === recCleanPhone) return true;
-        if (userPhone.length >= 7 && recCleanPhone.length >= 7 && (userPhone.endsWith(recCleanPhone) || recCleanPhone.endsWith(userPhone))) return true;
-      }
-      if (recEmail && curEmail && recEmail.trim().toLowerCase() === curEmail) {
-        return true;
-      }
-      return false;
+      const matchedResidentId = (currentUser as typeof currentUser & { matchedResidentId?: string }).matchedResidentId;
+      return isResidentRecordOwner(
+        {
+          residentId: recResidentId,
+          residentName: recName,
+          contactNumber: recPhone,
+          email: recEmail,
+        },
+        {
+          residentId: currentUser.residentId || matchedResidentId || currentUser.id,
+          name: currentUser.name,
+          email: currentUser.email,
+          contactNumber: currentUser.contactNumber,
+          username: currentUser.username,
+        },
+      );
     };
 
     if (currentUser?.role === 'Resident') {
@@ -1543,7 +1528,7 @@ export const CommunityServicesProvider: React.FC<{ children: React.ReactNode }> 
 
       // 3. Health Consultations for this resident
       healthAppointments
-        .filter((h) => isUserMatch(h.residentId, h.residentName) || Boolean(currentUser?.name && areNamesMatching(h.patientName, currentUser.name)))
+        .filter((h) => isUserMatch(h.residentId, h.residentName))
         .forEach((h) => {
           const isConfirmed = h.status === 'Confirmed' || h.status === 'Completed' || h.status === 'Triage Recorded';
           const statusSlug = (h.status || 'pending').toLowerCase().replace(/[^a-z0-9]/g, '-');
@@ -1661,7 +1646,7 @@ export const CommunityServicesProvider: React.FC<{ children: React.ReactNode }> 
 
       // 6c. Child Immunizations (For Parent / Guardian)
       childImmunizations
-        .filter((c) => isUserMatch(c.parentResidentId, c.parentName) || Boolean(currentUser?.name && areNamesMatching(c.childName, currentUser.name)))
+        .filter((c) => isUserMatch(c.parentResidentId, c.parentName))
         .forEach((c) => {
           list.push({
             id: `notif-cs-imm-res-${c.id}`,
@@ -1755,7 +1740,7 @@ export const CommunityServicesProvider: React.FC<{ children: React.ReactNode }> 
 
       // 9. Assistive Device Requests
       assistiveDeviceRequests
-        .filter((a) => isUserMatch(a.residentId, a.residentName) || Boolean(currentUser?.name && areNamesMatching(a.beneficiaryName, currentUser.name)))
+        .filter((a) => isUserMatch(a.residentId, a.residentName))
         .forEach((a) => {
           const isApproved = a.status === 'Approved for Delivery' || a.status === 'Delivered to Residence';
           const statusSlug = (a.status || 'submitted').toLowerCase().replace(/[^a-z0-9]/g, '-');

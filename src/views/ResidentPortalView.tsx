@@ -299,6 +299,14 @@ export const ResidentPortalView: React.FC<ResidentPortalViewProps> = ({ initialT
       } else if (isYouthSenior) {
         setActiveTab('youth_senior');
       }
+      window.requestAnimationFrame(() => {
+        const targetElement = Array.from(document.querySelectorAll('[id], [data-record-id], tr, article, section')).find(
+          (element) => element.textContent?.includes(targetRecordId) || element.id === targetRecordId
+        );
+        targetElement?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        targetElement?.classList.add('ring-2', 'ring-indigo-500', 'rounded-xl');
+        window.setTimeout(() => targetElement?.classList.remove('ring-2', 'ring-indigo-500', 'rounded-xl'), 3500);
+      });
       setTargetRecordId(null);
     }
   }, [

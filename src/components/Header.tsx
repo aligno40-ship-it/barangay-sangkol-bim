@@ -178,6 +178,18 @@ export const Header: React.FC<{ onOpenLoginModal: () => void }> = ({ onOpenLogin
   const casesCount = useMemo(() => allNotifications.filter((n) => n.category === 'blotter' || n.category === 'complaint' || n.category === 'concern').length, [allNotifications]);
   const activityCount = useMemo(() => allNotifications.filter((n) => n.category === 'activity' || n.category === 'appointment').length, [allNotifications]);
 
+  const markAllVisibleNotificationsAsRead = () => {
+    allNotifications.forEach((notif) => markNotificationAsRead(notif.id));
+  };
+
+  const markAllVisibleNotificationsAsUnread = () => {
+    allNotifications.forEach((notif) => markNotificationAsUnread(notif.id));
+  };
+
+  const clearAllVisibleNotifications = () => {
+    allNotifications.forEach((notif) => clearNotification(notif.id));
+  };
+
   const handleNotificationClick = (notif: SystemNotification) => {
     markNotificationAsRead(notif.id);
     setShowNotifMenu(false);
@@ -188,20 +200,24 @@ export const Header: React.FC<{ onOpenLoginModal: () => void }> = ({ onOpenLogin
         setTargetRecordId(notif.targetRecordId);
         setTargetServiceId(notif.targetRecordId);
       }
-      
-      // Select corresponding service desk tab based on notification identifier
-      if (notif.id.includes('-fac-') || notif.id.includes('-eqp-')) {
-        setActiveServiceDeskTab('facilities');
-      } else if (notif.id.includes('-hlth-') || notif.id.includes('-med-') || notif.id.includes('-imm-') || notif.id.includes('-msn-')) {
-        setActiveServiceDeskTab('health');
-      } else if (notif.id.includes('-job-') || notif.id.includes('-trn-') || notif.id.includes('-liv-') || notif.id.includes('-jobopen-')) {
-        setActiveServiceDeskTab('trabaho');
-      } else if (notif.id.includes('-ayu-') || notif.id.includes('-aics-')) {
-        setActiveServiceDeskTab('ayuda');
-      } else if (notif.id.includes('-bulk-') || notif.id.includes('-vol-') || notif.id.includes('-dump-') || notif.id.includes('-drive-')) {
-        setActiveServiceDeskTab('solidwaste');
-      } else if (notif.id.includes('-sk-') || notif.id.includes('-ast-') || notif.id.includes('-seniorben-') || notif.id.includes('-sktourney-')) {
-        setActiveServiceDeskTab('youth_senior');
+
+      if (notif.targetServiceDeskTab) {
+        setActiveServiceDeskTab(notif.targetServiceDeskTab);
+      } else {
+        // Legacy fallback for notifications that predate explicit target metadata.
+        if (notif.id.includes('-fac-') || notif.id.includes('-eqp-')) {
+          setActiveServiceDeskTab('facilities');
+        } else if (notif.id.includes('-hlth-') || notif.id.includes('-med-') || notif.id.includes('-imm-') || notif.id.includes('-msn-')) {
+          setActiveServiceDeskTab('health');
+        } else if (notif.id.includes('-job-') || notif.id.includes('-trn-') || notif.id.includes('-liv-') || notif.id.includes('-jobopen-')) {
+          setActiveServiceDeskTab('trabaho');
+        } else if (notif.id.includes('-ayu-') || notif.id.includes('-aics-')) {
+          setActiveServiceDeskTab('ayuda');
+        } else if (notif.id.includes('-bulk-') || notif.id.includes('-vol-') || notif.id.includes('-dump-') || notif.id.includes('-drive-')) {
+          setActiveServiceDeskTab('solidwaste');
+        } else if (notif.id.includes('-sk-') || notif.id.includes('-ast-') || notif.id.includes('-seniorben-') || notif.id.includes('-sktourney-')) {
+          setActiveServiceDeskTab('youth_senior');
+        }
       }
 
       if (currentUser.role === 'Resident') {
@@ -474,7 +490,7 @@ export const Header: React.FC<{ onOpenLoginModal: () => void }> = ({ onOpenLogin
                       </div>
 
                       <button
-                        onClick={markAllNotificationsAsRead}
+                        onClick={markAllVisibleNotificationsAsRead}
                         title="Mark all notifications as read"
                         className="flex items-center gap-1 px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 rounded-lg text-[11px] font-semibold transition-colors cursor-pointer shrink-0"
                       >
@@ -483,7 +499,7 @@ export const Header: React.FC<{ onOpenLoginModal: () => void }> = ({ onOpenLogin
                       </button>
 
                       <button
-                        onClick={markAllNotificationsAsUnread}
+                        onClick={markAllVisibleNotificationsAsUnread}
                         title="Mark all notifications as unread"
                         className="flex items-center gap-1 px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 rounded-lg text-[11px] font-semibold transition-colors cursor-pointer shrink-0"
                       >
@@ -492,7 +508,7 @@ export const Header: React.FC<{ onOpenLoginModal: () => void }> = ({ onOpenLogin
                       </button>
 
                       <button
-                        onClick={clearAllNotifications}
+                        onClick={clearAllVisibleNotifications}
                         title="Clear all notifications"
                         className="p-1.5 bg-slate-800 hover:bg-rose-950/60 text-slate-400 hover:text-rose-300 border border-slate-700 hover:border-rose-700/60 rounded-lg transition-colors cursor-pointer shrink-0"
                       >

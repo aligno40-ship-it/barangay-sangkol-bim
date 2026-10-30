@@ -2119,11 +2119,33 @@ export const CommunityServicesProvider: React.FC<{ children: React.ReactNode }> 
       });
     }
 
+    const inferCommunityTarget = (notificationId: string): Pick<SystemNotification, 'targetServiceDeskTab' | 'targetResidentTab' | 'targetSubTab'> => {
+      if (notificationId.includes('-fac-')) return { targetServiceDeskTab: 'facilities', targetResidentTab: 'facilities', targetSubTab: 'bookings' };
+      if (notificationId.includes('-eqp-')) return { targetServiceDeskTab: 'facilities', targetResidentTab: 'facilities', targetSubTab: 'equipment' };
+      if (notificationId.includes('-hlth-') || notificationId.includes('-med-') || notificationId.includes('-imm-') || notificationId.includes('-msn-')) {
+        return { targetServiceDeskTab: 'health', targetResidentTab: 'health', targetSubTab: notificationId.includes('-med-') ? 'medicine' : notificationId.includes('-imm-') ? 'immunization' : notificationId.includes('-msn-') ? 'missions' : 'appointments' };
+      }
+      if (notificationId.includes('-job-') || notificationId.includes('-trn-') || notificationId.includes('-liv-')) {
+        return { targetServiceDeskTab: 'trabaho', targetResidentTab: 'trabaho', targetSubTab: notificationId.includes('-job-') ? 'jobs' : notificationId.includes('-trn-') ? 'training' : 'livelihood' };
+      }
+      if (notificationId.includes('-ayu-') || notificationId.includes('-aics-')) {
+        return { targetServiceDeskTab: 'ayuda', targetResidentTab: 'ayuda', targetSubTab: notificationId.includes('-aics-') ? 'financial-assistance' : 'ayuda' };
+      }
+      if (notificationId.includes('-bulk-') || notificationId.includes('-vol-') || notificationId.includes('-dump-') || notificationId.includes('-drive-')) {
+        return { targetServiceDeskTab: 'solidwaste', targetResidentTab: 'waste', targetSubTab: notificationId.includes('-bulk-') ? 'bulk-pickup' : notificationId.includes('-vol-') ? 'volunteers' : notificationId.includes('-dump-') ? 'dumping-reports' : 'clean-up-drives' };
+      }
+      if (notificationId.includes('-sk-') || notificationId.includes('-ast-') || notificationId.includes('-seniorben-')) {
+        return { targetServiceDeskTab: 'youth_senior', targetResidentTab: 'youth_senior', targetSubTab: notificationId.includes('-sk-') ? 'sk-youth' : notificationId.includes('-ast-') ? 'assistive-devices' : 'senior-benefits' };
+      }
+      return { targetServiceDeskTab: 'facilities', targetResidentTab: 'facilities', targetSubTab: 'overview' };
+    };
+
     return list
       .filter((n) => !dismissedNotifIds?.includes(n.id))
       .map((n) => ({
         ...n,
         read: readNotifIds ? readNotifIds.includes(n.id) : false,
+        ...inferCommunityTarget(n.id),
       }))
       .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
   }, [

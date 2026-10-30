@@ -761,6 +761,9 @@ export interface SystemNotification {
   paymentMethod?: string;
   cashierName?: string;
   targetRecordId?: string;
+  targetServiceDeskTab?: 'facilities' | 'health' | 'trabaho' | 'ayuda' | 'solidwaste' | 'youth_senior';
+  targetResidentTab?: 'facilities' | 'health' | 'trabaho' | 'ayuda' | 'waste' | 'youth_senior';
+  targetSubTab?: string;
   actionText?: string;
   isTransactionNotification?: boolean;
   residentName?: string;

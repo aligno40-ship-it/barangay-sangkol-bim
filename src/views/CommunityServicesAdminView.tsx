@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { RecentSearchesInput } from '../components/RecentSearchesInput';
 import { InfoButton } from '../components/InfoButton';
@@ -215,6 +215,62 @@ export const CommunityServicesAdminView: React.FC = () => {
   const [selectedAICSForReview, setSelectedAICSForReview] = useState<FinancialAssistanceRequest | null>(null);
   const [selectedBulkWasteForReview, setSelectedBulkWasteForReview] = useState<BulkWastePickupRequest | null>(null);
   const [selectedAssistiveForReview, setSelectedAssistiveForReview] = useState<AssistiveDeviceRequest | null>(null);
+
+  useEffect(() => {
+    if (!targetServiceId) return;
+
+    const facility = facilityReservations.find((item) => item.id === targetServiceId);
+    if (facility) {
+      setFacilityFilter('All');
+      setSearchQuery('');
+      setSelectedFacilityForReview(facility);
+    }
+    const equipment = equipmentReservations.find((item) => item.id === targetServiceId);
+    if (equipment) {
+      setFacilityFilter('All');
+      setSearchQuery('');
+      setSelectedEquipmentForReview(equipment);
+    }
+    const medicine = medicineRefillRequests.find((item) => item.id === targetServiceId);
+    if (medicine) {
+      setSearchQuery('');
+      setSelectedMedicineForReview(medicine);
+    }
+    const financialAssistance = financialAssistanceRequests.find((item) => item.id === targetServiceId);
+    if (financialAssistance) {
+      setSearchQuery('');
+      setSelectedAICSForReview(financialAssistance);
+    }
+    const bulkWaste = bulkWasteRequests.find((item) => item.id === targetServiceId);
+    if (bulkWaste) {
+      setSearchQuery('');
+      setSelectedBulkWasteForReview(bulkWaste);
+    }
+    const assistive = assistiveDeviceRequests.find((item) => item.id === targetServiceId);
+    if (assistive) {
+      setSearchQuery('');
+      setSelectedAssistiveForReview(assistive);
+    }
+
+    window.requestAnimationFrame(() => {
+      const targetRow = Array.from(document.querySelectorAll('tr')).find((row) => row.textContent?.includes(targetServiceId));
+      targetRow?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      if (targetRow) {
+        targetRow.classList.add('ring-2', 'ring-indigo-500', 'bg-indigo-50');
+        window.setTimeout(() => targetRow.classList.remove('ring-2', 'ring-indigo-500', 'bg-indigo-50'), 3500);
+      }
+    });
+    setTargetServiceId(null);
+  }, [
+    targetServiceId,
+    facilityReservations,
+    equipmentReservations,
+    medicineRefillRequests,
+    financialAssistanceRequests,
+    bulkWasteRequests,
+    assistiveDeviceRequests,
+    setTargetServiceId,
+  ]);
 
   // Creation Modals
   const [isJobModalOpen, setIsJobModalOpen] = useState(false);

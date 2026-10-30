@@ -656,3 +656,96 @@ BEGIN
     ';
   END IF;
 END $$;
+
+-- ----------------------------------------------------------------------------
+-- 4B. COMPLETE COMMUNITY SERVICE RLS COVERAGE
+-- ----------------------------------------------------------------------------
+DO $$
+DECLARE
+  service_table text;
+  resident_column text;
+  policy_name text;
+BEGIN
+  -- Tables with a resident-owned request row
+  FOREACH service_table IN ARRAY ARRAY[
+    'health_appointments',
+    'medicine_refill_requests',
+    'child_immunizations',
+    'job_applications',
+    'livelihood_enrollment_records',
+    'livelihood_assistance_requests',
+    'ayuda_claim_stubs',
+    'financial_assistance_requests',
+    'bulk_waste_pickup_requests',
+    'bayanihan_volunteer_records',
+    'illegal_dumping_reports',
+    'mrf_recyclables_drop_records',
+    'sk_registration_records',
+    'assistive_device_requests'
+  ] LOOP
+    resident_column := CASE service_table
+      WHEN 'child_immunizations' THEN 'parent_resident_id'
+      ELSE 'resident_id'
+    END;
+
+    IF EXISTS (
+      SELECT 1 FROM information_schema.columns
+      WHERE table_schema = 'public' AND table_name = service_table AND column_name = resident_column
+    ) THEN
+      EXECUTE format('ALTER TABLE IF EXISTS public.%I ENABLE ROW LEVEL SECURITY', service_table);
+      EXECUTE format('DROP POLICY IF EXISTS admin_staff_%s ON public.%I', service_table, service_table);
+      EXECUTE format(
+        'CREATE POLICY admin_staff_%s ON public.%I FOR ALL TO authenticated USING (public.is_admin_or_staff()) WITH CHECK (public.is_admin_or_staff())',
+        service_table, service_table
+      );
+      EXECUTE format('DROP POLICY IF EXISTS resident_own_%s ON public.%I', service_table, service_table);
+      EXECUTE format(
+        'CREATE POLICY resident_own_%s ON public.%I FOR ALL TO authenticated USING (%I = public.get_current_resident_id()) WITH CHECK (%I = public.get_current_resident_id())',
+        service_table, service_table, resident_column, resident_column
+      );
+    END IF;
+  END LOOP;
+
+  -- Facility/equipment use a differently named resident foreign key
+  FOREACH service_table IN ARRAY ARRAY['facility_reservations', 'equipment_reservations'] LOOP
+    IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = service_table) THEN
+      EXECUTE format('ALTER TABLE IF EXISTS public.%I ENABLE ROW LEVEL SECURITY', service_table);
+      EXECUTE format('DROP POLICY IF EXISTS admin_staff_%s ON public.%I', service_table, service_table);
+      EXECUTE format(
+        'CREATE POLICY admin_staff_%s ON public.%I FOR ALL TO authenticated USING (public.is_admin_or_staff()) WITH CHECK (public.is_admin_or_staff())',
+        service_table, service_table
+      );
+      EXECUTE format('DROP POLICY IF EXISTS resident_own_%s ON public.%I', service_table, service_table);
+      EXECUTE format(
+        'CREATE POLICY resident_own_%s ON public.%I FOR ALL TO authenticated USING (reserved_by_resident_id = public.get_current_resident_id()) WITH CHECK (reserved_by_resident_id = public.get_current_resident_id())',
+        service_table, service_table
+      );
+    END IF;
+  END LOOP;
+
+  -- Public community information; private request tables still use the policies above.
+  FOREACH service_table IN ARRAY ARRAY[
+    'job_postings',
+    'livelihood_training_workshops',
+    'health_outreach_missions',
+    'waste_collection_schedules',
+    'bayanihan_clean_up_drives',
+    'sk_tournament_activities',
+    'senior_citizen_benefit_schedules',
+    'pharmacy_inventory'
+  ] LOOP
+    IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = service_table) THEN
+      EXECUTE format('ALTER TABLE IF EXISTS public.%I ENABLE ROW LEVEL SECURITY', service_table);
+      EXECUTE format('DROP POLICY IF EXISTS public_read_%s ON public.%I', service_table, service_table);
+      EXECUTE format(
+        'CREATE POLICY public_read_%s ON public.%I FOR SELECT TO public USING (true)',
+        service_table, service_table
+      );
+      EXECUTE format('DROP POLICY IF EXISTS admin_staff_%s ON public.%I', service_table, service_table);
+      EXECUTE format(
+        'CREATE POLICY admin_staff_%s ON public.%I FOR ALL TO authenticated USING (public.is_admin_or_staff()) WITH CHECK (public.is_admin_or_staff())',
+        service_table, service_table
+      );
+    END IF;
+  END LOOP;
+END $$;

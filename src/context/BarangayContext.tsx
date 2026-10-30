@@ -860,13 +860,31 @@ export const BarangayProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   const [readNotifIds, setReadNotifIds] = useState<string[]>(() => loadState('read_notif_ids', []));
   const [dismissedNotifIds, setDismissedNotifIds] = useState<string[]>(() => loadState('dismissed_notif_ids', []));
+  const notificationOwnerKeyRef = useRef('');
 
   useEffect(() => {
-    saveState('read_notif_ids', readNotifIds);
+    const ownerKey =
+      currentUser?.id ||
+      currentUser?.authId ||
+      currentUser?.username ||
+      'anonymous';
+    if (notificationOwnerKeyRef.current === ownerKey) return;
+
+    notificationOwnerKeyRef.current = ownerKey;
+    setReadNotifIds(loadState(`read_notif_ids:${ownerKey}`, []));
+    setDismissedNotifIds(loadState(`dismissed_notif_ids:${ownerKey}`, []));
+  }, [currentUser?.id, currentUser?.authId, currentUser?.username]);
+
+  useEffect(() => {
+    const ownerKey = notificationOwnerKeyRef.current;
+    if (!ownerKey) return;
+    saveState(`read_notif_ids:${ownerKey}`, readNotifIds);
   }, [readNotifIds]);
 
   useEffect(() => {
-    saveState('dismissed_notif_ids', dismissedNotifIds);
+    const ownerKey = notificationOwnerKeyRef.current;
+    if (!ownerKey) return;
+    saveState(`dismissed_notif_ids:${ownerKey}`, dismissedNotifIds);
   }, [dismissedNotifIds]);
 
   const markNotificationAsRead = (id: string) => {

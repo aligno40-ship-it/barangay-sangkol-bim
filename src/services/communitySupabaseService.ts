@@ -1645,6 +1645,40 @@ export async function fetchFullCommunityDatabase(): Promise<CommunityServicesFul
     supabase.from('assistive_device_requests').select('*').order('created_at', { ascending: false }),
   ]);
 
+  const queryResults = {
+    facility_reservations: facRes,
+    equipment_reservations: eqRes,
+    health_appointments: hlthRes,
+    child_immunizations: immRes,
+    pharmacy_inventory: pharmRes,
+    medicine_refill_requests: medRes,
+    health_outreach_missions: missRes,
+    job_postings: jobRes,
+    job_applications: appRes,
+    livelihood_training_workshops: trnRes,
+    livelihood_enrollment_records: enrRes,
+    livelihood_assistance_requests: livAssRes,
+    ayuda_claim_stubs: ayuRes,
+    financial_assistance_requests: finRes,
+    waste_collection_schedules: wstRes,
+    bulk_waste_pickup_requests: bulkRes,
+    bayanihan_clean_up_drives: drvRes,
+    bayanihan_volunteer_records: volRes,
+    illegal_dumping_reports: dmpRes,
+    mrf_recyclables_drop_records: mrfRes,
+    sk_tournament_activities: skTRes,
+    sk_registration_records: skRRes,
+    senior_citizen_benefit_schedules: senRes,
+    assistive_device_requests: devRes,
+  };
+
+  const failedTable = Object.entries(queryResults).find(([, result]) => result.error);
+  if (failedTable) {
+    const [table, result] = failedTable;
+    const error = result.error as { code?: string; message?: string };
+    throw new Error(`Supabase community data fetch failed for "${table}" (${error.code || 'unknown'}): ${error.message || 'Unknown error'}`);
+  }
+
   const bulkList = (bulkRes.data || []).map(bulkWastePickupFromRow);
   const seniorList = (senRes.data || []).map(seniorBenefitScheduleFromRow);
 

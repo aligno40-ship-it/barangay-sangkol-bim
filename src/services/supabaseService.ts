@@ -1951,7 +1951,7 @@ export function handleSupabaseMutationError(
         `[Supabase RLS Policy Notice] Table "${table}" ${operation} restricted by database policy for unauthenticated/anon client. In-memory data safely maintained.`
       );
     }
-    return { data: null, error: null, rlsRestricted: true };
+    return { data: null, error, rlsRestricted: true };
   }
   console.warn(`[Supabase ${operation} ${table} warning]:`, error.message || error);
   return { data: null, error };

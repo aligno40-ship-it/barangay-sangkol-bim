@@ -152,6 +152,21 @@ const MainLayout: React.FC = () => {
 
   const unreadNotifCount = notifications.filter((notification) => !notification.read).length;
 
+  const markAllVisibleNotificationsAsRead = () => {
+    notifications.forEach((notification) => markNotificationAsRead(notification.id));
+    markAllNotificationsAsRead();
+  };
+
+  const markAllVisibleNotificationsAsUnread = () => {
+    notifications.forEach((notification) => markNotificationAsUnread(notification.id));
+    markAllNotificationsAsUnread();
+  };
+
+  const clearAllVisibleNotifications = () => {
+    notifications.forEach((notification) => clearNotification(notification.id));
+    clearAllNotifications();
+  };
+
   const handleOpenLegalModal = (tab: LegalPolicyTab) => {
     setLegalModalTab(tab);
     setIsLegalModalOpen(true);
@@ -623,7 +638,7 @@ const MainLayout: React.FC = () => {
 
                       {/* Mark All Read Button */}
                       <button
-                        onClick={markAllNotificationsAsRead}
+                        onClick={markAllVisibleNotificationsAsRead}
                         title="Mark all notifications as read"
                         className="flex items-center gap-1 px-2.5 py-1.5 bg-white hover:bg-slate-100 text-slate-700 hover:text-slate-900 border border-slate-200 rounded-lg text-[11px] font-bold transition-colors cursor-pointer shrink-0"
                       >
@@ -633,7 +648,7 @@ const MainLayout: React.FC = () => {
 
                       {/* Mark All Unread Button */}
                       <button
-                        onClick={markAllNotificationsAsUnread}
+                        onClick={markAllVisibleNotificationsAsUnread}
                         title="Mark all notifications as unread"
                         className="flex items-center gap-1 px-2.5 py-1.5 bg-white hover:bg-slate-100 text-slate-700 hover:text-slate-900 border border-slate-200 rounded-lg text-[11px] font-bold transition-colors cursor-pointer shrink-0"
                       >
@@ -643,7 +658,7 @@ const MainLayout: React.FC = () => {
 
                       {/* Clear All Button */}
                       <button
-                        onClick={clearAllNotifications}
+                        onClick={clearAllVisibleNotifications}
                         title="Clear all notifications"
                         className="p-1.5 bg-white hover:bg-rose-50 text-slate-400 hover:text-rose-600 border border-slate-200 hover:border-rose-200 rounded-lg transition-colors cursor-pointer shrink-0"
                       >

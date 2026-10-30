@@ -564,7 +564,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
               <AnimatedLogoLoader mode="inline" label="Authenticating Secure Session..." />
             ) : (
               <>
-                <span>Sign In</span>
+                <span>Log In</span>
                 <ArrowRight className="w-4 h-4" />
               </>
             )}

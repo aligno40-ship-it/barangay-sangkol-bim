@@ -100,11 +100,11 @@ export interface CommunityServicesContextType {
   reservations: FacilityReservation[]; // alias
   equipmentReservations: EquipmentReservation[];
   requestFacilityReservation: (data: Omit<FacilityReservation, 'id' | 'createdAt' | 'status'>) => FacilityReservation;
-  addReservation: (item: FacilityReservation) => void;
+  addReservation: (item: FacilityReservation) => Promise<boolean>;
   updateFacilityReservationStatus: (id: string, status: FacilityReservation['status'], remarks?: string, fee?: number) => void;
   deleteFacilityReservation: (id: string) => void;
   requestEquipmentReservation: (data: Omit<EquipmentReservation, 'id' | 'createdAt' | 'status'>) => EquipmentReservation;
-  addEquipmentReservation: (item: EquipmentReservation) => void;
+  addEquipmentReservation: (item: EquipmentReservation) => Promise<boolean>;
   updateEquipmentReservationStatus: (id: string, status: EquipmentReservation['status'], condition?: string, deposit?: number) => void;
   deleteEquipmentReservation: (id: string) => void;
 
@@ -118,12 +118,12 @@ export interface CommunityServicesContextType {
   pharmacyInventory: PharmacyInventoryItem[];
   healthMissions: HealthOutreachMission[];
   bookHealthAppointment: (data: Omit<HealthAppointment, 'id' | 'createdAt' | 'status'>) => HealthAppointment;
-  addConsultation: (item: HealthAppointment) => void;
+  addConsultation: (item: HealthAppointment) => Promise<boolean>;
   updateHealthAppointmentStatus: (id: string, status: HealthAppointment['status'], notes?: string, attendingWorker?: string) => void;
   recordTriageVitals: (apptId: string, vitals: VitalSigns, diagnosis?: string, prescriptions?: string, queueNumber?: string) => void;
   cancelHealthAppointment: (id: string) => void;
   requestMedicineRefill: (data: Omit<MedicineRefillRequest, 'id' | 'requestedAt' | 'status'>) => MedicineRefillRequest;
-  addMedicineRequest: (item: MedicineRefillRequest) => void;
+  addMedicineRequest: (item: MedicineRefillRequest) => Promise<boolean>;
   updateMedicineRefillStatus: (id: string, status: MedicineRefillRequest['status'], pharmacistNotes?: string, dispensedBy?: string, batchDispensed?: string) => void;
   addPharmacyItem: (data: Omit<PharmacyInventoryItem, 'id' | 'updatedAt'>) => PharmacyInventoryItem;
   updatePharmacyItem: (id: string, updates: Partial<PharmacyInventoryItem>) => void;
@@ -136,7 +136,7 @@ export interface CommunityServicesContextType {
   cancelHealthMissionReservation: (missionId: string, residentId: string, residentName: string) => void;
   updateChildImmunization: (id: string, status: ChildImmunizationTracker['status'], dateAdministered?: string, administeredBy?: string, batchOrLotNumber?: string, injectionSite?: ChildImmunizationTracker['injectionSite'], adverseEffectsOrRemarks?: string) => void;
   addChildImmunization: (data: Omit<ChildImmunizationTracker, 'id'>) => void;
-  addImmunization: (item: ChildImmunizationTracker) => void;
+  addImmunization: (item: ChildImmunizationTracker) => Promise<boolean>;
 
   // 3. Trabaho & PESO Livelihood
   jobPostings: CommunityJobPosting[];
@@ -2156,24 +2156,56 @@ export const CommunityServicesProvider: React.FC<{ children: React.ReactNode }> 
     return communityNotifications.filter((n) => !n.read).length;
   }, [communityNotifications]);
 
-  const addReservation = (item: FacilityReservation) => {
+  const addReservation = async (item: FacilityReservation): Promise<boolean> => {
     setFacilityReservations((prev) => [item, ...prev]);
+    const result = await upsertFacilityReservation(item);
+    if (result.error) {
+      setFacilityReservations((prev) => prev.filter((reservation) => reservation.id !== item.id));
+      return false;
+    }
+    addAuditLog('CREATE', 'Property & Custodian', `New facility reservation booked: ${item.facilityName} for "${item.eventTitle}" by ${item.residentName}`);
+    return true;
   };
 
-  const addEquipmentReservation = (item: EquipmentReservation) => {
+  const addEquipmentReservation = async (item: EquipmentReservation): Promise<boolean> => {
     setEquipmentReservations((prev) => [item, ...prev]);
+    const result = await upsertEquipmentReservation(item);
+    if (result.error) {
+      setEquipmentReservations((prev) => prev.filter((reservation) => reservation.id !== item.id));
+      return false;
+    }
+    addAuditLog('CREATE', 'Property & Custodian', `New equipment borrowed: ${item.quantity}x ${item.equipmentName} by ${item.residentName}`);
+    return true;
   };
 
-  const addConsultation = (item: HealthAppointment) => {
+  const addConsultation = async (item: HealthAppointment): Promise<boolean> => {
     setHealthAppointments((prev) => [item, ...prev]);
+    const result = await upsertHealthAppointment(item);
+    if (result.error) {
+      setHealthAppointments((prev) => prev.filter((appointment) => appointment.id !== item.id));
+      return false;
+    }
+    return true;
   };
 
-  const addImmunization = (item: ChildImmunizationTracker) => {
+  const addImmunization = async (item: ChildImmunizationTracker): Promise<boolean> => {
     setChildImmunizations((prev) => [item, ...prev]);
+    const result = await upsertChildImmunization(item);
+    if (result.error) {
+      setChildImmunizations((prev) => prev.filter((immunization) => immunization.id !== item.id));
+      return false;
+    }
+    return true;
   };
 
-  const addMedicineRequest = (item: MedicineRefillRequest) => {
+  const addMedicineRequest = async (item: MedicineRefillRequest): Promise<boolean> => {
     setMedicineRefillRequests((prev) => [item, ...prev]);
+    const result = await upsertMedicineRefill(item);
+    if (result.error) {
+      setMedicineRefillRequests((prev) => prev.filter((request) => request.id !== item.id));
+      return false;
+    }
+    return true;
   };
 
   return (

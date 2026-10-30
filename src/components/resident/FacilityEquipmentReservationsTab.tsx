@@ -113,7 +113,7 @@ export const FacilityEquipmentReservationsTab: React.FC<FacilityEquipmentReserva
   const [returnDate, setReturnDate] = useState('');
   const [equipmentPurpose, setEquipmentPurpose] = useState('');
 
-  const handleCreateFacilityReservation = (e: React.FormEvent) => {
+  const handleCreateFacilityReservation = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!eventTitle || !eventDate) return;
 
@@ -136,7 +136,11 @@ export const FacilityEquipmentReservationsTab: React.FC<FacilityEquipmentReserva
       createdAt: new Date().toISOString().split('T')[0],
     };
 
-    addReservation(newRes);
+    const saved = await addReservation(newRes);
+    if (!saved) {
+      setSuccessMessage('✕ Facility booking could not be saved. Please verify your account and try again.');
+      return;
+    }
     setSuccessMessage(`✓ Facility booking request (${newRes.id}) successfully submitted! Awaiting Barangay Hall clearance.`);
     setIsNewBookingModalOpen(false);
     setEventTitle('');
@@ -145,7 +149,7 @@ export const FacilityEquipmentReservationsTab: React.FC<FacilityEquipmentReserva
     setTimeout(() => setSuccessMessage(''), 8000);
   };
 
-  const handleCreateEquipmentReservation = (e: React.FormEvent) => {
+  const handleCreateEquipmentReservation = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!borrowDate || !returnDate) return;
 
@@ -166,7 +170,11 @@ export const FacilityEquipmentReservationsTab: React.FC<FacilityEquipmentReserva
       createdAt: new Date().toISOString().split('T')[0],
     };
 
-    addEquipmentReservation(newEq);
+    const saved = await addEquipmentReservation(newEq);
+    if (!saved) {
+      setSuccessMessage('✕ Equipment request could not be saved. Please verify your account and try again.');
+      return;
+    }
     setSuccessMessage(`✓ Equipment lending slip (${newEq.id}) submitted! Please pick up items at Barangay Logistics Hub upon approval.`);
     setIsNewBookingModalOpen(false);
     setBorrowDate('');

@@ -622,7 +622,7 @@ BEGIN
       DROP POLICY IF EXISTS admin_staff_facility_res ON facility_reservations;
       CREATE POLICY admin_staff_facility_res ON facility_reservations FOR ALL TO authenticated USING (public.is_admin_or_staff()) WITH CHECK (public.is_admin_or_staff());
       DROP POLICY IF EXISTS resident_facility_res ON facility_reservations;
-      CREATE POLICY resident_facility_res ON facility_reservations FOR ALL TO authenticated USING (resident_id = public.get_current_resident_id()) WITH CHECK (resident_id = public.get_current_resident_id());
+      CREATE POLICY resident_facility_res ON facility_reservations FOR ALL TO authenticated USING (reserved_by_resident_id = public.get_current_resident_id()) WITH CHECK (reserved_by_resident_id = public.get_current_resident_id());
     ';
   END IF;
 
@@ -632,7 +632,7 @@ BEGIN
       DROP POLICY IF EXISTS admin_staff_equip_res ON equipment_reservations;
       CREATE POLICY admin_staff_equip_res ON equipment_reservations FOR ALL TO authenticated USING (public.is_admin_or_staff()) WITH CHECK (public.is_admin_or_staff());
       DROP POLICY IF EXISTS resident_equip_res ON equipment_reservations;
-      CREATE POLICY resident_equip_res ON equipment_reservations FOR ALL TO authenticated USING (resident_id = public.get_current_resident_id()) WITH CHECK (resident_id = public.get_current_resident_id());
+      CREATE POLICY resident_equip_res ON equipment_reservations FOR ALL TO authenticated USING (reserved_by_resident_id = public.get_current_resident_id()) WITH CHECK (reserved_by_resident_id = public.get_current_resident_id());
     ';
   END IF;
 

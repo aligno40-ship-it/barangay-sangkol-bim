@@ -28,7 +28,6 @@ import {
   Menu,
   X,
   FileText,
-  UserPlus,
   LogIn,
   QrCode,
   Lock,
@@ -41,14 +40,12 @@ import {
 
 export interface LandingPageProps {
   onGoToLogin: (mode?: 'resident' | 'official') => void;
-  onOpenRegister: () => void;
   onOpenVerification: (controlNumber?: string) => void;
   onOpenLegalModal: (tab: LegalPolicyTab) => void;
 }
 
 export const LandingPage: React.FC<LandingPageProps> = ({
   onGoToLogin,
-  onOpenRegister,
   onOpenVerification,
   onOpenLegalModal,
 }) => {
@@ -309,15 +306,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                   <LogIn className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
                   <span>Sign In</span>
                   <ArrowRight className="w-4 h-4 ml-1 opacity-80" />
-                </button>
-
-                <button
-                  type="button"
-                  onClick={onOpenRegister}
-                  className="px-5 py-3.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-100 font-bold text-sm border border-slate-700 transition-colors cursor-pointer flex items-center gap-2"
-                >
-                  <UserPlus className="w-4 h-4 text-emerald-400" />
-                  <span>Register as Resident</span>
                 </button>
 
               </div>
@@ -1037,15 +1025,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                     className="text-emerald-400 font-semibold hover:underline cursor-pointer"
                   >
                     Sign In
-                  </button>
-                </li>
-                <li>
-                  <button
-                    type="button"
-                    onClick={onOpenRegister}
-                    className="hover:text-slate-200 transition-colors cursor-pointer"
-                  >
-                    Register as Resident
                   </button>
                 </li>
                 <li>

@@ -12,7 +12,6 @@ import { InitialLoadingScreen } from './components/InitialLoadingScreen';
 import { TopRouteProgressBar, LoadingSpinner } from './components/LoadingAnimations';
 import { LoginPage } from './components/LoginPage';
 import { LandingPage } from './components/LandingPage';
-import { ResidentRegistrationModal } from './components/ResidentRegistrationModal';
 import { AccessRestrictedView } from './components/AccessRestrictedView';
 import { SessionTimeoutModal } from './components/SessionTimeoutModal';
 import { CertificateVerificationModal } from './components/CertificateVerificationModal';
@@ -122,8 +121,6 @@ const MainLayout: React.FC = () => {
   const [legalModalTab, setLegalModalTab] = useState<LegalPolicyTab>('privacy');
   const [isAnalyticsModalOpen, setIsAnalyticsModalOpen] = useState(false);
   const [authView, setAuthView] = useState<'landing' | 'login'>('login');
-  const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
-  const [registrationSubmitted, setRegistrationSubmitted] = useState(false);
   const [pollToast, setPollToast] = useState<string | null>(null);
 
   useEffect(() => {
@@ -402,10 +399,6 @@ const MainLayout: React.FC = () => {
           onGoToLogin={() => {
             setAuthView('login');
           }}
-          onOpenRegister={() => {
-            setRegistrationSubmitted(false);
-            setIsRegisterModalOpen(true);
-          }}
           onOpenVerification={(controlNo) => {
             if (controlNo) {
               setGlobalVerificationControlNo(controlNo);
@@ -413,19 +406,6 @@ const MainLayout: React.FC = () => {
             setIsGlobalVerificationOpen(true);
           }}
           onOpenLegalModal={handleOpenLegalModal}
-        />
-        <ResidentRegistrationModal
-          isOpen={isRegisterModalOpen}
-          onClose={() => {
-            setIsRegisterModalOpen(false);
-            if (registrationSubmitted) {
-              setAuthView('login');
-              setRegistrationSubmitted(false);
-            }
-          }}
-          onSuccess={() => {
-            setRegistrationSubmitted(true);
-          }}
         />
         <CertificateVerificationModal
           initialControlNumber={globalVerificationControlNo}
@@ -452,7 +432,6 @@ const MainLayout: React.FC = () => {
         return (
           <LandingPage
             onGoToLogin={(mode) => setActiveModule(mode === 'official' ? 'dashboard' : 'resident_portal')}
-            onOpenRegister={() => setIsRegisterModalOpen(true)}
             onOpenVerification={(controlNo) => {
               if (controlNo) {
                 setGlobalVerificationControlNo(controlNo);
@@ -1112,10 +1091,6 @@ const MainLayout: React.FC = () => {
           setIsGlobalVerificationOpen(false);
           setGlobalVerificationControlNo(null);
         }}
-      />
-      <ResidentRegistrationModal
-        isOpen={isRegisterModalOpen}
-        onClose={() => setIsRegisterModalOpen(false)}
       />
       {/* Cookie Consent & Legal Policies Modals */}
       <CookieConsentBanner

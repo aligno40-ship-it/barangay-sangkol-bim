@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useBarangay, areNamesMatching } from '../context/BarangayContext';
 import { BarangaySangkolSeal, RepublicSeal } from './OfficialSeals';
 import { AnimatedLogoLoader } from './AnimatedLogoLoader';
-import { ResidentRegistrationModal } from './ResidentRegistrationModal';
 import { LegalPoliciesModal, LegalPolicyTab } from './LegalPoliciesModal';
 import { safeGetItem, safeSetItem, safeRemoveItem } from '../utils/storageUtils';
 import {
@@ -18,7 +17,6 @@ import {
   Loader2,
   Info,
   X,
-  UserPlus,
   Clock,
   CheckCircle2,
   FileCheck2,
@@ -87,7 +85,6 @@ export const LoginPage: React.FC<LoginPageProps> = ({
   const [isResetSubmitting, setIsResetSubmitting] = useState(false);
   const [resetError, setResetError] = useState<string | null>(null);
 
-  const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
   const [isLegalModalOpen, setIsLegalModalOpen] = useState(false);
   const [legalModalTab, setLegalModalTab] = useState<LegalPolicyTab>('privacy');
   const [sessionTimeoutNotice, setSessionTimeoutNotice] = useState<string | null>(() => {
@@ -571,21 +568,6 @@ export const LoginPage: React.FC<LoginPageProps> = ({
           </button>
         </form>
 
-        {/* Resident Registration Link */}
-        <div className="mt-4 pt-4 border-t border-slate-100 text-center space-y-2">
-          <p className="text-xs text-slate-600">
-            Not yet registered in the Resident Portal?
-          </p>
-          <button
-            type="button"
-            onClick={() => setIsRegisterModalOpen(true)}
-            className="w-full py-2 px-3 rounded-xl border border-emerald-300 bg-emerald-50 hover:bg-emerald-100 text-emerald-900 text-xs font-bold transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
-          >
-            <UserPlus className="w-3.5 h-3.5 text-emerald-700" />
-            <span>Register Resident Account (Admin Approval Required)</span>
-          </button>
-        </div>
-
       </div>
 
       {/* Footer */}
@@ -598,15 +580,6 @@ export const LoginPage: React.FC<LoginPageProps> = ({
         </p>
       </footer>
 
-      {/* Resident Registration Modal */}
-      <ResidentRegistrationModal
-        isOpen={isRegisterModalOpen}
-        onClose={() => setIsRegisterModalOpen(false)}
-        onSuccess={(regUsername) => {
-          setUsername(regUsername);
-          setPassword('');
-        }}
-      />
     </div>
   );
 
@@ -656,14 +629,6 @@ export const LoginPage: React.FC<LoginPageProps> = ({
           </div>
         </div>
 
-        <button
-          type="button"
-          onClick={() => setIsRegisterModalOpen(true)}
-          className="px-3 py-1.5 rounded-xl bg-white/80 hover:bg-white text-emerald-800 text-xs font-bold border border-emerald-200 shadow-xs transition-colors cursor-pointer flex items-center gap-1.5"
-        >
-          <UserPlus className="w-3.5 h-3.5 text-emerald-600" />
-          <span>Resident Registration</span>
-        </button>
       </header>
 
       {/* Centered Login Card Area */}

@@ -831,6 +831,23 @@ export const BarangayProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   >([]);
 
   const [currentUser, setCurrentUser] = useState<SystemUser>(EMPTY_USER);
+  const currentUserRef = useRef<SystemUser>(EMPTY_USER);
+  const mainDataSnapshotRef = useRef<{
+    certificates: string[];
+    blotters: string[];
+    complaints: string[];
+    concerns: string[];
+    businesses: string[];
+    announcements: string[];
+    activities: string[];
+    appointments: string[];
+    transactions: string[];
+    users: string[];
+  } | null>(null);
+
+  useEffect(() => {
+    currentUserRef.current = currentUser;
+  }, [currentUser]);
 
   const isResident = currentUser.role === 'Resident';
 
@@ -1641,8 +1658,79 @@ export const BarangayProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     isSyncInProgressRef.current = true;
     setIsSupabaseSyncing(true);
     setSupabaseError(null);
+    const isInitialRefresh = !isInitialAuthRestoreComplete.current;
     try {
       const data = await fetchFullDatabase();
+      const nextSnapshot = {
+        certificates: data.certificates.map((item) => `${item.id}:${item.status}:${item.isReadyForPickup ? 'ready' : ''}`),
+        blotters: data.blotters.map((item) => `${item.id}:${item.status}`),
+        complaints: data.complaints.map((item) => `${item.id}:${item.status}`),
+        concerns: data.concerns.map((item) => `${item.id}:${item.status}`),
+        businesses: data.businesses.map((item) => `${item.id}:${item.status}`),
+        announcements: data.announcements.map((item) => `${item.id}:${item.status}`),
+        activities: data.activities.map((item) => `${item.id}:${item.status}`),
+        appointments: data.appointments.map((item) => `${item.id}:${item.status}`),
+        transactions: data.transactions.map((item) => `${item.id}:${item.orNumber}`),
+        users: data.users.map((item) => `${item.id}:${item.status}:${item.approvalStatus || ''}`),
+      };
+      const previousSnapshot = mainDataSnapshotRef.current;
+
+      if (previousSnapshot) {
+        const user = currentUserRef.current;
+        let toastMessage: string | null = null;
+
+        if (user.role === 'Resident') {
+          const ownsRecord = (record: { residentId?: string; residentName?: string }) =>
+            record.residentId === user.residentId ||
+            record.residentName?.toLowerCase() === user.name?.toLowerCase();
+
+          const readyCertificate = data.certificates.find((item) =>
+            ownsRecord(item) &&
+            (item.status === 'Issued' || item.status === 'Approved' || item.isReadyForPickup) &&
+            !previousSnapshot.certificates.includes(`${item.id}:${item.status}:${item.isReadyForPickup ? 'ready' : ''}`)
+          );
+          const newAnnouncement = data.announcements.find((item) =>
+            item.status === 'Active' && !previousSnapshot.announcements.includes(`${item.id}:${item.status}`)
+          );
+          const updatedAppointment = data.appointments.find((item) => {
+            if (!ownsRecord(item)) return false;
+            return !previousSnapshot.appointments.includes(`${item.id}:${item.status}`);
+          });
+
+          if (readyCertificate) {
+            toastMessage = 'Your certificate is ready for pickup';
+          } else if (newAnnouncement) {
+            toastMessage = `New announcement: ${newAnnouncement.title}`;
+          } else if (updatedAppointment) {
+            toastMessage = `Your appointment was updated: ${updatedAppointment.status}`;
+          }
+        } else {
+          if (data.certificates.some((item) => !previousSnapshot.certificates.includes(`${item.id}:${item.status}:${item.isReadyForPickup ? 'ready' : ''}`))) {
+            const newOrUpdated = data.certificates.find((item) => !previousSnapshot.certificates.some((signature) => signature.startsWith(`${item.id}:`)));
+            toastMessage = newOrUpdated ? 'New certificate request received' : 'Certificate status updated';
+          } else if (data.transactions.length > previousSnapshot.transactions.length) {
+            toastMessage = 'New transaction received';
+          } else if (
+            data.concerns.length > previousSnapshot.concerns.length ||
+            data.blotters.length > previousSnapshot.blotters.length ||
+            data.complaints.length > previousSnapshot.complaints.length
+          ) {
+            toastMessage = 'New case or citizen concern received';
+          } else if (data.appointments.length > previousSnapshot.appointments.length) {
+            toastMessage = 'New appointment scheduled';
+          } else if (
+            data.users.length > previousSnapshot.users.length ||
+            data.users.some((item) => !previousSnapshot.users.includes(`${item.id}:${item.status}:${item.approvalStatus || ''}`))
+          ) {
+            toastMessage = 'Resident account activity updated';
+          }
+        }
+
+        if (toastMessage && typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('bims-poll-toast', { detail: { message: toastMessage } }));
+        }
+      }
+      mainDataSnapshotRef.current = nextSnapshot;
       setResidents(data.residents);
 
       const seenUserIds = new Set<string>();
@@ -1716,7 +1804,9 @@ export const BarangayProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       isInitialAuthRestoreComplete.current = true;
       if (activeDatabaseUser) {
         setIsAuthenticated(true);
-        setActiveModule('dashboard');
+        if (isInitialRefresh) {
+          setActiveModule('dashboard');
+        }
         setCurrentUser((prevUser) => {
           const isRecentlyUpdated =
             lastAvatarUpdateRef.current &&
@@ -1730,12 +1820,14 @@ export const BarangayProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           return synced;
         });
       } else {
-        setIsAuthenticated(false);
-        setActiveModule('login');
-        setCurrentUser(EMPTY_USER);
-        safeRemoveSessionItem(STORAGE_KEY_PREFIX + 'auth_session');
-        safeRemoveSessionItem(STORAGE_KEY_PREFIX + 'current_user_id');
-        safeRemoveSessionItem(STORAGE_KEY_PREFIX + 'cached_current_user');
+        if (isInitialRefresh) {
+          setIsAuthenticated(false);
+          setActiveModule('login');
+          setCurrentUser(EMPTY_USER);
+          safeRemoveSessionItem(STORAGE_KEY_PREFIX + 'auth_session');
+          safeRemoveSessionItem(STORAGE_KEY_PREFIX + 'current_user_id');
+          safeRemoveSessionItem(STORAGE_KEY_PREFIX + 'cached_current_user');
+        }
       }
 
       setHouseholds(data.households);
@@ -1811,6 +1903,40 @@ export const BarangayProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     return () => {
       if (debounceTimer) clearTimeout(debounceTimer);
       supabase.removeChannel(channel);
+    };
+  }, [refreshFromSupabase]);
+
+  // Fallback background polling: refreshes live data every 15 seconds without remounting UI.
+  useEffect(() => {
+    if (!isSupabaseConfigured) return;
+
+    let intervalId: ReturnType<typeof setInterval> | null = null;
+    const startPolling = () => {
+      if (intervalId || document.visibilityState === 'hidden') return;
+      intervalId = setInterval(() => {
+        if (document.visibilityState === 'visible') {
+          refreshFromSupabase().catch((error) =>
+            console.warn('[BIMS Polling] Supabase refresh error:', error?.message || error)
+          );
+        }
+      }, 15000);
+    };
+    const stopPolling = () => {
+      if (intervalId) {
+        clearInterval(intervalId);
+        intervalId = null;
+      }
+    };
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') stopPolling();
+      else startPolling();
+    };
+
+    startPolling();
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      stopPolling();
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, [refreshFromSupabase]);
 

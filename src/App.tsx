@@ -124,6 +124,23 @@ const MainLayout: React.FC = () => {
   const [authView, setAuthView] = useState<'landing' | 'login'>('login');
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
   const [registrationSubmitted, setRegistrationSubmitted] = useState(false);
+  const [pollToast, setPollToast] = useState<string | null>(null);
+
+  useEffect(() => {
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
+    const handlePollToast = (event: Event) => {
+      const detail = (event as CustomEvent<{ message?: string }>).detail;
+      if (!detail?.message) return;
+      setPollToast(detail.message);
+      if (timeoutId) clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => setPollToast(null), 4000);
+    };
+    window.addEventListener('bims-poll-toast', handlePollToast);
+    return () => {
+      window.removeEventListener('bims-poll-toast', handlePollToast);
+      if (timeoutId) clearTimeout(timeoutId);
+    };
+  }, []);
 
   // Never leave the account-switch login overlay open after authentication succeeds.
   useEffect(() => {
@@ -1059,6 +1076,24 @@ const MainLayout: React.FC = () => {
           </div>
         </div>
       </footer>
+
+      <AnimatePresence>
+        {pollToast && (
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 16 }}
+            className="fixed bottom-5 right-5 z-[100] max-w-sm rounded-xl border border-emerald-200 bg-white px-4 py-3 shadow-xl dark:border-emerald-800 dark:bg-slate-900"
+            role="status"
+            aria-live="polite"
+          >
+            <div className="flex items-center gap-2 text-sm font-semibold text-slate-800 dark:text-slate-100">
+              <Bell className="h-4 w-4 text-emerald-600" />
+              <span>{pollToast}</span>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Global Modals */}
       <SessionTimeoutModal timeoutSeconds={15 * 60} warningSeconds={60} />

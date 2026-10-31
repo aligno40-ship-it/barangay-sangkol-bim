@@ -286,12 +286,61 @@ export const CommunityServicesProvider: React.FC<{ children: React.ReactNode }> 
   const [isCommunitySupabaseLive, setIsCommunitySupabaseLive] = useState<boolean>(isSupabaseConfigured);
   const [isCommunitySyncing, setIsCommunitySyncing] = useState<boolean>(false);
   const isCommunityLoaded = useRef(false);
+  const communitySnapshotRef = useRef<Record<string, string[]> | null>(null);
 
   const refreshCommunityFromSupabase = useCallback(async () => {
     if (!isSupabaseConfigured) return;
     setIsCommunitySyncing(true);
     try {
       const db = await fetchFullCommunityDatabase();
+      const signature = (items: any[] = []) =>
+        items.map((item) => `${item.id || ''}:${item.status || item.attendanceStatus || ''}:${item.residentId || ''}:${item.residentName || ''}`);
+      const nextSnapshot: Record<string, string[]> = {
+        facilityReservations: signature(db.facilityReservations),
+        equipmentReservations: signature(db.equipmentReservations),
+        healthAppointments: signature(db.healthAppointments),
+        medicineRefills: signature(db.medicineRefills),
+        jobApplications: signature(db.jobApplications),
+        livelihoodEnrollments: signature(db.livelihoodEnrollments),
+        livelihoodAssistance: signature(db.livelihoodAssistance),
+        ayudaClaims: signature(db.ayudaClaims),
+        financialAssistance: signature(db.financialAssistance),
+        bulkWastePickups: signature(db.bulkWastePickups),
+        cleanUpVolunteers: signature(db.cleanUpVolunteers),
+        skRegistrations: signature(db.skRegistrations),
+        assistiveDeviceRequests: signature(db.assistiveDeviceRequests),
+      };
+      const previousSnapshot = communitySnapshotRef.current;
+
+      if (previousSnapshot) {
+        let changedLabel: string | null = null;
+        const changedEntries = Object.entries(nextSnapshot).filter(
+          ([key, signatures]) => signatures.some((value) => !previousSnapshot[key]?.includes(value))
+        );
+
+        if (currentUser.role === 'Resident') {
+          const ownerToken = currentUser.residentId || '';
+          const ownerName = currentUser.name?.toLowerCase() || '';
+          const ownsChange = changedEntries.some(([, signatures]) =>
+            signatures.some((value) =>
+              (ownerToken && value.includes(`:${ownerToken}:`)) ||
+              (ownerName && value.toLowerCase().includes(`:${ownerName}:`))
+            )
+          );
+          if (ownsChange) changedLabel = 'Your resident service request status was updated';
+        } else if (changedEntries.length > 0) {
+          const newRequests = changedEntries.some(([key, signatures]) => {
+            const previous = previousSnapshot[key] || [];
+            return signatures.length > previous.length || signatures.some((value) => !previous.includes(value));
+          });
+          if (newRequests) changedLabel = 'New community service request received';
+        }
+
+        if (changedLabel && typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('bims-poll-toast', { detail: { message: changedLabel } }));
+        }
+      }
+      communitySnapshotRef.current = nextSnapshot;
       setFacilityReservations(db.facilityReservations);
       setEquipmentReservations(db.equipmentReservations);
       setHealthAppointments(db.healthAppointments);
@@ -324,7 +373,7 @@ export const CommunityServicesProvider: React.FC<{ children: React.ReactNode }> 
     } finally {
       setIsCommunitySyncing(false);
     }
-  }, []);
+  }, [currentUser.role, currentUser.residentId, currentUser.name]);
 
   // Initial load from Supabase
   useEffect(() => {
@@ -346,6 +395,40 @@ export const CommunityServicesProvider: React.FC<{ children: React.ReactNode }> 
 
     return () => {
       supabase.removeChannel(channel);
+    };
+  }, [refreshCommunityFromSupabase]);
+
+  // Background fallback polling for resident and admin community-service lists.
+  useEffect(() => {
+    if (!isSupabaseConfigured) return;
+
+    let intervalId: ReturnType<typeof setInterval> | null = null;
+    const startPolling = () => {
+      if (intervalId || document.visibilityState === 'hidden') return;
+      intervalId = setInterval(() => {
+        if (document.visibilityState === 'visible') {
+          refreshCommunityFromSupabase().catch((error) =>
+            console.warn('[BIMS Community Polling] Refresh error:', error)
+          );
+        }
+      }, 15000);
+    };
+    const stopPolling = () => {
+      if (intervalId) {
+        clearInterval(intervalId);
+        intervalId = null;
+      }
+    };
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') stopPolling();
+      else startPolling();
+    };
+
+    startPolling();
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      stopPolling();
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, [refreshCommunityFromSupabase]);
 

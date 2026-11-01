@@ -241,7 +241,8 @@ export function getAccurateCertificateCredentials(
     (r) =>
       (cert.residentId && r.id === cert.residentId) ||
       (cert.residentName && `${r.firstName} ${r.lastName}`.toLowerCase() === cert.residentName.toLowerCase()) ||
-      (cert.residentName && `${r.firstName} ${r.middleName ? r.middleName + ' ' : ''}${r.lastName}`.toLowerCase() === cert.residentName.toLowerCase())
+      (cert.residentName && `${r.firstName} ${r.middleName ? r.middleName + ' ' : ''}${r.lastName}${r.suffix ? ' ' + r.suffix : ''}`.toLowerCase() === cert.residentName.toLowerCase()) ||
+      (cert.residentName && `${r.firstName} ${r.middleName ? r.middleName.charAt(0) + '. ' : ''}${r.lastName}${r.suffix ? ' ' + r.suffix : ''}`.toLowerCase() === cert.residentName.toLowerCase())
   );
 
   // 2. Look for matching user account
@@ -254,14 +255,14 @@ export function getAccurateCertificateCredentials(
 
   // 3. Extract birthDate from certificate, user, or resident
   const birthDate =
-    cert.residentBirthDate ||
-    matchedUser?.birthDate ||
     matchedResident?.birthDate ||
+    matchedUser?.birthDate ||
+    cert.residentBirthDate ||
     (currentUser?.name.toLowerCase() === cert.residentName.toLowerCase() ? currentUser?.birthDate : undefined);
 
   // 4. Calculate accurate age
   const calculatedAge = birthDate
-    ? calculateAge(birthDate, cert.dateIssued || new Date())
+    ? calculateAge(birthDate, new Date())
     : (cert.residentAge && cert.residentAge > 0 ? cert.residentAge : (matchedResident?.age || 26));
 
   // 5. Civil Status

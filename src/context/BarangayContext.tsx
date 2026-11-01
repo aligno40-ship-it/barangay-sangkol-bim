@@ -5666,19 +5666,17 @@ export const BarangayProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     const date = new Date().toISOString().split('T')[0];
     const id = `CERT-${new Date().getFullYear()}-${Date.now().toString().slice(-4)}${Math.floor(100 + Math.random() * 900)}`;
 
-    let resolvedBirthDate = certData.residentBirthDate;
+    const matchResident =
+      residents.find((r) => r.id === certData.residentId) ||
+      residents.find((r) =>
+        `${r.firstName} ${r.middleName ? r.middleName.charAt(0) + '. ' : ''}${r.lastName}${r.suffix ? ' ' + r.suffix : ''}`.toLowerCase() === certData.residentName.toLowerCase() ||
+        `${r.firstName} ${r.middleName ? r.middleName + ' ' : ''}${r.lastName}${r.suffix ? ' ' + r.suffix : ''}`.toLowerCase() === certData.residentName.toLowerCase()
+      );
+    let resolvedBirthDate = matchResident?.birthDate || certData.residentBirthDate;
     let resolvedAge = certData.residentAge;
-    if (!resolvedBirthDate && certData.residentId) {
-      const match = residents.find((r) => r.id === certData.residentId);
-      if (match?.birthDate) {
-        resolvedBirthDate = match.birthDate;
-      }
-    }
     if (resolvedBirthDate) {
       resolvedAge = calculateAge(resolvedBirthDate);
     }
-
-    const matchResident = residents.find((r) => r.id === certData.residentId);
     const cleanedResidentAddress = formatCleanCertificateAddress(
       certData.residentAddress,
       matchResident?.purok,
@@ -5727,19 +5725,17 @@ export const BarangayProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     const timeString = `${now.toISOString().split('T')[0]} ${now.toTimeString().split(' ')[0]}`;
     const id = `CERT-${new Date().getFullYear()}-${Date.now().toString().slice(-4)}${Math.floor(100 + Math.random() * 900)}`;
 
-    let resolvedBirthDate = certData.residentBirthDate;
+    const matchResident =
+      residents.find((r) => r.id === certData.residentId) ||
+      residents.find((r) =>
+        `${r.firstName} ${r.middleName ? r.middleName.charAt(0) + '. ' : ''}${r.lastName}${r.suffix ? ' ' + r.suffix : ''}`.toLowerCase() === certData.residentName.toLowerCase() ||
+        `${r.firstName} ${r.middleName ? r.middleName + ' ' : ''}${r.lastName}${r.suffix ? ' ' + r.suffix : ''}`.toLowerCase() === certData.residentName.toLowerCase()
+      );
+    let resolvedBirthDate = matchResident?.birthDate || certData.residentBirthDate;
     let resolvedAge = certData.residentAge;
-    if (!resolvedBirthDate && certData.residentId) {
-      const match = residents.find((r) => r.id === certData.residentId);
-      if (match?.birthDate) {
-        resolvedBirthDate = match.birthDate;
-      }
-    }
     if (resolvedBirthDate) {
       resolvedAge = calculateAge(resolvedBirthDate);
     }
-
-    const matchResident = residents.find((r) => r.id === certData.residentId);
     const cleanedResidentAddress = formatCleanCertificateAddress(
       certData.residentAddress,
       matchResident?.purok,

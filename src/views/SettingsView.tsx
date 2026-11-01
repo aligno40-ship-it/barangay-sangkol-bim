@@ -47,9 +47,17 @@ import {
   Plus,
   Trash2,
   Loader2,
+  Volume2,
+  Play,
 } from 'lucide-react';
 import { BarangaySettings, EmergencyHotline } from '../types';
 import { compressSealImage } from '../utils/imageUtils';
+import {
+  getSavedNotificationSound,
+  saveNotificationSound,
+  previewNotificationSound,
+  type NotificationSound,
+} from '../utils/notificationTone';
 
 type SettingsTab =
   | 'appearance'
@@ -135,6 +143,7 @@ export const SettingsView: React.FC = () => {
   const [republicLogoUploadError, setRepublicLogoUploadError] = useState<string | null>(null);
   const [isUploadingRepublicLogo, setIsUploadingRepublicLogo] = useState(false);
   const [republicLogoSaveSuccess, setRepublicLogoSaveSuccess] = useState(false);
+  const [notificationSound, setNotificationSound] = useState<NotificationSound>(() => getSavedNotificationSound());
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const republicFileInputRef = useRef<HTMLInputElement | null>(null);
@@ -683,6 +692,47 @@ export const SettingsView: React.FC = () => {
                   {isDarkMode ? '🌙 Dark Mode Active' : '☀️ Light Mode Active'}
                 </span>
               </div>
+            </div>
+
+            <div className="flex flex-col sm:flex-row sm:items-end gap-3 p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-800/30">
+              <div className="flex items-center gap-3 sm:flex-1">
+                <div className="w-9 h-9 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
+                  <Volume2 className="w-4 h-4" />
+                </div>
+                <div className="flex-1">
+                  <label htmlFor="notification-sound" className="block text-xs font-bold text-slate-900 dark:text-white">
+                    Notification Sound
+                  </label>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                    Choose the tone played for new notifications.
+                  </p>
+                </div>
+              </div>
+              <select
+                id="notification-sound"
+                value={notificationSound}
+                onChange={(event) => {
+                  const choice = event.target.value as NotificationSound;
+                  setNotificationSound(choice);
+                  saveNotificationSound(choice);
+                }}
+                className="h-9 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-semibold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-indigo-500/20"
+              >
+                <option value="bell">Bell</option>
+                <option value="chime">Chime</option>
+                <option value="ding">Ding</option>
+                <option value="alert">Alert</option>
+                <option value="none">None</option>
+              </select>
+              <button
+                type="button"
+                onClick={() => previewNotificationSound(notificationSound)}
+                disabled={notificationSound === 'none'}
+                className="h-9 px-3 rounded-lg border border-indigo-200 dark:border-indigo-800 bg-indigo-50 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-300 text-xs font-bold flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <Play className="w-3.5 h-3.5" />
+                Preview
+              </button>
             </div>
 
             {/* Theme Selectable Cards */}

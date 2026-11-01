@@ -295,9 +295,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 clearance, alamin ang mga public health services, at mag-ulat ng hinaing sa inyong pamahalaang
                 lokal anumang oras.
               </p>
-
-              {/* Primary Action Buttons */}
-             
+      
 
               {/* Citizen Trust Badges */}
               <div className="pt-4 border-t border-slate-800 flex flex-wrap items-center gap-6 text-xs text-slate-400">

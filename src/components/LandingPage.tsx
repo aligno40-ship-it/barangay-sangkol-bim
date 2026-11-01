@@ -297,18 +297,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               </p>
 
               {/* Primary Action Buttons */}
-              <div className="flex flex-wrap items-center gap-3 pt-2">
-                <button
-                  type="button"
-                  onClick={() => onGoToLogin()}
-                  className="px-6 py-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm shadow-md hover:shadow-lg transition-all cursor-pointer flex items-center gap-2 group"
-                >
-                  <LogIn className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
-                  <span>Sign In</span>
-                  <ArrowRight className="w-4 h-4 ml-1 opacity-80" />
-                </button>
-
-              </div>
+             
 
               {/* Citizen Trust Badges */}
               <div className="pt-4 border-t border-slate-800 flex flex-wrap items-center gap-6 text-xs text-slate-400">

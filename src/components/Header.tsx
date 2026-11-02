@@ -121,6 +121,9 @@ export const Header: React.FC<{ onOpenLoginModal: () => void }> = ({ onOpenLogin
   });
   const notificationDiscoveryRef = useRef<Map<string, number>>(new Map());
   const notificationDiscoveryCounterRef = useRef(0);
+  const notificationArrivalRef = useRef<Map<string, number>>(new Map());
+  const notificationArrivalBatchRef = useRef(0);
+  const hasNotificationBaselineRef = useRef(false);
 
   const notifDropdownRef = useRef<HTMLDivElement>(null);
   const notifListRef = useRef<HTMLDivElement>(null);
@@ -129,6 +132,7 @@ export const Header: React.FC<{ onOpenLoginModal: () => void }> = ({ onOpenLogin
   const allNotifications = useMemo(() => {
     const combined = [...(notifications || []), ...(communityNotifications || [])];
     const map = new Map<string, SystemNotification>();
+    const unseenNotifications: SystemNotification[] = [];
     combined.forEach((n) => {
       if (!map.has(n.id)) {
         map.set(n.id, n);
@@ -136,9 +140,28 @@ export const Header: React.FC<{ onOpenLoginModal: () => void }> = ({ onOpenLogin
           notificationDiscoveryCounterRef.current += 1;
           notificationDiscoveryRef.current.set(n.id, notificationDiscoveryCounterRef.current);
         }
+        if (!notificationArrivalRef.current.has(n.id)) {
+          unseenNotifications.push(n);
+        }
       }
     });
+    if (unseenNotifications.length > 0) {
+      if (hasNotificationBaselineRef.current) {
+        notificationArrivalBatchRef.current += 1;
+      } else {
+        hasNotificationBaselineRef.current = true;
+      }
+      unseenNotifications.forEach((n) => {
+        notificationArrivalRef.current.set(n.id, notificationArrivalBatchRef.current);
+      });
+    }
+
     return Array.from(map.values()).sort((a, b) => {
+      const arrivalDifference =
+        (notificationArrivalRef.current.get(b.id) || 0) -
+        (notificationArrivalRef.current.get(a.id) || 0);
+      if (arrivalDifference !== 0) return arrivalDifference;
+
       const timestampDifference =
         getNotificationTimestampMs(b.timestamp) - getNotificationTimestampMs(a.timestamp);
       if (timestampDifference !== 0) {

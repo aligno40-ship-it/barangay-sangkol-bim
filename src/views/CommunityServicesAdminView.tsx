@@ -253,7 +253,10 @@ export const CommunityServicesAdminView: React.FC = () => {
     }
 
     window.requestAnimationFrame(() => {
-      const targetRow = Array.from(document.querySelectorAll('tr')).find((row) => row.textContent?.includes(targetServiceId));
+      const rows = Array.from(document.querySelectorAll('tr'));
+      const targetRow =
+        rows.find((row) => row.getAttribute('data-record-id') === targetServiceId) ||
+        rows.find((row) => row.textContent?.includes(targetServiceId));
       targetRow?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       if (targetRow) {
         targetRow.classList.add('ring-2', 'ring-indigo-500', 'bg-indigo-50');
@@ -675,7 +678,7 @@ export const CommunityServicesAdminView: React.FC = () => {
                       );
                     })
                     .map((fac) => (
-                      <tr key={fac.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
+                      <tr key={fac.id} data-record-id={fac.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
                         <td className="p-3.5 pl-5">
                           <p className="font-mono text-[10px] text-slate-400 font-bold">{fac.id}</p>
                           <p className="font-bold text-slate-800 dark:text-slate-100 text-sm">{fac.facilityName}</p>
@@ -965,7 +968,7 @@ export const CommunityServicesAdminView: React.FC = () => {
                       );
                     })
                     .map((eq) => (
-                      <tr key={eq.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
+                      <tr key={eq.id} data-record-id={eq.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
                         <td className="p-3.5 pl-5">
                           <p className="font-mono text-[10px] text-slate-400 font-bold">{eq.id}</p>
                           <p className="font-bold text-slate-800 dark:text-slate-100">{eq.equipmentName}</p>
@@ -2000,7 +2003,7 @@ export const CommunityServicesAdminView: React.FC = () => {
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                   {financialAssistanceRequests.map((aics) => (
-                    <tr key={aics.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
+                    <tr key={aics.id} data-record-id={aics.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
                       <td className="p-3.5 pl-5">
                         <p className="font-mono text-[10px] text-slate-400 font-bold">{aics.id}</p>
                         <p className="font-bold text-slate-800 dark:text-slate-100">{aics.assistanceType}</p>
@@ -2449,7 +2452,7 @@ export const CommunityServicesAdminView: React.FC = () => {
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                   {assistiveDeviceRequests.map((ast) => (
-                    <tr key={ast.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
+                    <tr key={ast.id} data-record-id={ast.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
                       <td className="p-3.5 pl-5">
                         <p className="font-mono text-[10px] text-slate-400 font-bold">{ast.id}</p>
                         <p className="font-bold text-slate-800 dark:text-slate-100">{ast.deviceRequested}</p>

@@ -274,7 +274,11 @@ export const ResidentPortalView: React.FC<ResidentPortalViewProps> = ({ initialT
   useEffect(() => {
     if (targetRecordId) {
       const isConcern = concerns.some((c) => c.id === targetRecordId);
-      const isActivity = activities.some((a) => a.id === targetRecordId);
+      const targetActivity = activities.find((a) => a.id === targetRecordId) ||
+        activities.find((activity) =>
+          activityAttendees.some((attendee) => attendee.id === targetRecordId && attendee.activityId === activity.id)
+        );
+      const isActivity = Boolean(targetActivity);
       const isFacility = facilityReservations.some((f) => f.id === targetRecordId) || equipmentReservations.some((e) => e.id === targetRecordId);
       const isHealth = healthAppointments.some((h) => h.id === targetRecordId) || medicineRefillRequests.some((m) => m.id === targetRecordId) || (childImmunizations && childImmunizations.some((c) => c.id === targetRecordId)) || (healthMissions && healthMissions.some((h) => h.id === targetRecordId));
       const isTrabaho = jobApplications.some((j) => j.id === targetRecordId) || livelihoodEnrollments.some((l) => l.id === targetRecordId) || (jobPostings && jobPostings.some((j) => j.id === targetRecordId)) || (livelihoodAssistanceRequests && livelihoodAssistanceRequests.some((l) => l.id === targetRecordId));
@@ -299,20 +303,33 @@ export const ResidentPortalView: React.FC<ResidentPortalViewProps> = ({ initialT
       } else if (isYouthSenior) {
         setActiveTab('youth_senior');
       }
-      window.requestAnimationFrame(() => {
-        const targetElement = Array.from(document.querySelectorAll('[id], [data-record-id], tr, article, section')).find(
-          (element) => element.textContent?.includes(targetRecordId) || element.id === targetRecordId
-        );
-        targetElement?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        targetElement?.classList.add('ring-2', 'ring-indigo-500', 'rounded-xl');
-        window.setTimeout(() => targetElement?.classList.remove('ring-2', 'ring-indigo-500', 'rounded-xl'), 3500);
-      });
+      const highlightTargetId = targetActivity?.id || targetRecordId;
+      let attempts = 0;
+      const highlightTarget = () => {
+        const targetElements = Array.from(document.querySelectorAll('[data-record-id], tr, article, section'));
+        const targetElement =
+          targetElements.find((element) => element.getAttribute('data-record-id') === highlightTargetId) ||
+          targetElements
+            .filter((element) => element.textContent?.includes(highlightTargetId))
+            .sort((a, b) => (a.textContent?.length || 0) - (b.textContent?.length || 0))[0];
+
+        if (targetElement) {
+          targetElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          targetElement.classList.add('ring-2', 'ring-indigo-500', 'rounded-xl');
+          window.setTimeout(() => targetElement.classList.remove('ring-2', 'ring-indigo-500', 'rounded-xl'), 3500);
+        } else if (attempts < 8) {
+          attempts += 1;
+          window.requestAnimationFrame(highlightTarget);
+        }
+      };
+      window.requestAnimationFrame(highlightTarget);
       setTargetRecordId(null);
     }
   }, [
     targetRecordId,
     concerns,
     activities,
+    activityAttendees,
     facilityReservations,
     equipmentReservations,
     healthAppointments,
@@ -1903,6 +1920,7 @@ export const ResidentPortalView: React.FC<ResidentPortalViewProps> = ({ initialT
                 return (
                   <div
                     key={act.id}
+                    data-record-id={act.id}
                     className="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs flex flex-col justify-between space-y-4 hover:border-indigo-300 transition-all"
                   >
                     <div className="space-y-3">
@@ -3315,6 +3333,7 @@ export const ResidentPortalView: React.FC<ResidentPortalViewProps> = ({ initialT
                   return (
                     <div
                       key={con.id}
+                      data-record-id={con.id}
                       className="bg-white border border-slate-200 hover:border-indigo-300 rounded-3xl p-5 shadow-xs space-y-3.5 transition-all"
                     >
                       <div className="flex flex-wrap items-start justify-between gap-2">

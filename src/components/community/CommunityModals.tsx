@@ -29,6 +29,7 @@ import {
   ChildImmunizationTracker,
 } from '../../types/residentServices';
 import { RepublicSeal, BarangaySangkolSeal } from '../OfficialSeals';
+import { useBarangay } from '../../context/BarangayContext';
 
 // ================= MODAL: POST JOB OPENING =================
 interface JobModalProps {
@@ -401,6 +402,8 @@ export const AyudaDistributionModal: React.FC<AyudaModalProps> = ({
   setForm,
   onSubmit,
 }) => {
+  const { settings } = useBarangay();
+  const configuredPuroks = settings.puroks || [];
   if (!isOpen) return null;
   return (
     <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
@@ -462,12 +465,11 @@ export const AyudaDistributionModal: React.FC<AyudaModalProps> = ({
                 className="w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl"
               >
                 <option value="All Puroks">All Puroks (Barangay-wide)</option>
-                <option value="Purok Pinya">Purok Pinya</option>
-                <option value="Purok Lumboy">Purok Lumboy</option>
-                <option value="Purok Mangga">Purok Mangga</option>
-                <option value="Purok Tambis">Purok Tambis</option>
-                <option value="Purok Kaimito">Purok Kaimito</option>
-                <option value="Purok Bayabas">Purok Bayabas</option>
+                {configuredPuroks.map((configuredPurok) => (
+                  <option key={configuredPurok} value={configuredPurok}>
+                    {configuredPurok}
+                  </option>
+                ))}
               </select>
             </div>
           </div>
@@ -546,6 +548,8 @@ export const BayanihanCleanUpModal: React.FC<CleanUpModalProps> = ({
   setForm,
   onSubmit,
 }) => {
+  const { settings } = useBarangay();
+  const configuredPuroks = settings.puroks || [];
   if (!isOpen) return null;
   return (
     <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
@@ -590,12 +594,11 @@ export const BayanihanCleanUpModal: React.FC<CleanUpModalProps> = ({
                 className="w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl"
               >
                 <option value="All Puroks">All Puroks (Barangay-wide)</option>
-                <option value="Purok Pinya">Purok Pinya</option>
-                <option value="Purok Lumboy">Purok Lumboy</option>
-                <option value="Purok Mangga">Purok Mangga</option>
-                <option value="Purok Tambis">Purok Tambis</option>
-                <option value="Purok Kaimito">Purok Kaimito</option>
-                <option value="Purok Bayabas">Purok Bayabas</option>
+                {configuredPuroks.map((configuredPurok) => (
+                  <option key={configuredPurok} value={configuredPurok}>
+                    {configuredPurok}
+                  </option>
+                ))}
               </select>
             </div>
             <div>

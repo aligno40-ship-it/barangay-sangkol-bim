@@ -41,8 +41,11 @@ import { MRFDropModal } from './MRFDropModal';
 import { IllegalDumpingDetailModal } from './IllegalDumpingDetailModal';
 import { BulkPickupDispatchModal } from './BulkPickupDispatchModal';
 import { BayanihanCleanUpModal } from '../community/CommunityModals';
+import { useBarangay } from '../../context/BarangayContext';
 
 export const SolidWasteAdminView: React.FC = () => {
+  const { settings } = useBarangay();
+  const configuredPuroks = settings.puroks || [];
   const {
     wasteSchedules,
     bulkWasteRequests,
@@ -82,7 +85,7 @@ export const SolidWasteAdminView: React.FC = () => {
     activityDate: '',
     assemblyTime: '06:00 AM',
     assemblyPoint: 'Barangay Sangkol Hall Grounds',
-    purokTarget: 'Purok 1 - Mabini Coastal & Estero Line',
+    purokTarget: configuredPuroks[0] || '',
     expectedVolunteers: 25,
     equipmentProvidedText: 'Garbage Sacks, Heavy Duty Gloves, Rakes & Shovels, Free Snacks & Mineral Water',
     coordinator: 'Kgd. Joel Manalo (Committee on Environment)',
@@ -131,7 +134,7 @@ export const SolidWasteAdminView: React.FC = () => {
       activityDate: '',
       assemblyTime: '06:00 AM',
       assemblyPoint: 'Barangay Sangkol Hall Grounds',
-      purokTarget: 'Purok 1 - Mabini Coastal & Estero Line',
+      purokTarget: configuredPuroks[0] || '',
       expectedVolunteers: 25,
       equipmentProvidedText: 'Garbage Sacks, Heavy Duty Gloves, Rakes & Shovels, Free Snacks & Mineral Water',
       coordinator: 'Kgd. Joel Manalo (Committee on Environment)',

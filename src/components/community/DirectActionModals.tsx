@@ -32,6 +32,7 @@ import {
   ChildImmunizationTracker,
   AyudaClaimStub,
 } from '../../types/residentServices';
+import { useBarangay } from '../../context/BarangayContext';
 
 // ================= MODAL: DIRECT ADMIN FACILITY BOOKING =================
 interface DirectFacilityModalProps {
@@ -47,11 +48,13 @@ export const DirectFacilityModal: React.FC<DirectFacilityModalProps> = ({
   onSubmit,
   residents,
 }) => {
+  const { settings } = useBarangay();
+  const configuredPuroks = settings.puroks || [];
   const [form, setForm] = useState({
     facilityName: 'Barangay Multi-Purpose Gymnasium',
     residentName: '',
     contactNumber: '0917-123-4567',
-    purok: 'Purok Pinya',
+    purok: configuredPuroks[0] || '',
     eventTitle: '',
     purpose: '',
     date: new Date().toISOString().split('T')[0],
@@ -140,12 +143,11 @@ export const DirectFacilityModal: React.FC<DirectFacilityModalProps> = ({
                 onChange={(e) => setForm({ ...form, purok: e.target.value })}
                 className="w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl"
               >
-                <option value="Purok Pinya">Purok Pinya</option>
-                <option value="Purok Lumboy">Purok Lumboy</option>
-                <option value="Purok Mangga">Purok Mangga</option>
-                <option value="Purok Tambis">Purok Tambis</option>
-                <option value="Purok Kaimito">Purok Kaimito</option>
-                <option value="Purok Bayabas">Purok Bayabas</option>
+                {configuredPuroks.map((configuredPurok) => (
+                  <option key={configuredPurok} value={configuredPurok}>
+                    {configuredPurok}
+                  </option>
+                ))}
                 <option value="External / Non-Resident">External / Non-Resident</option>
               </select>
             </div>
@@ -273,12 +275,14 @@ export const DirectEquipmentModal: React.FC<DirectEquipmentModalProps> = ({
   onClose,
   onSubmit,
 }) => {
+  const { settings } = useBarangay();
+  const configuredPuroks = settings.puroks || [];
   const [form, setForm] = useState({
     equipmentName: 'Heavy-Duty Heavy Rain Tolda / Canopy Tent (10x15 ft)',
     quantity: 1,
     residentName: '',
     contactNumber: '0918-987-6543',
-    purok: 'Purok Lumboy',
+    purok: configuredPuroks[0] || '',
     purpose: 'Community Event / Wake / Family Gathering',
     borrowDate: new Date().toISOString().split('T')[0],
     returnDate: new Date(Date.now() + 86400000 * 3).toISOString().split('T')[0],
@@ -377,12 +381,11 @@ export const DirectEquipmentModal: React.FC<DirectEquipmentModalProps> = ({
                 onChange={(e) => setForm({ ...form, purok: e.target.value })}
                 className="w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl"
               >
-                <option value="Purok Pinya">Purok Pinya</option>
-                <option value="Purok Lumboy">Purok Lumboy</option>
-                <option value="Purok Mangga">Purok Mangga</option>
-                <option value="Purok Tambis">Purok Tambis</option>
-                <option value="Purok Kaimito">Purok Kaimito</option>
-                <option value="Purok Bayabas">Purok Bayabas</option>
+                {configuredPuroks.map((configuredPurok) => (
+                  <option key={configuredPurok} value={configuredPurok}>
+                    {configuredPurok}
+                  </option>
+                ))}
               </select>
             </div>
           </div>

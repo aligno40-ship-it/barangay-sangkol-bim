@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, Truck, Calendar, Clock, MapPin, User, Phone, CheckCircle2 } from 'lucide-react';
 import { WasteCollectionSchedule } from '../../types/residentServices';
+import { useBarangay } from '../../context/BarangayContext';
 
 interface AddWasteRouteModalProps {
   isOpen: boolean;
@@ -15,7 +16,9 @@ export const AddWasteRouteModal: React.FC<AddWasteRouteModalProps> = ({
   onSave,
   initialData,
 }) => {
-  const [purokName, setPurokName] = useState('Purok 1 - Mabini');
+  const { settings } = useBarangay();
+  const configuredPuroks = settings.puroks || [];
+  const [purokName, setPurokName] = useState(configuredPuroks[0] || '');
   const [wasteType, setWasteType] = useState<WasteCollectionSchedule['wasteType']>(
     'Biodegradable (Nabubulok)'
   );
@@ -41,7 +44,7 @@ export const AddWasteRouteModal: React.FC<AddWasteRouteModalProps> = ({
       setRouteNotes(initialData.routeNotes || '');
       setStatus(initialData.status || 'On Schedule');
     } else {
-      setPurokName('Purok 1 - Mabini');
+      setPurokName(configuredPuroks[0] || '');
       setWasteType('Biodegradable (Nabubulok)');
       setCollectionDays('Mon, Wed, Fri');
       setPickupTime('06:00 AM - 08:30 AM');
@@ -52,7 +55,7 @@ export const AddWasteRouteModal: React.FC<AddWasteRouteModalProps> = ({
       setRouteNotes('Main highway to interior alleys, sounding siren 3x.');
       setStatus('On Schedule');
     }
-  }, [initialData, isOpen]);
+  }, [initialData, isOpen, configuredPuroks.join('|')]);
 
   if (!isOpen) return null;
 
@@ -106,13 +109,11 @@ export const AddWasteRouteModal: React.FC<AddWasteRouteModalProps> = ({
                 onChange={(e) => setPurokName(e.target.value)}
                 className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800 font-medium"
               >
-                <option value="Purok 1 - Mabini">Purok 1 - Mabini</option>
-                <option value="Purok 2 - Rizal">Purok 2 - Rizal</option>
-                <option value="Purok 3 - Bonifacio">Purok 3 - Bonifacio</option>
-                <option value="Purok 4 - Aguinaldo">Purok 4 - Aguinaldo</option>
-                <option value="Purok 5 - Silang">Purok 5 - Silang</option>
-                <option value="Purok 6 - Malvar">Purok 6 - Malvar</option>
-                <option value="Purok 7 - Dagohoy">Purok 7 - Dagohoy</option>
+                {configuredPuroks.map((configuredPurok) => (
+                  <option key={configuredPurok} value={configuredPurok}>
+                    {configuredPurok}
+                  </option>
+                ))}
               </select>
             </div>
 

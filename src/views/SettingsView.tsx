@@ -2068,7 +2068,7 @@ export const SettingsView: React.FC = () => {
               </div>
               <ul className="text-[11px] text-slate-600 dark:text-slate-400 space-y-1.5 list-disc list-inside">
                 <li>Strict Referrer Policy enforced (<code className="px-1 py-0.5 bg-white dark:bg-slate-800 rounded font-mono text-[10px]">strict-origin-when-cross-origin</code>) prevents URL leaking.</li>
-                <li>Google Identity Services client is loaded with <code className="px-1 py-0.5 bg-white dark:bg-slate-800 rounded font-mono text-[10px]">crossorigin="anonymous"</code>.</li>
+                <li>Google sign-in is initiated only when requested through Firebase Authentication; no third-party identity script is loaded globally.</li>
                 <li>External image elements apply <code className="px-1 py-0.5 bg-white dark:bg-slate-800 rounded font-mono text-[10px]">referrerPolicy="no-referrer"</code>.</li>
                 <li>All mapping tiles operate over TLS HTTPS with <code className="px-1 py-0.5 bg-white dark:bg-slate-800 rounded font-mono text-[10px]">rel="noopener noreferrer"</code> on navigation shortcuts.</li>
               </ul>

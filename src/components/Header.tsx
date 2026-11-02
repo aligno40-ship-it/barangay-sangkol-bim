@@ -49,6 +49,25 @@ import {
 import { UserRole, SystemNotification, NotificationCategory } from '../types';
 import { useCommunityServices } from '../context/CommunityServicesContext';
 
+const getNotificationTimestampMs = (timestamp?: string): number => {
+  if (!timestamp) return 0;
+  const parsed = new Date(timestamp).getTime();
+  if (!Number.isNaN(parsed)) return parsed;
+
+  const normalized = String(timestamp).replace('T', ' ').match(/^(\d{4}-\d{2}-\d{2})(?:\s+(\d{2}:\d{2})(?::\d{2})?)?/);
+  if (!normalized) return 0;
+  const fallback = new Date(`${normalized[1]}${normalized[2] ? `T${normalized[2]}:00` : 'T00:00:00'}`).getTime();
+  return Number.isNaN(fallback) ? 0 : fallback;
+};
+
+const formatNotificationTimestamp = (timestamp?: string): string => {
+  if (!timestamp) return 'Just now';
+  if (!Number.isNaN(new Date(timestamp).getTime())) return timestamp;
+
+  const match = String(timestamp).match(/^(\d{4}-\d{2}-\d{2})[T\s]+(\d{2}:\d{2})/);
+  return match ? `${match[1]} ${match[2]}` : timestamp;
+};
+
 export const Header: React.FC<{ onOpenLoginModal: () => void }> = ({ onOpenLoginModal }) => {
   const {
     settings,
@@ -93,8 +112,18 @@ export const Header: React.FC<{ onOpenLoginModal: () => void }> = ({ onOpenLogin
   const [notifCategoryFilter, setNotifCategoryFilter] = useState<'all' | 'financial' | 'certificate' | 'services' | 'registration' | 'cases' | 'activity' | 'sms_alert'>('all');
   const [unreadOnly, setUnreadOnly] = useState(false);
   const [notifSearch, setNotifSearch] = useState('');
+  const [notificationSortOrder, setNotificationSortOrder] = useState<'newest' | 'oldest'>(() => {
+    try {
+      return localStorage.getItem('bims_notification_sort_order') === 'oldest' ? 'oldest' : 'newest';
+    } catch {
+      return 'newest';
+    }
+  });
+  const notificationDiscoveryRef = useRef<Map<string, number>>(new Map());
+  const notificationDiscoveryCounterRef = useRef(0);
 
   const notifDropdownRef = useRef<HTMLDivElement>(null);
+  const notifListRef = useRef<HTMLDivElement>(null);
 
   // Combined notifications from core Barangay and Community Services
   const allNotifications = useMemo(() => {
@@ -103,16 +132,42 @@ export const Header: React.FC<{ onOpenLoginModal: () => void }> = ({ onOpenLogin
     combined.forEach((n) => {
       if (!map.has(n.id)) {
         map.set(n.id, n);
+        if (!notificationDiscoveryRef.current.has(n.id)) {
+          notificationDiscoveryCounterRef.current += 1;
+          notificationDiscoveryRef.current.set(n.id, notificationDiscoveryCounterRef.current);
+        }
       }
     });
-    return Array.from(map.values()).sort(
-      (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-    );
-  }, [notifications, communityNotifications]);
+    return Array.from(map.values()).sort((a, b) => {
+      const timestampDifference =
+        getNotificationTimestampMs(b.timestamp) - getNotificationTimestampMs(a.timestamp);
+      if (timestampDifference !== 0) {
+        return notificationSortOrder === 'newest' ? timestampDifference : -timestampDifference;
+      }
+
+      const aDiscovery = notificationDiscoveryRef.current.get(a.id) || 0;
+      const bDiscovery = notificationDiscoveryRef.current.get(b.id) || 0;
+      if (aDiscovery !== bDiscovery) {
+        return notificationSortOrder === 'newest' ? bDiscovery - aDiscovery : aDiscovery - bDiscovery;
+      }
+      return a.id.localeCompare(b.id);
+    });
+  }, [notifications, communityNotifications, notificationSortOrder]);
 
   const totalUnreadCount = useMemo(() => {
     return allNotifications.filter((n) => !n.read).length;
   }, [allNotifications]);
+
+  useEffect(() => {
+    if (notifListRef.current) {
+      notifListRef.current.scrollTop = 0;
+    }
+  }, [
+    totalUnreadCount,
+    showNotifMenu,
+    notificationSortOrder,
+    allNotifications.map((notification) => `${notification.id}:${notification.timestamp}:${notification.read ? '1' : '0'}`).join('|'),
+  ]);
 
   useEffect(() => {
     const updateTime = () => {
@@ -607,14 +662,37 @@ export const Header: React.FC<{ onOpenLoginModal: () => void }> = ({ onOpenLogin
                         />
                         <span>Show unread notifications only</span>
                       </label>
-                      <span className="text-[10px] text-slate-500">
-                        Showing {filteredNotifications.length} items
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] text-slate-500">
+                          Showing {filteredNotifications.length} items
+                        </span>
+                        <label className="flex items-center gap-1.5 text-[10px] text-slate-400">
+                          <Clock className="w-3 h-3" />
+                          <span className="hidden sm:inline">Sort:</span>
+                          <select
+                            value={notificationSortOrder}
+                            onChange={(e) => {
+                              const nextSort = e.target.value as 'newest' | 'oldest';
+                              setNotificationSortOrder(nextSort);
+                              try {
+                                localStorage.setItem('bims_notification_sort_order', nextSort);
+                              } catch {
+                                // Notification sorting still works for the current session.
+                              }
+                              if (notifListRef.current) notifListRef.current.scrollTop = 0;
+                            }}
+                            className="bg-slate-950/80 border border-slate-700 rounded-md px-2 py-1 text-[10px] text-slate-200 cursor-pointer focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                          >
+                            <option value="newest">Newest first</option>
+                            <option value="oldest">Oldest first</option>
+                          </select>
+                        </label>
+                      </div>
                     </div>
                   </div>
 
                   {/* Notification List Body */}
-                  <div className="p-2.5 space-y-2 overflow-y-auto max-h-[50vh] divide-y divide-slate-800/50">
+                  <div ref={notifListRef} className="p-2.5 space-y-2 overflow-y-auto max-h-[50vh] divide-y divide-slate-800/50">
                     {filteredNotifications.length === 0 ? (
                       <div className="py-8 text-center text-slate-400 space-y-2">
                         <Bell className="w-8 h-8 mx-auto text-slate-600 opacity-60" />
@@ -719,7 +797,7 @@ export const Header: React.FC<{ onOpenLoginModal: () => void }> = ({ onOpenLogin
                                     </p>
                                   </div>
                                   <span className="text-[10px] text-slate-400 font-mono shrink-0">
-                                    {notif.timestamp}
+                                    {formatNotificationTimestamp(notif.timestamp)}
                                   </span>
                                 </div>
 

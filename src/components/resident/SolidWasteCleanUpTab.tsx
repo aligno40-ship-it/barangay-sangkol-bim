@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   Trash2,
   Truck,
@@ -42,6 +42,7 @@ import { useCommunityServices } from '../../context/CommunityServicesContext';
 import { BayanihanCertificateModal } from '../solidwaste/BayanihanCertificateModal';
 import { isResidentRecordOwner } from '../../utils/residentAccountFilter';
 import { RecentSearchesInput } from '../RecentSearchesInput';
+import { useBarangay } from '../../context/BarangayContext';
 
 interface SolidWasteCleanUpTabProps {
   residentId: string;
@@ -69,6 +70,8 @@ export const SolidWasteCleanUpTab: React.FC<SolidWasteCleanUpTabProps> = ({
   contactNumber,
   purok,
 }) => {
+  const { settings } = useBarangay();
+  const configuredPuroks = useMemo(() => settings.puroks || [], [settings.puroks]);
   const {
     wasteSchedules: schedules,
     bulkWasteRequests: allBulkRequests,
@@ -166,7 +169,9 @@ export const SolidWasteCleanUpTab: React.FC<SolidWasteCleanUpTabProps> = ({
   const [violationType, setViolationType] = useState<IllegalDumpingReport['violationType']>(
     'Open Burning (Siga / RA 9003 Sec 48)'
   );
-  const [sumbongPurok, setSumbongPurok] = useState(purok || 'Purok 1 - Mabini');
+  const [sumbongPurok, setSumbongPurok] = useState(
+    configuredPuroks.includes(purok) ? purok : configuredPuroks[0] || purok
+  );
   const [landmarkDescription, setLandmarkDescription] = useState('');
   const [incidentDescription, setIncidentDescription] = useState('');
   const [severityLevel, setSeverityLevel] = useState<IllegalDumpingReport['severityLevel']>(
@@ -188,6 +193,17 @@ export const SolidWasteCleanUpTab: React.FC<SolidWasteCleanUpTabProps> = ({
 
   // Purok search filter
   const [purokSearch, setPurokSearch] = useState('');
+
+  useEffect(() => {
+    if (!configuredPuroks.length) return;
+    setSumbongPurok((current) =>
+      configuredPuroks.includes(current)
+        ? current
+        : configuredPuroks.includes(purok)
+          ? purok
+          : configuredPuroks[0]
+    );
+  }, [configuredPuroks, purok]);
 
   // Handle Photo upload for Bulk
   const handleBulkPhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -220,7 +236,7 @@ export const SolidWasteCleanUpTab: React.FC<SolidWasteCleanUpTabProps> = ({
       residentId,
       residentName,
       contactNumber,
-      purok: purok || 'Purok 1 - Mabini',
+      purok: configuredPuroks.includes(purok) ? purok : configuredPuroks[0] || purok || '',
       streetAddress: streetAddress || 'Purok Roadside',
       wasteCategory,
       wasteDescription,
@@ -274,7 +290,7 @@ export const SolidWasteCleanUpTab: React.FC<SolidWasteCleanUpTabProps> = ({
       residentId,
       residentName,
       contactNumber,
-      purok: purok || 'Purok 1 - Mabini',
+      purok: sumbongPurok || (configuredPuroks.includes(purok) ? purok : configuredPuroks[0] || ''),
       volunteerRole,
     });
 
@@ -1226,13 +1242,11 @@ export const SolidWasteCleanUpTab: React.FC<SolidWasteCleanUpTabProps> = ({
                     onChange={(e) => setSumbongPurok(e.target.value)}
                     className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800 font-medium"
                   >
-                    <option value="Purok 1 - Mabini">Purok 1 - Mabini</option>
-                    <option value="Purok 2 - Rizal">Purok 2 - Rizal</option>
-                    <option value="Purok 3 - Bonifacio">Purok 3 - Bonifacio</option>
-                    <option value="Purok 4 - Aguinaldo">Purok 4 - Aguinaldo</option>
-                    <option value="Purok 5 - Silang">Purok 5 - Silang</option>
-                    <option value="Purok 6 - Malvar">Purok 6 - Malvar</option>
-                    <option value="Purok 7 - Dagohoy">Purok 7 - Dagohoy</option>
+                    {configuredPuroks.map((configuredPurok) => (
+                      <option key={configuredPurok} value={configuredPurok}>
+                        {configuredPurok}
+                      </option>
+                    ))}
                   </select>
                 </div>
 

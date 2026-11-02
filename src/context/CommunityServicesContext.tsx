@@ -299,16 +299,22 @@ export const CommunityServicesProvider: React.FC<{ children: React.ReactNode }> 
         facilityReservations: signature(db.facilityReservations),
         equipmentReservations: signature(db.equipmentReservations),
         healthAppointments: signature(db.healthAppointments),
+        childImmunizations: signature(db.childImmunizations),
         medicineRefills: signature(db.medicineRefills),
+        healthMissions: signature(db.healthMissions),
         jobApplications: signature(db.jobApplications),
         livelihoodEnrollments: signature(db.livelihoodEnrollments),
         livelihoodAssistance: signature(db.livelihoodAssistance),
         ayudaClaims: signature(db.ayudaClaims),
         financialAssistance: signature(db.financialAssistance),
         bulkWastePickups: signature(db.bulkWastePickups),
+        wasteSchedules: signature(db.wasteSchedules),
+        mrfDropRecords: signature(db.mrfDropRecords),
         cleanUpVolunteers: signature(db.cleanUpVolunteers),
+        cleanUpDrives: signature(db.cleanUpDrives),
         skRegistrations: signature(db.skRegistrations),
         assistiveDeviceRequests: signature(db.assistiveDeviceRequests),
+        illegalDumpingReports: signature(db.illegalDumpingReports),
       };
       const previousSnapshot = communitySnapshotRef.current;
 
@@ -1821,6 +1827,56 @@ export const CommunityServicesProvider: React.FC<{ children: React.ReactNode }> 
           });
         });
 
+      // Waste collection schedule announcements for residents
+      wasteSchedules.forEach((w) => {
+        list.push({
+          id: `notif-cs-waste-res-${w.id}-${(w.status || 'schedule').toLowerCase().replace(/[^a-z0-9]/g, '-')}`,
+          title: `♻️ Waste Collection Schedule: ${w.purokName}`,
+          message: `${w.wasteType} collection is ${w.status}. Schedule: ${w.collectionDays} at ${w.pickupTime}. Truck: ${w.assignedTruckNo}. Officer: ${w.ecoOfficerInCharge}.`,
+          timestamp: timeString,
+          type: w.status === 'Collecting Now' ? 'warning' : w.status === 'Completed Today' ? 'success' : 'info',
+          category: 'services',
+          linkModule: 'resident_portal',
+          targetRecordId: w.id,
+          actionText: 'View Collection Schedule',
+        });
+      });
+
+      // MRF recyclables rewards for the resident who dropped them off
+      mrfDropRecords
+        .filter((m) => isUserMatch(m.residentId, m.residentName))
+        .forEach((m) => {
+          list.push({
+            id: `notif-cs-mrf-res-${m.id}`,
+            title: `♻️ MRF Drop Recorded: ${m.itemCategory}`,
+            message: `${m.weightKg} kg logged on ${m.loggedDate}. Reward: ${m.rewardValue}. Processed by: ${m.officerInCharge}.`,
+            timestamp: `${m.loggedDate} 09:30:00`,
+            type: 'success',
+            category: 'services',
+            linkModule: 'resident_portal',
+            targetRecordId: m.id,
+            actionText: 'View MRF Trade-In',
+          });
+        });
+
+      // Sumbong Basura status updates for the reporting resident
+      illegalDumpingReports
+        .filter((r) => isUserMatch(r.residentId, r.residentName, r.contactNumber))
+        .forEach((r) => {
+          const statusSlug = (r.status || 'reported').toLowerCase().replace(/[^a-z0-9]/g, '-');
+          list.push({
+            id: `notif-cs-dump-res-${r.id}-${statusSlug}`,
+            title: `🚮 Sanitation Report: ${r.status}`,
+            message: `Your report about ${r.violationType} at ${r.exactLocationOrLandmark} is ${r.status}. ${r.resolutionRemarks || r.assignedTanodOrCrew || ''}`,
+            timestamp: r.reportedAt ? `${r.reportedAt}:00` : timeString,
+            type: r.status === 'Cleaned & Cleared' || r.status === 'Notice Issued / Resolved' ? 'success' : r.status === 'Report Received' ? 'warning' : 'info',
+            category: 'services',
+            linkModule: 'resident_portal',
+            targetRecordId: r.id,
+            actionText: 'View Sanitation Report',
+          });
+        });
+
       // 9. Assistive Device Requests
       assistiveDeviceRequests
         .filter((a) => isUserMatch(a.residentId, a.residentName))
@@ -1846,7 +1902,7 @@ export const CommunityServicesProvider: React.FC<{ children: React.ReactNode }> 
         .forEach((v) => {
           const drive = cleanUpDrives.find((d) => d.id === v.driveId);
           list.push({
-            id: `notif-cs-vol-res-${v.id}`,
+            id: `notif-cs-vol-res-${v.id}-${v.attendanceVerified ? 'verified' : 'registered'}`,
             title: `Volunteer Confirmed: ${v.driveTitle || drive?.title || 'Clean-Up Drive'}`,
             message: `You are registered as a Bayanihan Volunteer. Venue: ${drive?.assemblyPoint || drive?.purokTarget || 'Barangay Center'}. Status: ${v.attendanceVerified ? 'Attendance Verified (Hours Recorded)' : 'Registered'}.`,
             timestamp: v.registeredDate ? `${v.registeredDate} 08:00:00` : timeString,
@@ -1976,6 +2032,36 @@ export const CommunityServicesProvider: React.FC<{ children: React.ReactNode }> 
         });
       });
 
+      childImmunizations.forEach((i) => {
+        const statusSlug = (i.status || 'due-soon').toLowerCase().replace(/[^a-z0-9]/g, '-');
+        list.push({
+          id: `notif-cs-imm-adm-${i.id}-${statusSlug}`,
+          title: `🍼 Child Immunization ${i.status}: ${i.childName}`,
+          message: `${i.vaccineName} - ${i.doseNumber}. Parent: ${i.parentName}. Due: ${i.dueDate}.${i.administeredDate ? ` Administered: ${i.administeredDate}.` : ''}`,
+          timestamp: i.administeredDate ? `${i.administeredDate} 09:00:00` : i.dueDate ? `${i.dueDate} 09:00:00` : timeString,
+          type: i.status === 'Overdue' ? 'warning' : i.status === 'Completed' ? 'success' : 'info',
+          category: 'services',
+          linkModule: 'community_services',
+          targetRecordId: i.id,
+          actionText: 'Open Immunization Tracker',
+        });
+      });
+
+      healthMissions.forEach((m) => {
+        const statusSlug = (m.status || 'upcoming').toLowerCase().replace(/[^a-z0-9]/g, '-');
+        list.push({
+          id: `notif-cs-msn-adm-${m.id}-${statusSlug}`,
+          title: `🏥 Health Mission: ${m.title}`,
+          message: `${m.programType || m.missionType || 'Community Health Mission'} on ${m.date} (${m.timeSchedule}) at ${m.venue}. Target: ${m.targetPurok || m.targetBeneficiaries || 'All Barangay Residents'} • ${m.registeredCount || 0}/${m.maxSlots} slots registered.`,
+          timestamp: m.date ? `${m.date} 07:00:00` : timeString,
+          type: m.status === 'Ongoing' ? 'warning' : 'info',
+          category: 'services',
+          linkModule: 'community_services',
+          targetRecordId: m.id,
+          actionText: 'Manage Health Mission',
+        });
+      });
+
       // 4. Medicine Refill Requests
       medicineRefillRequests.forEach((m) => {
         const isPending = m.status === 'Pending Dispensing' || m.status === 'Pending Approval';
@@ -2094,10 +2180,41 @@ export const CommunityServicesProvider: React.FC<{ children: React.ReactNode }> 
         });
       });
 
+      // Waste collection schedule announcements
+      wasteSchedules.forEach((w) => {
+        const statusSlug = (w.status || 'schedule').toLowerCase().replace(/[^a-z0-9]/g, '-');
+        list.push({
+          id: `notif-cs-waste-adm-${w.id}-${statusSlug}`,
+          title: `♻️ Waste Collection: ${w.purokName} (${w.status})`,
+          message: `${w.collectionDays} at ${w.pickupTime}. Waste type: ${w.wasteType}. Truck: ${w.assignedTruckNo}. Officer: ${w.ecoOfficerInCharge}.`,
+          timestamp: timeString,
+          type: w.status === 'Delayed due to Weather' ? 'warning' : w.status === 'Collecting Now' ? 'info' : 'success',
+          category: 'services',
+          linkModule: 'community_services',
+          targetRecordId: w.id,
+          actionText: 'Manage in Sanitation Desk',
+        });
+      });
+
+      // MRF recyclable drop records
+      mrfDropRecords.forEach((m) => {
+        list.push({
+          id: `notif-cs-mrf-adm-${m.id}`,
+          title: `♻️ MRF Recyclables Logged: ${m.residentName}`,
+          message: `${m.weightKg} kg of ${m.itemCategory} from ${m.purok}. Reward: ${m.rewardValue}. Logged: ${m.loggedDate}.`,
+          timestamp: `${m.loggedDate} 09:30:00`,
+          type: 'success',
+          category: 'services',
+          linkModule: 'community_services',
+          targetRecordId: m.id,
+          actionText: 'View in MRF Eco-Station',
+        });
+      });
+
       // 9. Clean-Up Drive Volunteer Signups & Published Drives
       cleanUpVolunteers.forEach((v) => {
         list.push({
-          id: `notif-cs-vol-adm-${v.id}`,
+          id: `notif-cs-vol-adm-${v.id}-${v.attendanceVerified ? 'verified' : 'registered'}`,
           title: `Bayanihan Volunteer: ${v.residentName}`,
           message: `Resident ${v.residentName} (${v.purok}) signed up for Clean-Up Drive "${v.driveTitle}". Status: ${v.attendanceVerified ? 'Verified' : 'Registered'}.`,
           timestamp: v.registeredDate ? `${v.registeredDate} 08:00:00` : timeString,
@@ -2192,7 +2309,9 @@ export const CommunityServicesProvider: React.FC<{ children: React.ReactNode }> 
           id: `notif-cs-dump-adm-${r.id}-${statusSlug}`,
           title: `⚠️ Sanitation Alert: ${r.purok} (${r.status})`,
           message: `Report by ${r.residentName} (${r.contactNumber || 'Resident'}): ${r.violationType} at ${r.exactLocationOrLandmark}. Severity: ${r.severityLevel}. Action: ${r.assignedTanodOrCrew || r.resolutionRemarks || 'Pending Tanod / Eco Crew'}.`,
-          timestamp: r.reportedAt ? `${r.reportedAt} 08:00:00` : timeString,
+          timestamp: r.reportedAt
+            ? `${String(r.reportedAt).replace('T', ' ').slice(0, 16)}:00`
+            : timeString,
           type: isPending ? 'warning' : 'info',
           category: 'services',
           linkModule: 'community_services',
@@ -2214,8 +2333,22 @@ export const CommunityServicesProvider: React.FC<{ children: React.ReactNode }> 
       if (notificationId.includes('-ayu-') || notificationId.includes('-aics-')) {
         return { targetServiceDeskTab: 'ayuda', targetResidentTab: 'ayuda', targetSubTab: notificationId.includes('-aics-') ? 'financial-assistance' : 'ayuda' };
       }
-      if (notificationId.includes('-bulk-') || notificationId.includes('-vol-') || notificationId.includes('-dump-') || notificationId.includes('-drive-')) {
-        return { targetServiceDeskTab: 'solidwaste', targetResidentTab: 'waste', targetSubTab: notificationId.includes('-bulk-') ? 'bulk-pickup' : notificationId.includes('-vol-') ? 'volunteers' : notificationId.includes('-dump-') ? 'dumping-reports' : 'clean-up-drives' };
+      if (notificationId.includes('-bulk-') || notificationId.includes('-vol-') || notificationId.includes('-dump-') || notificationId.includes('-drive-') || notificationId.includes('-waste-') || notificationId.includes('-mrf-')) {
+        return {
+          targetServiceDeskTab: 'solidwaste',
+          targetResidentTab: 'waste',
+          targetSubTab: notificationId.includes('-bulk-')
+            ? 'bulk-pickup'
+            : notificationId.includes('-vol-')
+            ? 'volunteers'
+            : notificationId.includes('-dump-')
+            ? 'dumping-reports'
+            : notificationId.includes('-mrf-')
+            ? 'mrf-trade-in'
+            : notificationId.includes('-waste-')
+            ? 'collection-schedule'
+            : 'clean-up-drives',
+        };
       }
       if (notificationId.includes('-sk-') || notificationId.includes('-ast-') || notificationId.includes('-seniorben-')) {
         return { targetServiceDeskTab: 'youth_senior', targetResidentTab: 'youth_senior', targetSubTab: notificationId.includes('-sk-') ? 'sk-youth' : notificationId.includes('-ast-') ? 'assistive-devices' : 'senior-benefits' };
@@ -2245,10 +2378,12 @@ export const CommunityServicesProvider: React.FC<{ children: React.ReactNode }> 
     livelihoodAssistanceRequests,
     ayudaClaims,
     financialAssistanceRequests,
+    wasteSchedules,
     bulkWasteRequests,
     illegalDumpingReports,
     cleanUpVolunteers,
     cleanUpDrives,
+    mrfDropRecords,
     skRegistrations,
     skTournaments,
     seniorBenefitSchedules,

@@ -26,7 +26,7 @@ export const MRFDropModal: React.FC<MRFDropModalProps> = ({
   onClose,
   onSave,
 }) => {
-  const { residents, currentUser } = useBarangay();
+  const { residents, currentUser, settings } = useBarangay();
 
   const [residentId, setResidentId] = useState(residents[0]?.id || 'RES-001');
   const [itemCategory, setItemCategory] = useState<MRFRecyclablesDropRecord['itemCategory']>(
@@ -46,7 +46,10 @@ export const MRFDropModal: React.FC<MRFDropModalProps> = ({
   const residentName = selectedResident
     ? `${selectedResident.firstName} ${selectedResident.lastName}`
     : 'Juan Dela Cruz';
-  const purok = selectedResident?.purok || 'Purok 1 - Mabini';
+  const purok =
+    selectedResident?.purok ||
+    settings.puroks?.[0] ||
+    '';
 
   const rates = MRF_RATES_CONFIG[itemCategory] || { pricePerKg: 10, riceKgPerKg: 0.2, pointsPerKg: 10 };
   const calculatedCash = Math.round(weightKg * rates.pricePerKg);

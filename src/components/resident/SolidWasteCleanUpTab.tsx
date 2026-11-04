@@ -10,7 +10,6 @@ import {
   AlertCircle,
   Plus,
   X,
-  Sparkles,
   TreePine,
   Layers,
   Recycle,
@@ -944,7 +943,7 @@ export const SolidWasteCleanUpTab: React.FC<SolidWasteCleanUpTabProps> = ({
           <div className="bg-gradient-to-br from-emerald-900 to-teal-950 p-6 rounded-3xl text-white shadow-lg space-y-4 border border-emerald-700/50">
             <div className="flex items-center gap-2">
               <div className="p-2 rounded-xl bg-amber-400 text-slate-950">
-                <Sparkles className="w-5 h-5" />
+                
               </div>
               <div>
                 <h3 className="text-lg font-black">Barangay MRF "Trash-to-Rice / Cash" Trade-In Calculator</h3>

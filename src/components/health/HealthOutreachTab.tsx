@@ -10,7 +10,6 @@ import {
   Plus,
   Search,
   Check,
-  Sparkles,
   XCircle,
   AlertCircle,
 } from 'lucide-react';

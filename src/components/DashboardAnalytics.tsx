@@ -33,7 +33,6 @@ import {
   ArrowUpRight,
   Download,
   Calendar,
-  Sparkles,
   Layers,
   Scale,
   Award,

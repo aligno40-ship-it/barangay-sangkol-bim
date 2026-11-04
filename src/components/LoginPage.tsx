@@ -21,7 +21,6 @@ import {
   CheckCircle2,
   FileCheck2,
   MapPin,
-  Sparkles,
   Scale,
   ArrowLeft,
   KeyRound,

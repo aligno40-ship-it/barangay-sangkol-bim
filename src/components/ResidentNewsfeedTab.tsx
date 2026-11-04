@@ -12,7 +12,6 @@ import {
   Search,
   Printer,
   RotateCcw,
-  Sparkles,
   X,
   Check,
   Smartphone,
@@ -511,7 +510,7 @@ export const ResidentNewsfeedTab: React.FC<ResidentNewsfeedTabProps> = ({
                 : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
             }`}
           >
-            <Sparkles className="w-3.5 h-3.5" />
+            
             <span>All Feed ({activities.length + announcements.length + jobPostings.length + filteredAyudaDistributions.length})</span>
           </button>
 

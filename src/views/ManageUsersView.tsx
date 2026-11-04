@@ -25,7 +25,6 @@ import {
   Eye,
   EyeOff,
   RefreshCw,
-  Sparkles,
   Phone,
   Mail,
   MapPin,
@@ -1576,7 +1575,7 @@ export const ManageUsersView: React.FC = () => {
                     <div className="flex flex-wrap items-center gap-1.5">
                       {appUser.registrationType === 'existing_resident_match' || appUser.matchedResidentId ? (
                         <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-800 border border-emerald-200 text-[10px] font-bold">
-                          <Sparkles className="w-3 h-3 text-emerald-600" />
+                          
                           <span>Census Match: {appUser.matchedResidentId || 'Found'}</span>
                         </span>
                       ) : (
@@ -2296,7 +2295,7 @@ export const ManageUsersView: React.FC = () => {
                         }}
                         className="mt-1 px-2.5 py-1 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-[11px] font-bold transition-all flex items-center gap-1 cursor-pointer"
                       >
-                        <Sparkles className="w-3 h-3" />
+                        
                         <span>Auto-fill Credentials from Official ({officialCaptain.name})</span>
                       </button>
                     )}
@@ -2476,7 +2475,7 @@ export const ManageUsersView: React.FC = () => {
                         onClick={() => setFormData({ ...formData, password: generateRandomPassword() })}
                         className="text-[11px] text-indigo-600 hover:text-indigo-800 font-bold cursor-pointer flex items-center gap-1"
                       >
-                        <Sparkles className="w-3 h-3" />
+                        
                         <span>Generate Random</span>
                       </button>
                     </div>
@@ -2624,7 +2623,7 @@ export const ManageUsersView: React.FC = () => {
                     onClick={() => setNewAdminPassword(generateRandomPassword())}
                     className="text-[11px] text-indigo-600 hover:text-indigo-800 font-bold flex items-center gap-1 cursor-pointer"
                   >
-                    <Sparkles className="w-3 h-3" />
+                    
                     <span>Generate New</span>
                   </button>
                 </div>

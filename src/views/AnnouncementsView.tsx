@@ -23,7 +23,6 @@ import {
   CheckCircle2,
   Clock,
   MapPin,
-  Sparkles,
   Search,
   Filter,
   Check,
@@ -214,7 +213,7 @@ export const AnnouncementsView: React.FC = () => {
               : 'bg-indigo-900 border-indigo-500 text-indigo-100'
           }`}
         >
-          <Sparkles className="w-4 h-4 text-amber-300" />
+          
           <span>{toastMessage.text}</span>
         </div>
       )}
@@ -276,7 +275,7 @@ export const AnnouncementsView: React.FC = () => {
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               <span className="px-3 py-1 bg-amber-500/20 text-amber-300 border border-amber-500/40 rounded-full text-[11px] font-black uppercase tracking-wider flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                
                 <span>Latest Published Announcement</span>
               </span>
               <span className="px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700 text-xs font-semibold">

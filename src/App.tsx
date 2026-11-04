@@ -57,7 +57,6 @@ import {
   ExternalLink,
   ChevronRight,
   Globe,
-  Sparkles,
   RefreshCw,
   Zap,
   Check,

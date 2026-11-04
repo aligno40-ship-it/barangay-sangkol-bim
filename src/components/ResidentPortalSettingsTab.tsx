@@ -19,7 +19,6 @@ import {
   Mail,
   UserCheck,
   Lock,
-  Sparkles,
   HelpCircle,
   Radio,
   Sliders,

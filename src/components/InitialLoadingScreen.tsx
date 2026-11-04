@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { BarangaySangkolSeal, RepublicSeal } from './OfficialSeals';
-import { ShieldCheck, CheckCircle2, Sparkles, Database, Users, FileText, ArrowRight } from 'lucide-react';
+import { ShieldCheck, CheckCircle2, Database, Users, FileText, ArrowRight } from 'lucide-react';
 
 interface InitialLoadingScreenProps {
   onComplete: () => void;
@@ -115,7 +115,7 @@ export const InitialLoadingScreen: React.FC<InitialLoadingScreenProps> = ({ onCo
         {/* Title & Official Tagline */}
         <div className="space-y-1.5">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-950/80 border border-indigo-700/60 text-indigo-300 text-[11px] font-bold tracking-wider uppercase">
-            <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+            
             <span>Republika ng Pilipinas • Region IX</span>
           </div>
           <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight uppercase">

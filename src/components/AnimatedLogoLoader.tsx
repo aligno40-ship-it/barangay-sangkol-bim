@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { BarangaySangkolSeal, RepublicSeal } from './OfficialSeals';
-import { ShieldCheck, Sparkles, Lock, CheckCircle2 } from 'lucide-react';
+import { ShieldCheck, Lock, CheckCircle2 } from 'lucide-react';
 
 interface AnimatedLogoLoaderProps {
   mode?: 'header' | 'overlay' | 'inline' | 'hero';
@@ -193,27 +193,6 @@ export const AnimatedLogoLoader: React.FC<AnimatedLogoLoaderProps> = ({
               }}
               className="absolute w-36 h-36 rounded-full border border-dashed border-slate-300 dark:border-slate-700 pointer-events-none"
             />
-
-            {/* Orbiting Satellite Sparkle */}
-            <motion.div
-              animate={{ rotate: 360 }}
-              transition={{
-                duration: 3,
-                repeat: Infinity,
-                ease: 'linear',
-              }}
-              className="absolute w-28 h-28 pointer-events-none"
-            >
-              <div
-                className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3 rounded-full flex items-center justify-center shadow-lg"
-                style={{
-                  backgroundColor: isEmerald ? '#10B981' : '#3B82F6',
-                  boxShadow: `0 0 10px ${primaryColor}`,
-                }}
-              >
-                <Sparkles className="w-2 h-2 text-white" />
-              </div>
-            </motion.div>
 
             {/* Center Animated Logo Seal Badge */}
             <motion.div

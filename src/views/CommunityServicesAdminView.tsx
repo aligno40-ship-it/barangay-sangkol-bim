@@ -8,7 +8,6 @@ import {
   Briefcase,
   Gift,
   Trash2,
-  Sparkles,
   Search,
   Filter,
   Plus,
@@ -1713,7 +1712,7 @@ export const CommunityServicesAdminView: React.FC = () => {
 
                     {trn.starterKitProvided && (
                       <div className="mt-2 p-1.5 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-lg text-[10px] font-bold text-emerald-800 dark:text-emerald-300 flex items-center gap-1">
-                        <Sparkles className="w-3 h-3 text-emerald-600 shrink-0" />
+                        
                         <span>Includes Free Starter Toolset & Certification</span>
                       </div>
                     )}

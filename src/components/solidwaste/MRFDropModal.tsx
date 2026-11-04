@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Recycle, DollarSign, Scale, Gift, User, CheckCircle2, Sparkles } from 'lucide-react';
+import { X, Recycle, DollarSign, Scale, Gift, User, CheckCircle2} from 'lucide-react';
 import { MRFRecyclablesDropRecord } from '../../types/residentServices';
 import { useBarangay } from '../../context/BarangayContext';
 

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Mail, Check, Copy, Shield, Sparkles, Clock, X, ExternalLink, AlertCircle, ArrowRight } from 'lucide-react';
+import { Mail, Check, Copy, Shield, Clock, X, ExternalLink, AlertCircle, ArrowRight } from 'lucide-react';
 import { GmailOTPSession } from '../utils/security';
 import { BarangaySangkolSeal, RepublicSeal } from './OfficialSeals';
 
@@ -162,7 +162,7 @@ export const GmailNotificationSimulator: React.FC<GmailNotificationSimulatorProp
                   onClick={handleAutoFillClick}
                   className="flex-1 sm:flex-none px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-xs transition-all cursor-pointer active:scale-95"
                 >
-                  <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+                  
                   <span>Auto-Fill</span>
                 </button>
               )}

@@ -21,7 +21,6 @@ import {
   Calendar,
   MessageSquare,
   Clock,
-  Sparkles,
   RefreshCw,
   Trash2,
   X,
@@ -840,7 +839,7 @@ export const SMSDispatchCenterModal: React.FC<SMSDispatchCenterModalProps> = ({
                     }}
                     className="px-3 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-xl text-xs font-bold transition-colors cursor-pointer flex items-center gap-1.5"
                   >
-                    <Sparkles className="w-3.5 h-3.5 text-indigo-600" />
+                    
                     <span>Clear Test Fields</span>
                   </button>
                 </div>

@@ -48,7 +48,6 @@ import {
   Eye,
   LayoutGrid,
   Table,
-  Sparkles,
   Edit2,
   BadgeCheck,
   HelpCircle,
@@ -2014,7 +2013,7 @@ export const ResidentPortalView: React.FC<ResidentPortalViewProps> = ({ initialT
 
             {renewalNotice && (
               <div className="p-4 bg-indigo-50 border border-indigo-200 text-indigo-950 rounded-2xl text-xs flex items-start gap-2.5 animate-in fade-in shadow-2xs">
-                <Sparkles className="w-4 h-4 text-indigo-600 shrink-0 mt-0.5" />
+                
                 <div className="flex-1">
                   <p className="font-bold text-indigo-900">Fast Renewal Form Pre-filled</p>
                   <p className="text-indigo-800 text-[11px] mt-0.5">{renewalNotice}</p>
@@ -2349,7 +2348,7 @@ export const ResidentPortalView: React.FC<ResidentPortalViewProps> = ({ initialT
             <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-2xs space-y-1.5">
               <div className="flex items-center justify-between text-slate-500 text-xs">
                 <span className="font-bold text-slate-700 uppercase tracking-wider text-[10px]">Free / Waived Grants</span>
-                <Sparkles className="w-4 h-4 text-amber-600" />
+                
               </div>
               <p className="text-2xl font-black text-amber-700">{waivedArchivedCount}</p>
               <p className="text-[11px] text-slate-500">Indigent assistance & RA 11261 grants</p>
@@ -2674,7 +2673,7 @@ export const ResidentPortalView: React.FC<ResidentPortalViewProps> = ({ initialT
                           className="px-2.5 py-1.5 text-indigo-700 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 rounded-xl text-[11px] font-bold border border-indigo-200 transition-colors flex items-center gap-1 cursor-pointer"
                           title="Pre-fill form to request a renewal"
                         >
-                          <Sparkles className="w-3 h-3 text-indigo-600" />
+                          
                           <span>Renew</span>
                         </button>
                       </div>

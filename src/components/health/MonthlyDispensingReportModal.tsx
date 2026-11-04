@@ -16,7 +16,6 @@ import {
   Building,
   Filter,
   Layers,
-  Sparkles,
   Search,
 } from 'lucide-react';
 import {

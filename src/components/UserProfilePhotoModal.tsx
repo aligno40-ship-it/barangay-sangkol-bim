@@ -13,7 +13,6 @@ import {
   Image as ImageIcon,
   Check,
   X,
-  Sparkles,
   RefreshCw,
   AlertCircle,
   Shield,
@@ -392,7 +391,7 @@ export const UserProfilePhotoModal: React.FC<UserProfilePhotoModalProps> = ({
                     : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
-                <Sparkles className="w-3.5 h-3.5" />
+                
                 <span>Gallery</span>
               </button>
             </div>
@@ -436,7 +435,7 @@ export const UserProfilePhotoModal: React.FC<UserProfilePhotoModalProps> = ({
                 </div>
 
                 <div className="p-3 bg-slate-50 rounded-xl border border-slate-200/80 text-[11px] text-slate-600 flex items-center gap-2">
-                  <Sparkles className="w-4 h-4 text-amber-500 shrink-0" />
+                  
                   <span>Images are automatically compressed to ensure lightning-fast system loading.</span>
                 </div>
               </div>

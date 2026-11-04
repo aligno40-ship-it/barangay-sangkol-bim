@@ -29,7 +29,6 @@ import {
   Send,
   BellRing,
   MapPin,
-  Sparkles,
   Inbox,
   Filter,
   QrCode,

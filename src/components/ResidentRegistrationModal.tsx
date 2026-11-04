@@ -30,7 +30,6 @@ import {
   Upload,
   Camera,
   Search,
-  Sparkles,
   Info,
   ArrowRight,
   Loader2,
@@ -413,7 +412,7 @@ export const ResidentRegistrationModal: React.FC<ResidentRegistrationModalProps>
 
                 {submittedResult.matched && (
                   <div className="mt-2 p-2 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl text-[11px] flex items-center gap-1.5 font-medium">
-                    <Sparkles className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                    
                     <span>Civil Census match verified! Faster admin approval queue.</span>
                   </div>
                 )}
@@ -742,7 +741,7 @@ export const ResidentRegistrationModal: React.FC<ResidentRegistrationModalProps>
                     <div className="p-3.5 bg-emerald-50 border border-emerald-200 rounded-2xl text-xs text-emerald-900 space-y-1.5 animate-in fade-in">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <Sparkles className="w-4 h-4 text-emerald-600 shrink-0" />
+                          
                           <span className="font-bold text-emerald-950">
                             Census Record Matched: {matchResult.matchedResident.firstName} {matchResult.matchedResident.lastName}
                           </span>

@@ -8,7 +8,6 @@ import {
   CheckCircle2,
   Calendar,
   Layers,
-  Sparkles,
   HeartPulse,
   ShieldCheck,
   Zap,
@@ -226,7 +225,7 @@ export const PharmacyInventoryModal: React.FC<PharmacyInventoryModalProps> = ({
                   Pharmacy Registry
                 </span>
                 <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-1">
-                  <Sparkles className="w-3 h-3" /> Smart Category Engine Active
+                   Smart Category Engine Active
                 </span>
               </div>
               <h3 className="text-base font-black text-slate-900 dark:text-white">
@@ -294,7 +293,7 @@ export const PharmacyInventoryModal: React.FC<PharmacyInventoryModalProps> = ({
               </label>
               {autoDetectedCategory && (
                 <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-md bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800 flex items-center gap-1">
-                  <Sparkles className="w-3 h-3" /> Auto-set: {autoDetectedCategory}
+                   Auto-set: {autoDetectedCategory}
                 </span>
               )}
             </div>
@@ -311,7 +310,7 @@ export const PharmacyInventoryModal: React.FC<PharmacyInventoryModalProps> = ({
               }}
               className="w-full px-3 py-2 border-2 border-rose-400 dark:border-rose-600 rounded-xl bg-white dark:bg-slate-900 font-bold text-slate-900 dark:text-white focus:ring-2 focus:ring-rose-500 cursor-pointer shadow-xs"
             >
-              <optgroup label="⭐ Primary Cardiovascular & NCD Allocation">
+              <optgroup label="Primary Cardiovascular & NCD Allocation">
                 <option value="Antihypertensive">
                   ❤️ Antihypertensive (Cardiovascular / Blood Pressure Maintenance)
                 </option>
@@ -521,4 +520,3 @@ export const PharmacyInventoryModal: React.FC<PharmacyInventoryModalProps> = ({
     </div>
   );
 };
-

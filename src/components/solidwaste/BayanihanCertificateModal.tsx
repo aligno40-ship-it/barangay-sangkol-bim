@@ -8,7 +8,6 @@ import {
   Calendar,
   Clock,
   MapPin,
-  Sparkles,
   TreePine,
   Download,
 } from 'lucide-react';

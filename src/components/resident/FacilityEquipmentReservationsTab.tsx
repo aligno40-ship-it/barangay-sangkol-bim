@@ -13,7 +13,6 @@ import {
   Check,
   X,
   FileCheck,
-  Sparkles,
   Info,
   Layers,
   MapPin,

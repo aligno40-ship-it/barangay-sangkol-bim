@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'motion/react';
 import { BarangaySangkolSeal, RepublicSeal } from './OfficialSeals';
-import { Loader2, Sparkles, CheckCircle2, ShieldCheck } from 'lucide-react';
+import { Loader2, CheckCircle2, ShieldCheck } from 'lucide-react';
 
 /**
  * Base Shimmer Skeleton Element

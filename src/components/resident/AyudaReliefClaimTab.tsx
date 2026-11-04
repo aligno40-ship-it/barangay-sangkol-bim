@@ -12,7 +12,6 @@ import {
   X,
   Printer,
   ShieldCheck,
-  Sparkles,
   Package,
   Layers,
   FileText,

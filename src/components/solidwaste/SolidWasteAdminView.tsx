@@ -17,7 +17,6 @@ import {
   ShieldCheck,
   Phone,
   Scale,
-  Sparkles,
   DollarSign,
   Gift,
   ArrowRight,

@@ -10,7 +10,6 @@ import {
   AlertCircle,
   Plus,
   X,
-  Sparkles,
   Award,
   Accessibility,
   Heart,

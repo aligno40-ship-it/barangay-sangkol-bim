@@ -6,7 +6,6 @@ import {
   CheckCircle2,
   AlertCircle,
   ShieldCheck,
-  Sparkles,
   Upload,
   X,
   Eye,
@@ -555,7 +554,7 @@ export const FaceVerificationCapture: React.FC<FaceVerificationCaptureProps> = (
                 disabled={!cameraActive || isCapturing}
                 className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-emerald-300 border border-emerald-500/40 text-xs font-bold transition-colors cursor-pointer flex items-center gap-1.5 shadow-sm disabled:opacity-40"
               >
-                <Sparkles className="w-3.5 h-3.5" />
+                
                 <span>3s Timer</span>
               </button>
 

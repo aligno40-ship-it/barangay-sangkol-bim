@@ -9,7 +9,6 @@ import {
   Sliders,
   ExternalLink,
   ChevronRight,
-  Sparkles,
 } from 'lucide-react';
 import {
   getCookieConsent,
@@ -239,7 +238,7 @@ export const CookieConsentBanner: React.FC<CookieConsentBannerProps> = ({
               <div className="p-3.5 bg-slate-50 dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-700 space-y-2">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Sparkles className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                    
                     <span className="font-bold text-slate-900 dark:text-white text-xs">
                       Functional & Visual Preferences
                     </span>

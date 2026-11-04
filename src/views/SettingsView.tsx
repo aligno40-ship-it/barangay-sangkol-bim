@@ -17,7 +17,6 @@ import {
   CheckCircle2,
   Image as ImageIcon,
   RotateCcw,
-  Sparkles,
   ExternalLink,
   Shield,
   FileCheck,
@@ -56,6 +55,7 @@ import {
   getSavedNotificationSound,
   saveNotificationSound,
   previewNotificationSound,
+  NOTIFICATION_SOUND_OPTIONS,
   type NotificationSound,
 } from '../utils/notificationTone';
 
@@ -681,11 +681,9 @@ export const SettingsView: React.FC = () => {
                 }}
                 className="h-9 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-semibold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-indigo-500/20"
               >
-                <option value="bell">Bell</option>
-                <option value="chime">Chime</option>
-                <option value="ding">Ding</option>
-                <option value="alert">Alert</option>
-                <option value="none">None</option>
+                {NOTIFICATION_SOUND_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>{option.label}</option>
+                ))}
               </select>
               <button
                 type="button"
@@ -854,7 +852,7 @@ export const SettingsView: React.FC = () => {
             {/* Quick Live Preview Notice */}
             <div className="p-3.5 bg-indigo-50/70 dark:bg-indigo-950/40 border border-indigo-100 dark:border-indigo-800/60 rounded-xl flex items-center justify-between gap-3 text-xs text-indigo-900 dark:text-indigo-200">
               <div className="flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0" />
+                
                 <span>
                   Theme preference is stored locally and synchronizes instantly across all barangay modules, tables, modals, and charts.
                 </span>
@@ -1212,7 +1210,7 @@ export const SettingsView: React.FC = () => {
                 {/* System Propagation Notice */}
                 <div className="p-3.5 bg-indigo-50/70 dark:bg-indigo-950/40 border border-indigo-100 dark:border-indigo-800/60 rounded-xl text-xs text-indigo-900 dark:text-indigo-200 space-y-1">
                   <p className="font-bold flex items-center gap-1.5">
-                    <Sparkles className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0" />
+                    
                     <span>Automatic System-Wide Seal Propagation</span>
                   </p>
                   <p className="text-[11px] text-indigo-800 dark:text-indigo-300 leading-relaxed">
@@ -1417,7 +1415,7 @@ export const SettingsView: React.FC = () => {
                   {/* Document Alignment Notice */}
                   <div className="p-3.5 bg-amber-50/70 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 rounded-xl text-xs text-amber-900 dark:text-amber-200 space-y-1">
                     <p className="font-bold flex items-center gap-1.5">
-                      <Sparkles className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
+                      
                       <span>Official Dual Header Standard</span>
                     </p>
                     <p className="text-[11px] text-amber-800 dark:text-amber-300 leading-relaxed">

@@ -33,7 +33,6 @@ import {
   Users,
   Calendar,
   Layers,
-  Sparkles,
   Radio,
   Smartphone,
   Mail,

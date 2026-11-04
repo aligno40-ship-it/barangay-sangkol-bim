@@ -1,4 +1,16 @@
-export type NotificationSound = 'bell' | 'chime' | 'ding' | 'alert' | 'none';
+export const NOTIFICATION_SOUND_OPTIONS = [
+  { value: 'bell', label: 'Bell' },
+  { value: 'chime', label: 'Chime' },
+  { value: 'ding', label: 'Ding' },
+  { value: 'alert', label: 'Alert' },
+  { value: 'soft-chime', label: 'Soft Chime' },
+  { value: 'double-bell', label: 'Double Bell' },
+  { value: 'digital', label: 'Digital' },
+  { value: 'marimba', label: 'Marimba' },
+  { value: 'none', label: 'None' },
+] as const;
+
+export type NotificationSound = (typeof NOTIFICATION_SOUND_OPTIONS)[number]['value'];
 
 export const NOTIFICATION_SOUND_KEY = 'notificationSound';
 
@@ -8,9 +20,7 @@ let pendingSound: NotificationSound | null = null;
 export function getSavedNotificationSound(): NotificationSound {
   if (typeof window === 'undefined') return 'bell';
   const value = window.localStorage.getItem(NOTIFICATION_SOUND_KEY);
-  return value === 'bell' || value === 'chime' || value === 'ding' || value === 'alert' || value === 'none'
-    ? value
-    : 'bell';
+  return NOTIFICATION_SOUND_OPTIONS.find((option) => option.value === value)?.value ?? 'bell';
 }
 
 export function saveNotificationSound(choice: NotificationSound): void {
@@ -47,7 +57,8 @@ export function playNotificationSound(choice?: NotificationSound, allowPending =
   const selected = choice || getSavedNotificationSound();
   if (selected === 'none') return;
 
-  const audio = new Audio(`/sounds/${selected}.mp3`);
+  const audioExtension = ['soft-chime', 'double-bell', 'digital', 'marimba'].includes(selected) ? 'wav' : 'mp3';
+  const audio = new Audio(`/sounds/${selected}.${audioExtension}`);
   audio.volume = 0.7;
   void audio.play().catch(() => {
     if (allowPending || !isUnlocked) {

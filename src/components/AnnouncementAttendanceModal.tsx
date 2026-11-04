@@ -23,7 +23,6 @@ import {
   XCircle,
   FileSpreadsheet,
   ChevronDown,
-  Sparkles,
   Phone,
   Home,
   ShieldCheck,

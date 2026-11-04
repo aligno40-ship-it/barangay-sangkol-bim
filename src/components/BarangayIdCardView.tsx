@@ -9,7 +9,6 @@ import {
   Printer, 
   Shield, 
   Info, 
-  Sparkles, 
   UserCheck, 
   Flame, 
   Users, 
@@ -151,7 +150,7 @@ export const BarangayIdCardView: React.FC<BarangayIdCardViewProps> = ({
           <div className="bg-white p-4 rounded-xl border border-indigo-100 text-xs space-y-2.5 animate-fadeIn shadow-xs">
             <div className="flex items-center justify-between">
               <span className="font-extrabold text-indigo-900 flex items-center gap-1.5 uppercase tracking-wide">
-                <Sparkles className="w-3.5 h-3.5 text-indigo-600" />
+                
                 Modern Barangay Color-Coding Protocol:
               </span>
               <button

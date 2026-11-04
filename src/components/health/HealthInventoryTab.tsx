@@ -10,7 +10,6 @@ import {
   Pill,
   Filter,
   Layers,
-  Sparkles,
 } from 'lucide-react';
 import { PharmacyInventoryItem } from '../../types/residentServices';
 import { RecentSearchesInput } from '../RecentSearchesInput';

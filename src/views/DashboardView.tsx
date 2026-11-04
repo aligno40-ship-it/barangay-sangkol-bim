@@ -20,7 +20,6 @@ import {
   UserPlus,
   PlusCircle,
   Megaphone,
-  Sparkles,
   FolderArchive,
   FileText,
   ChevronRight,
@@ -298,7 +297,7 @@ export const DashboardView: React.FC = () => {
       <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 flex-wrap">
-            <Sparkles className="w-4 h-4 text-indigo-600" />
+            
             <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700">
               Quick Actions & Common Administrative Tasks
             </h3>

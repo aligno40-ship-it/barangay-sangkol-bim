@@ -13,7 +13,6 @@ import {
   Send,
   Search,
   Award,
-  Sparkles,
   ExternalLink,
   BookOpen,
   FileCheck2,
@@ -506,7 +505,7 @@ export const TrabahoLivelihoodTab: React.FC<TrabahoLivelihoodTabProps> = ({
                       </p>
                       {trn.starterKitProvided && (
                         <p className="text-[10px] font-bold text-emerald-700 flex items-center gap-1 pt-0.5">
-                          <Sparkles className="w-3 h-3 text-emerald-600" />
+                          
                           <span>Includes Free Livelihood Starter Toolset & Certification</span>
                         </p>
                       )}
@@ -878,7 +877,7 @@ export const TrabahoLivelihoodTab: React.FC<TrabahoLivelihoodTabProps> = ({
                 </div>
                 {selectedTrainingForEnroll.starterKitProvided && (
                   <p className="text-[10px] font-bold text-emerald-800 flex items-center gap-1 pt-0.5">
-                    <Sparkles className="w-3 h-3 text-emerald-600" />
+                    
                     <span>Free Official Livelihood Starter Kit & TESDA/DTI Certificate upon graduation</span>
                   </p>
                 )}

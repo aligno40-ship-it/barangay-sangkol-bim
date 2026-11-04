@@ -22,7 +22,6 @@ import {
   AlertCircle,
   ExternalLink,
   Award,
-  Sparkles,
   QrCode,
 } from 'lucide-react';
 
@@ -337,7 +336,7 @@ export const CertificateDetailModal: React.FC<CertificateDetailModalProps> = ({
                 }}
                 className="px-3.5 py-2 bg-white hover:bg-slate-100 text-indigo-700 font-bold rounded-xl text-xs border border-slate-300 transition-colors flex items-center gap-1.5 cursor-pointer"
               >
-                <Sparkles className="w-3.5 h-3.5" />
+                
                 <span>Apply for Renewal</span>
               </button>
             )}

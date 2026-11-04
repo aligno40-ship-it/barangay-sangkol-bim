@@ -17,7 +17,6 @@ import {
   ArrowRight,
   AlertCircle,
   Calendar,
-  Sparkles,
   Award,
   CheckCircle2,
   Check,

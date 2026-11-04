@@ -23,7 +23,6 @@ import {
   XCircle,
   FileSpreadsheet,
   ChevronDown,
-  Sparkles,
   Phone,
   Home,
   ShieldCheck,
@@ -664,7 +663,6 @@ export const ActivityAttendanceModal: React.FC<ActivityAttendanceModalProps> = (
                                   }`}
                                 >
                                   {normalizedStatus === 'Present / Attended' && <Check className="w-3.5 h-3.5" />}
-                                  {normalizedStatus === 'Walk-In' && <Sparkles className="w-3.5 h-3.5" />}
                                   {normalizedStatus}
                                 </span>
                                 {attendee.verifiedBy && (

@@ -16,7 +16,6 @@ import {
   CheckCircle2,
   X,
   Eye,
-  Sparkles,
   Info,
   Clock,
   Building,

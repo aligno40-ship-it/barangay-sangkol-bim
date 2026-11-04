@@ -3,7 +3,6 @@ import {
   Lock,
   Eye,
   EyeOff,
-  Sparkles,
   CheckCircle2,
   XCircle,
   Copy,
@@ -195,7 +194,7 @@ export const PasswordSecurityField: React.FC<PasswordSecurityFieldProps> = ({
                 className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 text-[10px] font-bold transition-colors cursor-pointer shadow-2xs"
                 title="Generate an ultra-secure 14-character password"
               >
-                <Sparkles className="w-3 h-3 text-emerald-600" />
+                
                 <span>Auto-Generate Secure</span>
               </button>
               {copied && (

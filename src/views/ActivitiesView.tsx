@@ -22,7 +22,6 @@ import {
   CalendarCheck,
   UserCheck,
   Printer,
-  Sparkles,
   ChevronRight,
   ShieldCheck,
   FileSpreadsheet,

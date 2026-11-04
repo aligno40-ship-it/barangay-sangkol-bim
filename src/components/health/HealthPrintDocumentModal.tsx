@@ -32,11 +32,35 @@ export type HealthPrintDocType =
 interface HealthPrintDocumentModalProps {
   document: HealthPrintDocType | null;
   onClose: () => void;
+  healthMidwifeName?: string;
+  healthPhysicianName?: string;
+  healthCenterLogoUrl?: string;
+  dohLogoUrl?: string;
+  barangayName?: string;
+  municipality?: string;
+  province?: string;
+  region?: string;
+  zipCode?: string;
+  hallAddress?: string;
+  contactNumber?: string;
+  email?: string;
 }
 
 export const HealthPrintDocumentModal: React.FC<HealthPrintDocumentModalProps> = ({
   document,
   onClose,
+  healthMidwifeName = '',
+  healthPhysicianName = '',
+  healthCenterLogoUrl,
+  dohLogoUrl,
+  barangayName = '',
+  municipality = '',
+  province = '',
+  region = '',
+  zipCode = '',
+  hallAddress = '',
+  contactNumber = '',
+  email = '',
 }) => {
   if (!document) return null;
 
@@ -49,6 +73,10 @@ export const HealthPrintDocumentModal: React.FC<HealthPrintDocumentModalProps> =
     month: 'long',
     day: 'numeric',
   });
+  const jurisdiction = [barangayName, municipality, province, region, zipCode]
+    .filter(Boolean)
+    .join(' • ');
+  const contactDetails = [hallAddress, contactNumber, email].filter(Boolean).join(' • ');
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-xs animate-fadeIn overflow-y-auto">
@@ -83,21 +111,23 @@ export const HealthPrintDocumentModal: React.FC<HealthPrintDocumentModalProps> =
         <div className="p-6 sm:p-8 bg-white text-slate-900 space-y-6 print:p-0 print:space-y-4 font-sans text-xs">
           {/* Official Letterhead Header */}
           <div className="border-b-2 border-slate-800 pb-4 text-center relative">
-            <div className="flex items-center justify-center gap-3">
-              <div className="w-12 h-12 rounded-full bg-blue-900 text-white flex items-center justify-center font-black text-sm shadow-inner shrink-0 border-2 border-amber-400">
-                BHS
+            <div className="flex items-center justify-between gap-3">
+              <div className="w-12 h-12 shrink-0 flex items-center justify-center">
+                {healthCenterLogoUrl && (
+                  <img src={healthCenterLogoUrl} alt="Health Center logo" className="max-w-full max-h-full object-contain" />
+                )}
               </div>
-              <div>
-                <p className="text-[10px] font-bold tracking-wider uppercase text-slate-500">Republic of the Philippines • City Health Department</p>
+              <div className="min-w-0 flex-1">
+                <p className="text-[10px] font-bold tracking-wider uppercase text-slate-500">{jurisdiction}</p>
                 <h1 className="text-base sm:text-lg font-black tracking-tight text-slate-900 uppercase">
-                  Barangay Sangkol Primary Health Station
+                  {barangayName ? `${barangayName} Primary Health Station` : 'Primary Health Station'}
                 </h1>
-                <p className="text-[11px] font-medium text-slate-600">
-                  Purok Health Center, Barangay Sangkol • Tel: (088) 822-4410 • Email: health.sangkol@gov.ph
-                </p>
+                {contactDetails && <p className="text-[11px] font-medium text-slate-600">{contactDetails}</p>}
               </div>
-              <div className="w-12 h-12 rounded-full bg-emerald-800 text-white flex items-center justify-center font-black text-sm shadow-inner shrink-0 border-2 border-white">
-                DOH
+              <div className="w-12 h-12 shrink-0 flex items-center justify-center">
+                {dohLogoUrl && (
+                  <img src={dohLogoUrl} alt="Department of Health logo" className="max-w-full max-h-full object-contain" />
+                )}
               </div>
             </div>
 
@@ -274,7 +304,7 @@ export const HealthPrintDocumentModal: React.FC<HealthPrintDocumentModalProps> =
                   </div>
                   <div>
                     <span className="text-slate-500 block">Batch / Lot Dispensed:</span>
-                    <strong className="font-mono text-slate-800">{document.data.batchDispensed || 'LOT-LOS-2026A'}</strong>
+                    <strong className="font-mono text-slate-800">{document.data.batchDispensed || 'Not recorded'}</strong>
                   </div>
                   <div>
                     <span className="text-slate-500 block">Prescription Requirement:</span>
@@ -340,11 +370,11 @@ export const HealthPrintDocumentModal: React.FC<HealthPrintDocumentModalProps> =
                   </div>
                   <div>
                     <span className="text-slate-500 block">Vaccine Batch / Lot No:</span>
-                    <strong className="font-mono text-slate-800">{document.data.batchOrLotNumber || 'LOT-PENTA-8832'}</strong>
+                    <strong className="font-mono text-slate-800">{document.data.batchOrLotNumber || 'Not recorded'}</strong>
                   </div>
                   <div>
                     <span className="text-slate-500 block">Injection Site:</span>
-                    <strong className="text-slate-800">{document.data.injectionSite || 'Right Anterolateral Thigh'}</strong>
+                    <strong className="text-slate-800">{document.data.injectionSite || 'Not recorded'}</strong>
                   </div>
                 </div>
 
@@ -417,8 +447,8 @@ export const HealthPrintDocumentModal: React.FC<HealthPrintDocumentModalProps> =
                   <QrCode className="w-14 h-14 text-slate-800" />
                 </div>
                 <div className="text-[10px] text-slate-500 leading-tight">
-                  <p className="font-mono font-bold text-slate-700">AUTH: BHS-VLD-2026-X89</p>
-                  <p>Digitally validated via Barangay Health Information System.</p>
+                  <p className="font-mono font-bold text-slate-700">Document Ref: {document.data.id}</p>
+                  <p>Health Desk document reference.</p>
                   <p className="text-emerald-700 font-semibold mt-0.5">✓ Official Health Document</p>
                 </div>
               </div>
@@ -427,13 +457,13 @@ export const HealthPrintDocumentModal: React.FC<HealthPrintDocumentModalProps> =
               <div className="flex items-center gap-8 text-center text-xs">
                 <div>
                   <div className="w-36 border-b border-slate-800 pb-1">
-                    <p className="font-bold text-slate-900 text-[11px]">Midwife Carmela Reyes, R.M.</p>
+                    <p className="font-bold text-slate-900 text-[11px]">{healthMidwifeName}</p>
                   </div>
                   <p className="text-[10px] text-slate-500 mt-0.5">Barangay Midwife / Dispensary</p>
                 </div>
                 <div>
                   <div className="w-36 border-b border-slate-800 pb-1">
-                    <p className="font-bold text-slate-900 text-[11px]">Dr. Evelyn Morales, MD</p>
+                    <p className="font-bold text-slate-900 text-[11px]">{healthPhysicianName}</p>
                   </div>
                   <p className="text-[10px] text-slate-500 mt-0.5">City Visiting Health Physician</p>
                 </div>
@@ -443,7 +473,7 @@ export const HealthPrintDocumentModal: React.FC<HealthPrintDocumentModalProps> =
 
           {/* Document Footer */}
           <div className="text-center text-[10px] text-slate-400 pt-2 border-t border-slate-100 print:text-[9px]">
-            This slip serves as an official clinical voucher from the Barangay Sangkol Health Station. Issued on {currentDate}. Not valid without official dry seal.
+            {barangayName || 'Barangay'} Health Station document. Issued on {currentDate}.
           </div>
         </div>
       </div>

@@ -47,9 +47,9 @@ export const HealthOutreachTab: React.FC<HealthOutreachTabProps> = ({
   missions = [],
   immunizations = [],
   mode,
-  residentId = 'RES-CURRENT',
-  residentName = 'Resident Beneficiary',
-  purok = 'Barangay Sangkol',
+  residentId = '',
+  residentName = '',
+  purok = '',
   onOpenMissionModal,
   onOpenImmunizationModal,
   onRegisterMission,
@@ -390,8 +390,8 @@ export const HealthOutreachTab: React.FC<HealthOutreachTabProps> = ({
                           {imm.dueDate}
                         </td>
                         <td className="p-3.5 text-slate-600 dark:text-slate-400">
-                          <p className="font-mono text-[11px] text-slate-800 dark:text-slate-200">{imm.batchNumber || imm.batchOrLotNumber || 'LOT-EPI-2026'}</p>
-                          <p className="text-[11px] text-slate-400">{imm.injectionSite || 'Left Anterolateral Thigh'}</p>
+                          <p className="font-mono text-[11px] text-slate-800 dark:text-slate-200">{imm.batchNumber || imm.batchOrLotNumber || 'Not recorded'}</p>
+                          <p className="text-[11px] text-slate-400">{imm.injectionSite || 'Not recorded'}</p>
                         </td>
                         <td className="p-3.5">
                           <span
@@ -444,4 +444,3 @@ export const HealthOutreachTab: React.FC<HealthOutreachTabProps> = ({
     </div>
   );
 };
-

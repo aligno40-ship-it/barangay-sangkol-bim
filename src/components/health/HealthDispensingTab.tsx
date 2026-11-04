@@ -25,6 +25,7 @@ import { MonthlyDispensingReportModal } from './MonthlyDispensingReportModal';
 import { useBarangay } from '../../context/BarangayContext';
 import { isResidentRecordOwner } from '../../utils/residentAccountFilter';
 import { RecentSearchesInput } from '../RecentSearchesInput';
+import { HealthPrintSignatorySettings } from './HealthPrintSignatorySettings';
 
 interface HealthDispensingTabProps {
   requests: MedicineRefillRequest[];
@@ -108,6 +109,8 @@ export const HealthDispensingTab: React.FC<HealthDispensingTabProps> = ({
 
   return (
     <div className="space-y-5">
+      {mode === 'admin' && <HealthPrintSignatorySettings />}
+
       {/* Top Banner & Quick Metrics */}
       <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
@@ -371,6 +374,14 @@ export const HealthDispensingTab: React.FC<HealthDispensingTabProps> = ({
         municipality={settings?.municipality}
         province={settings?.province}
         punongBarangay={settings?.punongBarangay}
+        healthMidwifeName={settings?.healthMidwifeName}
+        healthCenterLogoUrl={settings?.healthCenterLogoUrl}
+        dohLogoUrl={settings?.dohLogoUrl}
+        region={settings?.region}
+        zipCode={settings?.zipCode}
+        hallAddress={settings?.hallAddress}
+        contactNumber={settings?.contactNumber}
+        email={settings?.email}
       />
     </div>
   );

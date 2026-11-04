@@ -249,7 +249,7 @@ export const HealthInventoryTab: React.FC<HealthInventoryTabProps> = ({
                           <span className="text-[10px] text-slate-400">Reorder at: {threshold}</span>
                         </td>
                         <td className="p-3.5 font-mono text-[11px]">
-                          <p className="text-slate-700 dark:text-slate-300 font-bold">{item.batchNumber || 'BATCH-2026'}</p>
+                          <p className="text-slate-700 dark:text-slate-300 font-bold">{item.batchNumber || 'Not recorded'}</p>
                           <p className="text-slate-400">Exp: {item.expiryDate}</p>
                         </td>
                         <td className="p-3.5">

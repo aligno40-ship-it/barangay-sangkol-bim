@@ -822,6 +822,14 @@ export const BarangayProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [settings, setSettings] = useState<BarangaySettings>(() => ({
     ...INITIAL_SETTINGS,
   }));
+  const settingsRef = useRef(settings);
+  const settingsSaveQueueRef = useRef<Promise<void>>(Promise.resolve());
+  const settingsWriteVersionRef = useRef(0);
+  const settingsWritesInProgressRef = useRef(0);
+
+  useEffect(() => {
+    settingsRef.current = settings;
+  }, [settings]);
 
   const [users, setUsers] = useState<SystemUser[]>([]);
   const [userNameSyncNoticeCount, setUserNameSyncNoticeCount] = useState(0);
@@ -1658,6 +1666,8 @@ export const BarangayProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     isSyncInProgressRef.current = true;
     setIsSupabaseSyncing(true);
     setSupabaseError(null);
+    const settingsVersionAtFetch = settingsWriteVersionRef.current;
+    const settingsWriteWasPendingAtFetch = settingsWritesInProgressRef.current > 0;
     const isInitialRefresh = !isInitialAuthRestoreComplete.current;
     try {
       const data = await fetchFullDatabase();
@@ -1847,8 +1857,14 @@ export const BarangayProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       setFiles(data.files);
       setSmsAlerts(data.smsAlerts);
       setAuditLogs(data.auditLogs);
-      if (data.settings) {
+      if (
+        data.settings &&
+        !settingsWriteWasPendingAtFetch &&
+        settingsVersionAtFetch === settingsWriteVersionRef.current &&
+        settingsWritesInProgressRef.current === 0
+      ) {
         const s = { ...INITIAL_SETTINGS, ...data.settings };
+        settingsRef.current = s;
         setSettings(s);
       }
 
@@ -3609,14 +3625,15 @@ export const BarangayProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   };
 
   const updateSettings = async (newSettings: Partial<BarangaySettings>): Promise<void> => {
-    const oldPb = settings.punongBarangay;
-    const oldSec = settings.barangaySecretary;
-    const oldTreas = settings.barangayTreasurer;
-
-    setSettings((prev) => {
-      const updated = { ...prev, ...newSettings };
-      return updated;
-    });
+    const currentSettings = settingsRef.current;
+    const oldPb = currentSettings.punongBarangay;
+    const oldSec = currentSettings.barangaySecretary;
+    const oldTreas = currentSettings.barangayTreasurer;
+    const updatedSettingsRecord = { ...currentSettings, ...newSettings };
+    settingsWriteVersionRef.current += 1;
+    settingsWritesInProgressRef.current += 1;
+    settingsRef.current = updatedSettingsRecord;
+    setSettings(updatedSettingsRecord);
 
     // Synchronize user accounts, officials, residents, and active session when institutional names change
     if (newSettings.punongBarangay && newSettings.punongBarangay !== oldPb) {
@@ -3730,8 +3747,8 @@ export const BarangayProvider: React.FC<{ children: React.ReactNode }> = ({ chil
             name: secName,
             position: 'Barangay Secretary',
             committee: 'Secretariat & Records',
-            termStart: newSettings.termStart || settings.termStart || '2023-11-01',
-            termEnd: newSettings.termEnd || settings.termEnd || '2026-11-30',
+            termStart: newSettings.termStart || currentSettings.termStart || '2023-11-01',
+            termEnd: newSettings.termEnd || currentSettings.termEnd || '2026-11-30',
             contactNumber: '0918-777-4321',
             email: 'sec.sangkol@gov.ph',
             purok: 'Purok Mangga',
@@ -3803,8 +3820,8 @@ export const BarangayProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     // Sync Kagawads with councilors in officials list ONLY if non-empty array provided
     if (newSettings.kagawads && Array.isArray(newSettings.kagawads) && newSettings.kagawads.length > 0) {
       const kagawadList = newSettings.kagawads;
-      const secNameLower = (newSettings.barangaySecretary || settings.barangaySecretary || '').trim().toLowerCase();
-      const capNameLower = (newSettings.punongBarangay || settings.punongBarangay || '').trim().toLowerCase();
+      const secNameLower = (newSettings.barangaySecretary || currentSettings.barangaySecretary || '').trim().toLowerCase();
+      const capNameLower = (newSettings.punongBarangay || currentSettings.punongBarangay || '').trim().toLowerCase();
       setOfficials((prev) => {
         let kagawadIndex = 0;
         return prev.map((o) => {
@@ -3891,12 +3908,21 @@ export const BarangayProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       return updated;
     });
 
-    const updatedSettingsRecord = { ...settings, ...newSettings };
+    const savePromise = settingsSaveQueueRef.current
+      .catch(() => undefined)
+      .then(async () => {
+        try {
+          const { error } = await upsertSettings(updatedSettingsRecord);
+          if (error) {
+            throw new Error(`Failed to save barangay settings: ${error.message}`);
+          }
+        } finally {
+          settingsWritesInProgressRef.current = Math.max(0, settingsWritesInProgressRef.current - 1);
+        }
+      });
+    settingsSaveQueueRef.current = savePromise.then(() => undefined, () => undefined);
     try {
-      const { error } = await upsertSettings(updatedSettingsRecord);
-      if (error) {
-        throw new Error(`Failed to save barangay settings: ${error.message}`);
-      }
+      await savePromise;
     } catch (err) {
       console.error('Failed to save barangay settings:', err);
       throw err;

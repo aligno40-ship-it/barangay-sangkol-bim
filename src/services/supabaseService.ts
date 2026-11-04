@@ -1451,6 +1451,10 @@ export function settingsFromRow(row: any): BarangaySettings {
           };
         })
       : DEFAULT_EMERGENCY_HOTLINES.map((hotline) => ({ ...hotline })),
+    healthMidwifeName: row.health_midwife_name || '',
+    healthPhysicianName: row.health_physician_name || '',
+    healthCenterLogoUrl: row.health_center_logo_url || '',
+    dohLogoUrl: row.doh_logo_url || '',
     email: row.email || '',
     hallAddress: row.hall_address || '',
     officeHours: row.office_hours || '',
@@ -1501,6 +1505,10 @@ export function settingsToRow(s: BarangaySettings): any {
     kagawads: Array.isArray(s.kagawads) ? s.kagawads : [],
     contact_number: s.contactNumber || '',
     emergency_hotlines: s.emergencyHotlines || DEFAULT_EMERGENCY_HOTLINES,
+    health_midwife_name: s.healthMidwifeName || '',
+    health_physician_name: s.healthPhysicianName || '',
+    health_center_logo_url: s.healthCenterLogoUrl || '',
+    doh_logo_url: s.dohLogoUrl || '',
     email: s.email || '',
     hall_address: s.hallAddress || '',
     office_hours: s.officeHours || 'Monday - Friday: 8:00 AM - 5:00 PM',
@@ -2374,6 +2382,26 @@ export async function upsertAuditLog(log: AuditLog) {
 
 export async function upsertSettings(settings: BarangaySettings) {
   let row: Record<string, any> = { ...settingsToRow(settings) };
+  const healthSettingsColumns = new Set([
+    'health_midwife_name',
+    'health_physician_name',
+    'health_center_logo_url',
+    'doh_logo_url',
+  ]);
+  const getMissingColumn = (message: string) =>
+    message.match(/Could not find the '([^']+)' column of 'barangay_settings' in the schema cache/i)?.[1] ||
+    message.match(/column "?([a-z0-9_]+)"? does not exist/i)?.[1] ||
+    message.match(/'([a-z0-9_]+)' column/i)?.[1] ||
+    null;
+  const getMissingColumnError = (error: object, missingColumn: string) => {
+    if (healthSettingsColumns.has(missingColumn)) {
+      return {
+        ...error,
+        message: 'Health Desk settings cannot be saved because the database is missing Health Desk columns. Run database/fix_barangay_settings.sql in the Supabase SQL Editor, then save again.',
+      };
+    }
+    return error;
+  };
 
   // Attempt upsert with explicit onConflict on id
   let res = await supabase.from('barangay_settings').upsert(row, { onConflict: 'id' }).select();
@@ -2386,10 +2414,12 @@ export async function upsertSettings(settings: BarangaySettings) {
     console.warn(`Supabase upsert barangay_settings attempt ${attempts} warning:`, errMsg);
 
     // Check for column missing in Postgres or PostgREST schema cache
-    const colMatch = errMsg.match(/column "?([a-z0-9_]+)"? does not exist|'([a-z0-9_]+)' column/i);
-    const missingCol = colMatch ? (colMatch[1] || colMatch[2]) : null;
+    const missingCol = getMissingColumn(errMsg);
 
     if (missingCol && missingCol in row) {
+      if (healthSettingsColumns.has(missingCol)) {
+        return { data: null, error: getMissingColumnError(res.error, missingCol) };
+      }
       if (missingCol === 'purok_map_boundaries' || missingCol === 'emergency_hotlines') {
         return {
           data: null,
@@ -2419,9 +2449,11 @@ export async function upsertSettings(settings: BarangaySettings) {
     }
 
     if (updateError) {
-      const updColMatch = (updateError.message || '').match(/column "?([a-z0-9_]+)"? does not exist|'([a-z0-9_]+)' column/i);
-      const updMissingCol = updColMatch ? (updColMatch[1] || updColMatch[2]) : null;
+      const updMissingCol = getMissingColumn(updateError.message || '');
       if (updMissingCol && updMissingCol in row) {
+        if (healthSettingsColumns.has(updMissingCol)) {
+          return { data: null, error: getMissingColumnError(updateError, updMissingCol) };
+        }
         if (updMissingCol === 'purok_map_boundaries' || updMissingCol === 'emergency_hotlines') {
           return {
             data: null,

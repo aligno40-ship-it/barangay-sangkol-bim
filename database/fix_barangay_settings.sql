@@ -17,6 +17,18 @@ ALTER TABLE barangay_settings ADD COLUMN IF NOT EXISTS theme VARCHAR(50) DEFAULT
 ALTER TABLE barangay_settings ADD COLUMN IF NOT EXISTS is_dark_mode BOOLEAN DEFAULT FALSE;
 ALTER TABLE barangay_settings ADD COLUMN IF NOT EXISTS purok_map_boundaries JSONB DEFAULT '[]'::jsonb;
 ALTER TABLE barangay_settings ADD COLUMN IF NOT EXISTS emergency_hotlines JSONB DEFAULT '[]'::jsonb;
+ALTER TABLE barangay_settings ADD COLUMN IF NOT EXISTS health_midwife_name VARCHAR(150) NOT NULL DEFAULT '';
+ALTER TABLE barangay_settings ADD COLUMN IF NOT EXISTS health_physician_name VARCHAR(150) NOT NULL DEFAULT '';
+ALTER TABLE barangay_settings ADD COLUMN IF NOT EXISTS health_center_logo_url TEXT;
+ALTER TABLE barangay_settings ADD COLUMN IF NOT EXISTS doh_logo_url TEXT;
+ALTER TABLE barangay_settings ALTER COLUMN health_midwife_name SET DEFAULT '';
+ALTER TABLE barangay_settings ALTER COLUMN health_physician_name SET DEFAULT '';
+UPDATE barangay_settings
+SET health_midwife_name = ''
+WHERE health_midwife_name = 'Carmela Reyes, R.M.';
+UPDATE barangay_settings
+SET health_physician_name = ''
+WHERE health_physician_name = 'Dr. Evelyn Morales, MD';
 
 -- 2. Update RLS policies to allow anon/authenticated read and update
 ALTER TABLE barangay_settings ENABLE ROW LEVEL SECURITY;

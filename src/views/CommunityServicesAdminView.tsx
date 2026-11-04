@@ -93,6 +93,7 @@ import { HealthPatientHistoryTab } from '../components/health/HealthPatientHisto
 import { HealthDispensingTab } from '../components/health/HealthDispensingTab';
 import { HealthConsultationsTab } from '../components/health/HealthConsultationsTab';
 import { HealthOutreachTab } from '../components/health/HealthOutreachTab';
+import { HealthPrintSignatorySettings } from '../components/health/HealthPrintSignatorySettings';
 import { SolidWasteAdminView } from '../components/solidwaste/SolidWasteAdminView';
 
 type ServiceDeskTab =
@@ -1328,6 +1329,8 @@ export const CommunityServicesAdminView: React.FC = () => {
               </button>
             </div>
           </div>
+
+          {healthSubTab !== 'dispensary' && <HealthPrintSignatorySettings />}
 
           {/* 1. BOTIKA INVENTORY TAB */}
           {healthSubTab === 'inventory' && (
@@ -2737,6 +2740,18 @@ export const CommunityServicesAdminView: React.FC = () => {
       <HealthPrintDocumentModal
         document={healthPrintDoc}
         onClose={() => setHealthPrintDoc(null)}
+        healthMidwifeName={settings.healthMidwifeName}
+        healthPhysicianName={settings.healthPhysicianName}
+        healthCenterLogoUrl={settings.healthCenterLogoUrl}
+        dohLogoUrl={settings.dohLogoUrl}
+        barangayName={settings.barangayName}
+        municipality={settings.municipality}
+        province={settings.province}
+        region={settings.region}
+        zipCode={settings.zipCode}
+        hallAddress={settings.hallAddress}
+        contactNumber={settings.contactNumber}
+        email={settings.email}
       />
     </div>
   );

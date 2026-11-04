@@ -27,7 +27,7 @@ import {
   HealthMission,
 } from '../../types/residentServices';
 import { useCommunityServices } from '../../context/CommunityServicesContext';
-import { areNamesMatching } from '../../context/BarangayContext';
+import { areNamesMatching, useBarangay } from '../../context/BarangayContext';
 import { isResidentRecordOwner } from '../../utils/residentAccountFilter';
 import {
   HealthPrintDocumentModal,
@@ -52,6 +52,8 @@ export const HealthCenterDeskTab: React.FC<HealthCenterDeskTabProps> = ({
   contactNumber,
   purok,
 }) => {
+  const { settings, residents } = useBarangay();
+  const registeredResident = residents.find((resident) => resident.id === residentId);
   const {
     consultations: appointments,
     immunizations,
@@ -195,33 +197,33 @@ export const HealthCenterDeskTab: React.FC<HealthCenterDeskTabProps> = ({
 
   // Appointment Form State
   const [patientName, setPatientName] = useState(residentName);
-  const [patientAge, setPatientAge] = useState(28);
-  const [serviceType, setServiceType] = useState<HealthAppointment['serviceType']>('General Medical Consultation');
+  const [patientAge, setPatientAge] = useState(registeredResident?.age ?? 0);
+  const [serviceType, setServiceType] = useState<HealthAppointment['serviceType'] | ''>('');
   const [preferredDate, setPreferredDate] = useState('');
-  const [timeSlot, setTimeSlot] = useState<HealthAppointment['preferredTimeSlot']>('08:30 AM - 10:00 AM');
+  const [timeSlot, setTimeSlot] = useState<HealthAppointment['preferredTimeSlot'] | ''>('');
   const [symptomsOrPurpose, setSymptomsOrPurpose] = useState('');
 
   // Medicine Refill State
-  const [selectedMed, setSelectedMed] = useState<string>('Losartan Potassium 50mg (Hypertension)');
+  const [selectedMed, setSelectedMed] = useState<string>('');
   const [selectedInventoryItemId, setSelectedInventoryItemId] = useState<string>('');
-  const [medQty, setMedQty] = useState(30);
+  const [medQty, setMedQty] = useState<number | ''>('');
   const [medPurpose, setMedPurpose] = useState('');
 
   // Add Child Vaccine Tracker State
   const [newChildName, setNewChildName] = useState('');
   const [newChildBirthDate, setNewChildBirthDate] = useState('');
-  const [newVaccineName, setNewVaccineName] = useState<ChildImmunizationTracker['vaccineName']>('Pentavalent (DTP-HepB-Hib)');
-  const [newDoseNumber, setNewDoseNumber] = useState<ChildImmunizationTracker['doseNumber']>('Dose 1');
+  const [newVaccineName, setNewVaccineName] = useState<ChildImmunizationTracker['vaccineName'] | ''>('');
+  const [newDoseNumber, setNewDoseNumber] = useState<ChildImmunizationTracker['doseNumber'] | ''>('');
   const [newDueDate, setNewDueDate] = useState('');
   const [newBatchNumber, setNewBatchNumber] = useState('');
-  const [newInjectionSite, setNewInjectionSite] = useState('Left Anterolateral Thigh');
+  const [newInjectionSite, setNewInjectionSite] = useState('');
 
   const handleBookAppointment = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!preferredDate || !symptomsOrPurpose) return;
+    if (!serviceType || !preferredDate || !timeSlot || !symptomsOrPurpose) return;
 
     const newAppt: HealthAppointment = {
-      id: `HLTH-2026-${Date.now().toString().slice(-4)}`,
+      id: `HLTH-${new Date().getFullYear()}-${Date.now().toString().slice(-4)}`,
       residentId,
       residentName,
       patientName,
@@ -229,35 +231,31 @@ export const HealthCenterDeskTab: React.FC<HealthCenterDeskTabProps> = ({
       serviceType,
       preferredDate,
       preferredTimeSlot: timeSlot,
-      attendingHealthWorker: 'Barangay Health Center Duty Physician & Nurse',
+      attendingHealthWorker: '',
       symptomsOrPurpose,
       status: 'Pending Triage',
-      queueNumber: `Q-${Math.floor(10 + Math.random() * 89)}`,
       createdAt: new Date().toISOString(),
     };
 
     addConsultation(newAppt);
-    setSuccessMessage(`✓ Consultation request submitted for ${patientName}! Your live queue number is ${newAppt.queueNumber}.`);
+    setSuccessMessage(`✓ Consultation request submitted for ${patientName}.`);
     setIsBookModalOpen(false);
     setSymptomsOrPurpose('');
     setTimeout(() => setSuccessMessage(''), 8000);
   };
 
   const handleOpenMedModalWithItem = (item?: PharmacyInventoryItem) => {
-    if (item) {
-      setSelectedMed(`${item.name} ${item.strength}`);
-      setSelectedInventoryItemId(item.id);
-      setMedPurpose(`Prescribed maintenance: ${item.indications || item.genericName}`);
-    } else if (pharmacyInventory.length > 0) {
-      setSelectedMed(`${pharmacyInventory[0].name} ${pharmacyInventory[0].strength}`);
-      setSelectedInventoryItemId(pharmacyInventory[0].id);
-    }
+    const inventoryItem = item || pharmacyInventory[0];
+    setSelectedMed(inventoryItem ? `${inventoryItem.name || inventoryItem.genericName}${inventoryItem.strength ? ` ${inventoryItem.strength}` : ''}` : '');
+    setSelectedInventoryItemId(inventoryItem?.id || '');
+    setMedQty('');
+    setMedPurpose('');
     setIsMedModalOpen(true);
   };
 
   const handleRequestMedicine = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedMed || !medPurpose) return;
+    if (!selectedMed || !selectedInventoryItemId || !medQty || !medPurpose) return;
 
     const newRefill: MedicineRefillRequest = {
       id: `MED-REQ-${Date.now().toString().slice(-4)}`,
@@ -266,17 +264,15 @@ export const HealthCenterDeskTab: React.FC<HealthCenterDeskTabProps> = ({
       contactNumber,
       inventoryItemId: selectedInventoryItemId || undefined,
       medicineName: selectedMed,
-      quantityRequested: medQty,
+      quantityRequested: Number(medQty),
       purpose: medPurpose,
       status: 'Pending Approval',
-      prescriptionAttached: true,
+      prescriptionAttached: false,
       requestedAt: new Date().toISOString().split('T')[0],
-      approvedBy: 'Health Desk Triage Officer',
-      pharmacistNotes: 'Under BHW triage and stock verification. Check back for pickup slip.',
     };
 
     addMedicineRequest(newRefill);
-    setSuccessMessage(`✓ Requisition submitted for ${medQty} tabs of ${selectedMed}! Proceed to the health station once Ready for Pickup.`);
+    setSuccessMessage(`✓ Requisition submitted for ${medQty} units of ${selectedMed}.`);
     setIsMedModalOpen(false);
     setMedPurpose('');
     setTimeout(() => setSuccessMessage(''), 8000);
@@ -284,10 +280,10 @@ export const HealthCenterDeskTab: React.FC<HealthCenterDeskTabProps> = ({
 
   const handleAddChildImmunization = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newChildName || !newDueDate) return;
+    if (!newChildName || !newVaccineName || !newDoseNumber || !newDueDate) return;
 
     const newImm: ChildImmunizationTracker = {
-      id: `EPI-2026-${Date.now().toString().slice(-4)}`,
+      id: `EPI-${new Date().getFullYear()}-${Date.now().toString().slice(-4)}`,
       childName: newChildName,
       birthDate: newChildBirthDate || '',
       childBirthDate: newChildBirthDate,
@@ -296,8 +292,8 @@ export const HealthCenterDeskTab: React.FC<HealthCenterDeskTabProps> = ({
       vaccineName: newVaccineName,
       doseNumber: newDoseNumber,
       dueDate: newDueDate,
-      batchNumber: newBatchNumber || `LOT-EPI-${Date.now().toString().slice(-4)}`,
-      batchOrLotNumber: newBatchNumber || `LOT-EPI-${Date.now().toString().slice(-4)}`,
+      batchNumber: newBatchNumber,
+      batchOrLotNumber: newBatchNumber,
       injectionSite: newInjectionSite,
       status: 'Upcoming',
     };
@@ -315,10 +311,9 @@ export const HealthCenterDeskTab: React.FC<HealthCenterDeskTabProps> = ({
     name: residentName,
     purok,
     contactNumber,
-    age: 28,
-    philhealthNo: `PH-${residentId.slice(-4)}-2026`,
-    bloodType: 'O+',
-    allergies: 'No known drug allergies',
+    age: registeredResident?.age,
+    philhealthNo: registeredResident?.philhealthNo,
+    bloodType: registeredResident?.bloodType,
   };
 
   return (
@@ -590,7 +585,7 @@ export const HealthCenterDeskTab: React.FC<HealthCenterDeskTabProps> = ({
                 </div>
                 <div>
                   <h3 className="text-base font-black text-slate-900">Book Health Consultation</h3>
-                  <p className="text-xs text-slate-500">Barangay Sangkol Health Station</p>
+                  <p className="text-xs text-slate-500">{settings.barangayName || 'Barangay'} Health Station</p>
                 </div>
               </div>
               <button
@@ -618,6 +613,7 @@ export const HealthCenterDeskTab: React.FC<HealthCenterDeskTabProps> = ({
                   <label className="block font-bold text-slate-700 mb-1">Patient Age</label>
                   <input
                     type="number"
+                    required
                     min={0}
                     max={120}
                     value={patientAge}
@@ -630,10 +626,12 @@ export const HealthCenterDeskTab: React.FC<HealthCenterDeskTabProps> = ({
               <div>
                 <label className="block font-bold text-slate-700 mb-1">Health Service Requested</label>
                 <select
+                  required
                   value={serviceType}
                   onChange={(e) => setServiceType(e.target.value as any)}
                   className="w-full px-3 py-2 border border-slate-300 rounded-xl bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-500 font-medium"
                 >
+                  <option value="" disabled>Select a health service</option>
                   <option value="General Medical Consultation">General Medical Consultation (Visiting MD)</option>
                   <option value="Barangay Midwife / Prenatal Check">Barangay Midwife / Prenatal & Maternal Check</option>
                   <option value="Child Immunization / Vaccine">Child Immunization / Vaccine Administration</option>
@@ -657,10 +655,12 @@ export const HealthCenterDeskTab: React.FC<HealthCenterDeskTabProps> = ({
                 <div>
                   <label className="block font-bold text-slate-700 mb-1">Time Slot</label>
                   <select
+                    required
                     value={timeSlot}
                     onChange={(e) => setTimeSlot(e.target.value as any)}
                     className="w-full px-3 py-2 border border-slate-300 rounded-xl bg-slate-50 focus:bg-white font-medium"
                   >
+                    <option value="" disabled>Select a time slot</option>
                     <option value="08:30 AM - 10:00 AM">Morning: 08:30 AM - 10:00 AM</option>
                     <option value="10:00 AM - 11:30 AM">Morning: 10:00 AM - 11:30 AM</option>
                     <option value="01:30 PM - 03:00 PM">Afternoon: 01:30 PM - 03:00 PM</option>
@@ -728,29 +728,28 @@ export const HealthCenterDeskTab: React.FC<HealthCenterDeskTabProps> = ({
               <div>
                 <label className="block font-bold text-slate-700 mb-1">Select Medicine from Inventory</label>
                 <select
-                  value={selectedMed}
+                  required
+                  value={selectedInventoryItemId}
                   onChange={(e) => {
-                    setSelectedMed(e.target.value);
-                    const inv = pharmacyInventory.find((i) => `${i.name} ${i.strength}` === e.target.value || i.name === e.target.value);
-                    if (inv) setSelectedInventoryItemId(inv.id);
+                    const inventoryItem = pharmacyInventory.find((item) => item.id === e.target.value);
+                    setSelectedInventoryItemId(inventoryItem?.id || '');
+                    setSelectedMed(
+                      inventoryItem
+                        ? `${inventoryItem.name || inventoryItem.genericName}${inventoryItem.strength ? ` ${inventoryItem.strength}` : ''}`
+                        : ''
+                    );
                   }}
+                  disabled={pharmacyInventory.length === 0}
                   className="w-full px-3 py-2 border border-slate-300 rounded-xl bg-slate-50 focus:bg-white focus:ring-2 focus:ring-cyan-500 font-medium"
                 >
-                  {pharmacyInventory.length > 0 ? (
-                    pharmacyInventory.map((item) => (
-                      <option key={item.id} value={`${item.name} ${item.strength}`}>
-                        {item.name} {item.strength} ({item.category}) — {item.stockQuantity} {item.unit} in stock
-                      </option>
-                    ))
-                  ) : (
-                    <>
-                      <option value="Losartan Potassium 50mg (Hypertension)">Losartan Potassium 50mg (Hypertension)</option>
-                      <option value="Metformin Hydrochloride 500mg (Diabetes)">Metformin Hydrochloride 500mg (Diabetes)</option>
-                      <option value="Amlodipine Besylate 5mg (Hypertension)">Amlodipine Besylate 5mg (Hypertension)</option>
-                      <option value="Paracetamol 500mg (Fever / Pain)">Paracetamol 500mg (Fever / Pain)</option>
-                      <option value="Ascorbic Acid + Zinc 500mg (Immunity)">Ascorbic Acid + Zinc 500mg (Immunity)</option>
-                    </>
-                  )}
+                  <option value="" disabled>
+                    {pharmacyInventory.length > 0 ? 'Select medicine from inventory' : 'No medicines are recorded in inventory'}
+                  </option>
+                  {pharmacyInventory.map((item) => (
+                    <option key={item.id} value={item.id}>
+                      {item.name || item.genericName}{item.strength ? ` ${item.strength}` : ''} ({item.category}) — {item.stockQuantity} {item.unit} in stock
+                    </option>
+                  ))}
                 </select>
               </div>
 
@@ -760,8 +759,9 @@ export const HealthCenterDeskTab: React.FC<HealthCenterDeskTabProps> = ({
                   type="number"
                   min={1}
                   max={60}
+                  required
                   value={medQty}
-                  onChange={(e) => setMedQty(Number(e.target.value))}
+                  onChange={(e) => setMedQty(e.target.value === '' ? '' : Number(e.target.value))}
                   className="w-full px-3 py-2 border border-slate-300 rounded-xl bg-slate-50 focus:bg-white font-medium"
                 />
                 <span className="text-[10px] text-slate-500 mt-1 block">
@@ -773,7 +773,8 @@ export const HealthCenterDeskTab: React.FC<HealthCenterDeskTabProps> = ({
                 <label className="block font-bold text-slate-700 mb-1">Prescription Note / Indication</label>
                 <textarea
                   rows={2}
-                  placeholder="e.g. Monthly maintenance prescribed by Dr. Reyes for blood pressure control..."
+                  required
+                  placeholder="Enter prescription or request details"
                   value={medPurpose}
                   onChange={(e) => setMedPurpose(e.target.value)}
                   className="w-full px-3 py-2 border border-slate-300 rounded-xl bg-slate-50 focus:bg-white font-medium"
@@ -851,10 +852,12 @@ export const HealthCenterDeskTab: React.FC<HealthCenterDeskTabProps> = ({
                 <div>
                   <label className="block font-bold text-slate-700 mb-1">Vaccine Antigen</label>
                   <select
+                    required
                     value={newVaccineName}
                     onChange={(e) => setNewVaccineName(e.target.value as any)}
                     className="w-full px-3 py-2 border border-slate-300 rounded-xl bg-slate-50 focus:bg-white font-medium"
                   >
+                    <option value="" disabled>Select a vaccine</option>
                     <option value="BCG Vaccine (Tuberculosis)">BCG Vaccine (Tuberculosis)</option>
                     <option value="Hepatitis B (Birth Dose)">Hepatitis B (Birth Dose)</option>
                     <option value="Pentavalent (DTP-HepB-Hib)">Pentavalent (DTP-HepB-Hib)</option>
@@ -867,10 +870,12 @@ export const HealthCenterDeskTab: React.FC<HealthCenterDeskTabProps> = ({
                 <div>
                   <label className="block font-bold text-slate-700 mb-1">Dose Sequence</label>
                   <select
+                    required
                     value={newDoseNumber}
                     onChange={(e) => setNewDoseNumber(e.target.value as any)}
                     className="w-full px-3 py-2 border border-slate-300 rounded-xl bg-slate-50 focus:bg-white font-medium"
                   >
+                    <option value="" disabled>Select a dose</option>
                     <option value="Birth Dose">Birth Dose</option>
                     <option value="Dose 1">Dose 1</option>
                     <option value="Dose 2">Dose 2</option>
@@ -897,7 +902,7 @@ export const HealthCenterDeskTab: React.FC<HealthCenterDeskTabProps> = ({
                     type="text"
                     value={newInjectionSite}
                     onChange={(e) => setNewInjectionSite(e.target.value)}
-                    placeholder="Left Anterolateral Thigh"
+                    placeholder="Enter if recorded"
                     className="w-full px-3 py-2 border border-slate-300 rounded-xl bg-slate-50 focus:bg-white font-medium"
                   />
                 </div>
@@ -927,6 +932,18 @@ export const HealthCenterDeskTab: React.FC<HealthCenterDeskTabProps> = ({
       <HealthPrintDocumentModal
         document={printDoc}
         onClose={() => setPrintDoc(null)}
+        healthMidwifeName={settings.healthMidwifeName}
+        healthPhysicianName={settings.healthPhysicianName}
+        healthCenterLogoUrl={settings.healthCenterLogoUrl}
+        dohLogoUrl={settings.dohLogoUrl}
+        barangayName={settings.barangayName}
+        municipality={settings.municipality}
+        province={settings.province}
+        region={settings.region}
+        zipCode={settings.zipCode}
+        hallAddress={settings.hallAddress}
+        contactNumber={settings.contactNumber}
+        email={settings.email}
       />
     </div>
   );

@@ -30,11 +30,9 @@ export const HealthMissionModal: React.FC<HealthMissionModalProps> = ({
   );
   const [date, setDate] = useState(missionToEdit?.date || '');
   const [timeSchedule, setTimeSchedule] = useState(missionToEdit?.timeSchedule || '08:00 AM - 02:00 PM');
-  const [venue, setVenue] = useState(missionToEdit?.venue || 'Barangay Sangkol Multi-Purpose Covered Court');
-  const [targetPurok, setTargetPurok] = useState(missionToEdit?.targetPurok || 'All Puroks (1 to 7)');
-  const [leadProvider, setLeadProvider] = useState(
-    missionToEdit?.leadProvider || 'City Health Office Mobile Medical Team & Barangay BHWs'
-  );
+  const [venue, setVenue] = useState(missionToEdit?.venue || '');
+  const [targetPurok, setTargetPurok] = useState(missionToEdit?.targetPurok || 'All Puroks');
+  const [leadProvider, setLeadProvider] = useState(missionToEdit?.leadProvider || '');
   const [maxSlots, setMaxSlots] = useState(missionToEdit?.maxSlots || 150);
   const [description, setDescription] = useState(
     missionToEdit?.description || 'Free clinical checkups, basic diagnostic tests, free maintenance medicines, and pediatric consultations.'
@@ -52,9 +50,9 @@ export const HealthMissionModal: React.FC<HealthMissionModalProps> = ({
       setMissionType(missionToEdit.missionType || 'General Medical Consultation & Free Medicines');
       setDate(missionToEdit.date || '');
       setTimeSchedule(missionToEdit.timeSchedule || '08:00 AM - 02:00 PM');
-      setVenue(missionToEdit.venue || 'Barangay Sangkol Multi-Purpose Covered Court');
-      setTargetPurok(missionToEdit.targetPurok || 'All Puroks (1 to 7)');
-      setLeadProvider(missionToEdit.leadProvider || 'City Health Office Mobile Medical Team & Barangay BHWs');
+      setVenue(missionToEdit.venue || '');
+      setTargetPurok(missionToEdit.targetPurok || 'All Puroks');
+      setLeadProvider(missionToEdit.leadProvider || '');
       setMaxSlots(missionToEdit.maxSlots || 150);
       setDescription(missionToEdit.description || '');
       setStatus(missionToEdit.status || 'Scheduled');
@@ -64,9 +62,9 @@ export const HealthMissionModal: React.FC<HealthMissionModalProps> = ({
       setMissionType('General Medical Consultation & Free Medicines');
       setDate('');
       setTimeSchedule('08:00 AM - 02:00 PM');
-      setVenue('Barangay Sangkol Multi-Purpose Covered Court');
-      setTargetPurok('All Puroks (1 to 7)');
-      setLeadProvider('City Health Office Mobile Medical Team & Barangay BHWs');
+      setVenue('');
+      setTargetPurok('All Puroks');
+      setLeadProvider('');
       setMaxSlots(150);
       setDescription('Free clinical checkups, basic diagnostic tests, free maintenance medicines, and pediatric consultations.');
       setStatus('Scheduled');

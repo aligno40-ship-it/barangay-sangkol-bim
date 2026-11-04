@@ -896,6 +896,10 @@ export interface BarangaySettings {
   barangayTreasurer: string;
   contactNumber: string;
   emergencyHotlines?: EmergencyHotline[];
+  healthMidwifeName?: string;
+  healthPhysicianName?: string;
+  healthCenterLogoUrl?: string;
+  dohLogoUrl?: string;
   email: string;
   hallAddress: string;
   officeHours: string;

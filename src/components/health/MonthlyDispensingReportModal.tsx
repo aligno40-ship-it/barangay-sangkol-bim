@@ -7,7 +7,6 @@ import {
   FileText,
   Pill,
   Calendar,
-  CheckCircle2,
   AlertCircle,
   TrendingUp,
   Package,
@@ -22,7 +21,6 @@ import {
   MedicineRefillRequest,
   PharmacyInventoryItem,
 } from '../../types/residentServices';
-import { RepublicSeal, BarangaySangkolSeal, DrySealStamp } from '../OfficialSeals';
 import { printHtmlDocument, downloadHtmlReport, exportToCsv } from '../../utils/printUtils';
 import { RecentSearchesInput } from '../RecentSearchesInput';
 
@@ -35,7 +33,15 @@ interface MonthlyDispensingReportModalProps {
   barangayName?: string;
   municipality?: string;
   province?: string;
+  region?: string;
+  zipCode?: string;
+  hallAddress?: string;
+  contactNumber?: string;
+  email?: string;
   punongBarangay?: string;
+  healthMidwifeName?: string;
+  healthCenterLogoUrl?: string;
+  dohLogoUrl?: string;
 }
 
 export const MonthlyDispensingReportModal: React.FC<MonthlyDispensingReportModalProps> = ({
@@ -43,23 +49,44 @@ export const MonthlyDispensingReportModal: React.FC<MonthlyDispensingReportModal
   onClose,
   requests,
   inventory = [],
-  currentAdminName = 'Barangay Health Officer / Dispensary Officer',
-  barangayName = 'Barangay Sangkol',
-  municipality = 'Dipolog City',
-  province = 'Zamboanga del Norte',
-  punongBarangay = 'Hon. Roberto "Berting" Tan',
+  currentAdminName = '',
+  barangayName = '',
+  municipality = '',
+  province = '',
+  region = '',
+  zipCode = '',
+  hallAddress = '',
+  contactNumber = '',
+  email = '',
+  punongBarangay = '',
+  healthMidwifeName = '',
+  healthCenterLogoUrl,
+  dohLogoUrl,
 }) => {
-  // Available Months Generator based on data + current year 2026
-  const availableMonths = [
-    { value: '2026-09', label: 'September 2026 (Current Month)' },
-    { value: '2026-08', label: 'August 2026' },
-    { value: '2026-07', label: 'July 2026' },
-    { value: '2026-06', label: 'June 2026' },
-    { value: '2026-05', label: 'May 2026' },
-    { value: 'all', label: 'All Months (Year 2026 to Date)' },
-  ];
+  const now = new Date();
+  const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+  const availableMonths = useMemo(() => {
+    const months = new Set([currentMonth]);
+    requests.forEach((request) => {
+      const requestDate = request.dispensedAt || request.requestedAt || '';
+      const month = requestDate.match(/^\d{4}-\d{2}/)?.[0];
+      if (month) months.add(month);
+    });
+    return [
+      { value: 'all', label: 'All Records' },
+      ...Array.from(months)
+        .sort((a, b) => b.localeCompare(a))
+        .map((value) => ({
+          value,
+          label: new Date(`${value}-01T00:00:00`).toLocaleDateString('en-PH', {
+            month: 'long',
+            year: 'numeric',
+          }),
+        })),
+    ];
+  }, [requests, currentMonth]);
 
-  const [selectedMonth, setSelectedMonth] = useState<string>('2026-09');
+  const [selectedMonth, setSelectedMonth] = useState<string>(currentMonth);
   const [filterStatus, setFilterStatus] = useState<'Dispensed' | 'All'>('Dispensed');
   const [searchFilter, setSearchFilter] = useState('');
 
@@ -69,7 +96,7 @@ export const MonthlyDispensingReportModal: React.FC<MonthlyDispensingReportModal
   const monthlyRequests = useMemo(() => {
     return requests.filter((r) => {
       // Check date matches selected month (via requestedAt or dispensedAt)
-      const dateToCheck = r.dispensedAt || r.requestedAt || '2026-09-01';
+      const dateToCheck = r.dispensedAt || r.requestedAt || '';
       const matchesMonth =
         selectedMonth === 'all' ? true : dateToCheck.startsWith(selectedMonth);
 
@@ -163,7 +190,11 @@ export const MonthlyDispensingReportModal: React.FC<MonthlyDispensingReportModal
   }, [medBreakdown, totalUnitsDispensed]);
 
   const monthLabel =
-    availableMonths.find((m) => m.value === selectedMonth)?.label || 'September 2026';
+    availableMonths.find((m) => m.value === selectedMonth)?.label || selectedMonth;
+  const jurisdiction = [barangayName, municipality, province, region, zipCode]
+    .filter(Boolean)
+    .join(' • ');
+  const contactDetails = [hallAddress, contactNumber, email].filter(Boolean).join(' • ');
 
   const dateGenerated = new Date().toLocaleDateString('en-PH', {
     year: 'numeric',
@@ -218,9 +249,9 @@ export const MonthlyDispensingReportModal: React.FC<MonthlyDispensingReportModal
       r.doctorPrescriberName || 'N/A',
       r.doctorLicenseNo || 'N/A',
       r.prescriptionAttached ? 'Yes' : 'No',
-      r.dispensedBy || 'Dispensary Officer',
+      r.dispensedBy || 'Not recorded',
       r.dispensedAt || r.requestedAt,
-      r.batchDispensed || 'LOT-2026-DEF',
+      r.batchDispensed || '',
       r.status,
     ]);
 
@@ -369,29 +400,33 @@ export const MonthlyDispensingReportModal: React.FC<MonthlyDispensingReportModal
             <div className="border-b-2 border-slate-900 pb-4 text-center relative">
               <div className="flex items-center justify-between gap-4">
                 <div className="w-16 h-16 flex items-center justify-center shrink-0">
-                  <RepublicSeal size={64} />
+                  {healthCenterLogoUrl && (
+                    <img src={healthCenterLogoUrl} alt="Health Center logo" className="max-w-16 max-h-16 object-contain" />
+                  )}
                 </div>
 
                 <div className="flex-1 text-center">
                   <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
-                    Republic of the Philippines • Department of Health
+                    {region || 'Health Desk'}
                   </p>
                   <p className="text-[10px] font-bold uppercase tracking-wider text-slate-600">
-                    Province of {province} • {municipality}
+                    {jurisdiction}
                   </p>
                   <h1 className="text-base sm:text-lg font-black tracking-tight text-slate-900 uppercase mt-0.5">
-                    {barangayName} Primary Health Station
+                    {barangayName ? `${barangayName} Primary Health Station` : 'Primary Health Station'}
                   </h1>
                   <p className="text-[11px] font-semibold text-rose-700">
                     BARANGAY BOTIKA SA BARANGAY (BSB) & MAINTENANCE DRUG DISPENSARY
                   </p>
                   <p className="text-[9px] text-slate-400 mt-0.5">
-                    Purok Health Center, {barangayName} • Hotline: (088) 822-4410 • Email: health.{barangayName.toLowerCase().replace(/\s+/g, '')}@gov.ph
+                    {contactDetails}
                   </p>
                 </div>
 
                 <div className="w-16 h-16 flex items-center justify-center shrink-0">
-                  <BarangaySangkolSeal size={64} />
+                  {dohLogoUrl && (
+                    <img src={dohLogoUrl} alt="Department of Health logo" className="max-w-16 max-h-16 object-contain" />
+                  )}
                 </div>
               </div>
 
@@ -411,7 +446,7 @@ export const MonthlyDispensingReportModal: React.FC<MonthlyDispensingReportModal
               <div>
                 <span className="text-[9px] text-slate-500 uppercase font-bold block">Document Control #</span>
                 <strong className="font-mono text-slate-900 text-xs">
-                  RPT-DISP-{selectedMonth.replace('-', '')}-{Math.floor(1000 + Math.random() * 9000)}
+                  RPT-DISP-{selectedMonth === 'all' ? 'ALL' : selectedMonth.replace('-', '')}
                 </strong>
               </div>
               <div>
@@ -420,12 +455,12 @@ export const MonthlyDispensingReportModal: React.FC<MonthlyDispensingReportModal
               </div>
               <div>
                 <span className="text-[9px] text-slate-500 uppercase font-bold block">Officer In-Charge</span>
-                <strong className="text-slate-800">{currentAdminName}</strong>
+                <strong className="text-slate-800">{currentAdminName || '—'}</strong>
               </div>
               <div>
-                <span className="text-[9px] text-slate-500 uppercase font-bold block">Health Station Status</span>
-                <span className="inline-flex items-center gap-1 text-emerald-700 font-bold text-xs">
-                  <CheckCircle2 className="w-3 h-3" /> Fully Operational
+                <span className="text-[9px] text-slate-500 uppercase font-bold block">Report Status Filter</span>
+                <span className="inline-flex items-center gap-1 text-slate-700 font-bold text-xs">
+                  {filterStatus}
                 </span>
               </div>
             </div>
@@ -559,7 +594,7 @@ export const MonthlyDispensingReportModal: React.FC<MonthlyDispensingReportModal
                           </td>
                           <td className="p-2">
                             <p className="font-bold text-slate-900">{req.residentName}</p>
-                            <p className="text-[9px] text-slate-500">{req.contactNumber || 'Resident Beneficiary'}</p>
+                            <p className="text-[9px] text-slate-500">{req.contactNumber || '—'}</p>
                           </td>
                           <td className="p-2">
                             <p className="font-bold text-slate-900">{req.medicineName}</p>
@@ -588,7 +623,7 @@ export const MonthlyDispensingReportModal: React.FC<MonthlyDispensingReportModal
                           <td className="p-2 pr-3">
                             <p className="font-medium text-slate-800">{req.dispensedBy || currentAdminName}</p>
                             <p className="text-[8px] font-mono text-slate-400">
-                              Lot: {req.batchDispensed || 'LOT-2026-NCD'}
+                              Lot: {req.batchDispensed || 'Not recorded'}
                             </p>
                           </td>
                         </tr>
@@ -636,7 +671,7 @@ export const MonthlyDispensingReportModal: React.FC<MonthlyDispensingReportModal
                 <div className="space-y-1">
                   <div className="border-b border-slate-900 pb-1">
                     <strong className="block text-slate-900 text-xs uppercase font-black">
-                      Carmela Reyes, R.M.
+                      {healthMidwifeName || ''}
                     </strong>
                   </div>
                   <span className="text-[9px] uppercase font-bold text-slate-500 block">
@@ -664,7 +699,7 @@ export const MonthlyDispensingReportModal: React.FC<MonthlyDispensingReportModal
             <div className="border-t border-slate-200 pt-3 flex items-center justify-between text-[9px] text-slate-400">
               <div className="flex items-center gap-1.5">
                 <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-                <span>Barangay Sangkol BIMS • Official Health Registry v2.6 • 256-Bit Encrypted Record</span>
+                <span>{barangayName || 'Barangay'} • Health Desk Dispensing Report</span>
               </div>
               <div>Page 1 of 1 • System Generated</div>
             </div>

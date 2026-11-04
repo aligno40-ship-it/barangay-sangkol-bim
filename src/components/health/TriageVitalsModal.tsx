@@ -28,35 +28,31 @@ export const TriageVitalsModal: React.FC<TriageVitalsModalProps> = ({
   onClose,
   onSave,
 }) => {
-  const [systolic, setSystolic] = useState('120');
-  const [diastolic, setDiastolic] = useState('80');
-  const [heartRate, setHeartRate] = useState('75');
-  const [temperature, setTemperature] = useState('36.6');
-  const [weightKg, setWeightKg] = useState('65');
-  const [spo2, setSpo2] = useState('99');
-  const [triagePriority, setTriagePriority] = useState<VitalSigns['triagePriority']>(
-    appointment && appointment.patientAge >= 60 ? 'Priority (Senior/Pregnant/Infant)' : 'Routine'
+  const [systolic, setSystolic] = useState(appointment?.vitals?.bp?.split('/')[0] || '');
+  const [diastolic, setDiastolic] = useState(appointment?.vitals?.bp?.split('/')[1] || '');
+  const [heartRate, setHeartRate] = useState(appointment?.vitals?.heartRate?.toString() || '');
+  const [temperature, setTemperature] = useState(appointment?.vitals?.temperature?.toString() || '');
+  const [weightKg, setWeightKg] = useState(appointment?.vitals?.weightKg?.toString() || '');
+  const [spo2, setSpo2] = useState(appointment?.vitals?.spo2?.toString() || '');
+  const [triagePriority, setTriagePriority] = useState<VitalSigns['triagePriority'] | ''>(
+    appointment?.vitals?.triagePriority || ''
   );
-  const [triageNotes, setTriageNotes] = useState(
-    appointment?.vitals?.triageNotes || 'Normotensive, afebrile, alert and conscious. Oriented to time, person, and place.'
-  );
+  const [triageNotes, setTriageNotes] = useState(appointment?.vitals?.triageNotes || '');
   const [diagnosis, setDiagnosis] = useState(appointment?.diagnosis || '');
   const [prescriptions, setPrescriptions] = useState(appointment?.prescriptionsOrAdvice || '');
-  const [queueNumber, setQueueNumber] = useState(
-    appointment?.queueNumber || (appointment ? `TRIAGE-${(appointment.serviceType || 'M').charAt(0).toUpperCase()}${Math.floor(10 + Math.random() * 90)}` : '')
-  );
+  const [queueNumber, setQueueNumber] = useState(appointment?.queueNumber || '');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!appointment) return;
 
     const vitalsData: VitalSigns = {
-      bp: `${systolic}/${diastolic}`,
-      heartRate: Number(heartRate) || 72,
-      temperature: Number(temperature) || 36.5,
-      weightKg: Number(weightKg) || undefined,
-      spo2: Number(spo2) || 98,
-      triagePriority,
+      bp: systolic && diastolic ? `${systolic}/${diastolic}` : undefined,
+      heartRate: heartRate ? Number(heartRate) : undefined,
+      temperature: temperature ? Number(temperature) : undefined,
+      weightKg: weightKg ? Number(weightKg) : undefined,
+      spo2: spo2 ? Number(spo2) : undefined,
+      triagePriority: triagePriority || undefined,
       triageNotes,
       recordedAt: new Date().toLocaleString(),
     };
@@ -241,7 +237,7 @@ export const TriageVitalsModal: React.FC<TriageVitalsModalProps> = ({
                 rows={2}
                 value={prescriptions}
                 onChange={(e) => setPrescriptions(e.target.value)}
-                placeholder="e.g. Paracetamol 500mg tab q4h PRN for fever. Increase oral fluid intake. Return for follow up in 5 days."
+                placeholder="Enter clinician-provided prescription or advice"
                 className="w-full px-3 py-2 border border-slate-300 rounded-xl bg-slate-50 focus:bg-white font-medium"
               />
             </div>

@@ -8,9 +8,7 @@ import {
   CheckCircle2,
   Calendar,
   Layers,
-  HeartPulse,
   ShieldCheck,
-  Zap,
 } from 'lucide-react';
 import { PharmacyInventoryItem } from '../../types/residentServices';
 
@@ -65,29 +63,24 @@ export const PharmacyInventoryModal: React.FC<PharmacyInventoryModalProps> = ({
 }) => {
   const [name, setName] = useState(itemToEdit?.name || '');
   const [genericName, setGenericName] = useState(itemToEdit?.genericName || '');
-  const [dosageForm, setDosageForm] = useState(itemToEdit?.dosageForm || 'Tablet');
-  const [strength, setStrength] = useState(itemToEdit?.strength || '50mg');
-  // Automatically introduce Antihypertensive as the primary category
+  const [dosageForm, setDosageForm] = useState(itemToEdit?.dosageForm || '');
+  const [strength, setStrength] = useState(itemToEdit?.strength || '');
   const [category, setCategory] = useState<PharmacyInventoryItem['category']>(
-    itemToEdit?.category || 'Antihypertensive'
+    itemToEdit?.category || ''
   );
-  const [stockQuantity, setStockQuantity] = useState(itemToEdit?.stockQuantity || 100);
-  const [unit, setUnit] = useState<string>(itemToEdit?.unit || 'tablets');
-  const [minimumThreshold, setMinimumThreshold] = useState(itemToEdit?.minimumThreshold || 30);
-  const [batchNumber, setBatchNumber] = useState(itemToEdit?.batchNumber || 'LOT-2026-01');
-  const [expiryDate, setExpiryDate] = useState(itemToEdit?.expiryDate || '2027-12-31');
+  const [stockQuantity, setStockQuantity] = useState(itemToEdit?.stockQuantity ?? 0);
+  const [unit, setUnit] = useState<string>(itemToEdit?.unit || '');
+  const [minimumThreshold, setMinimumThreshold] = useState(itemToEdit?.minimumThreshold ?? 0);
+  const [batchNumber, setBatchNumber] = useState(itemToEdit?.batchNumber || '');
+  const [expiryDate, setExpiryDate] = useState(itemToEdit?.expiryDate || '');
   const [requiresPrescription, setRequiresPrescription] = useState(
     itemToEdit ? itemToEdit.requiresPrescription : true
   );
-  const [programSource, setProgramSource] = useState(
-    itemToEdit?.programSource || 'DOH Botika sa Barangay / LGU NCD Cardiovascular Allocation'
-  );
-  const [indications, setIndications] = useState(
-    itemToEdit?.indications || 'First-line management for essential hypertension / elevated blood pressure maintenance.'
-  );
+  const [programSource, setProgramSource] = useState(itemToEdit?.programSource || '');
+  const [indications, setIndications] = useState(itemToEdit?.indications || '');
 
   const [autoDetectedCategory, setAutoDetectedCategory] = useState<string | null>(
-    !itemToEdit ? 'Antihypertensive' : null
+    null
   );
 
   // Sync state when itemToEdit changes
@@ -95,33 +88,33 @@ export const PharmacyInventoryModal: React.FC<PharmacyInventoryModalProps> = ({
     if (itemToEdit) {
       setName(itemToEdit.name || '');
       setGenericName(itemToEdit.genericName || '');
-      setDosageForm(itemToEdit.dosageForm || 'Tablet');
-      setStrength(itemToEdit.strength || '50mg');
-      setCategory(itemToEdit.category || 'Antihypertensive');
-      setStockQuantity(itemToEdit.stockQuantity || 0);
-      setUnit(itemToEdit.unit || 'tablets');
-      setMinimumThreshold(itemToEdit.minimumThreshold || 30);
-      setBatchNumber(itemToEdit.batchNumber || 'LOT-2026-01');
-      setExpiryDate(itemToEdit.expiryDate || '2027-12-31');
+      setDosageForm(itemToEdit.dosageForm || '');
+      setStrength(itemToEdit.strength || '');
+      setCategory(itemToEdit.category || '');
+      setStockQuantity(itemToEdit.stockQuantity ?? 0);
+      setUnit(itemToEdit.unit || '');
+      setMinimumThreshold(itemToEdit.minimumThreshold ?? 0);
+      setBatchNumber(itemToEdit.batchNumber || '');
+      setExpiryDate(itemToEdit.expiryDate || '');
       setRequiresPrescription(itemToEdit.requiresPrescription ?? true);
-      setProgramSource(itemToEdit.programSource || 'DOH Botika sa Barangay');
+      setProgramSource(itemToEdit.programSource || '');
       setIndications(itemToEdit.indications || '');
       setAutoDetectedCategory(itemToEdit.category || null);
     } else {
       setName('');
       setGenericName('');
-      setDosageForm('Tablet');
-      setStrength('50mg');
-      setCategory('Antihypertensive');
-      setStockQuantity(100);
-      setUnit('tablets');
-      setMinimumThreshold(30);
-      setBatchNumber('LOT-2026-01');
-      setExpiryDate('2027-12-31');
+      setDosageForm('');
+      setStrength('');
+      setCategory('');
+      setStockQuantity(0);
+      setUnit('');
+      setMinimumThreshold(0);
+      setBatchNumber('');
+      setExpiryDate('');
       setRequiresPrescription(true);
-      setProgramSource('DOH Botika sa Barangay / LGU NCD Cardiovascular Allocation');
-      setIndications('First-line management for essential hypertension / elevated blood pressure maintenance.');
-      setAutoDetectedCategory('Antihypertensive');
+      setProgramSource('');
+      setIndications('');
+      setAutoDetectedCategory(null);
     }
   }, [itemToEdit, isOpen]);
 
@@ -133,57 +126,28 @@ export const PharmacyInventoryModal: React.FC<PharmacyInventoryModalProps> = ({
     if (ANTIHYPERTENSIVE_KEYWORDS.some((kw) => query.includes(kw))) {
       setCategory('Antihypertensive');
       setAutoDetectedCategory('Antihypertensive');
-      if (!indications || indications.includes('hypertension') || indications.includes('First-line')) {
-        setIndications('First-line management for essential hypertension / elevated blood pressure maintenance.');
-      }
       setRequiresPrescription(true);
     } else if (ANTIDIABETIC_KEYWORDS.some((kw) => query.includes(kw))) {
       setCategory('Antidiabetic');
       setAutoDetectedCategory('Antidiabetic');
-      setIndications('Oral hypoglycemic agent for glycemic control in Type 2 Diabetes Mellitus.');
       setRequiresPrescription(true);
     } else if (ANALGESIC_KEYWORDS.some((kw) => query.includes(kw))) {
       setCategory('Analgesic / Antipyretic');
       setAutoDetectedCategory('Analgesic / Antipyretic');
-      setIndications('Symptomatic relief of mild-to-moderate pain and acute fever reduction.');
       setRequiresPrescription(false);
     } else if (ANTIBIOTIC_KEYWORDS.some((kw) => query.includes(kw))) {
       setCategory('Antibiotic');
       setAutoDetectedCategory('Antibiotic');
-      setIndications('Antibacterial treatment for confirmed bacterial infections. Full course required.');
       setRequiresPrescription(true);
     } else if (VITAMINS_KEYWORDS.some((kw) => query.includes(kw))) {
       setCategory('Vitamins & Minerals');
       setAutoDetectedCategory('Vitamins & Minerals');
-      setIndications('Daily micronutrient supplementation and immune defense booster.');
       setRequiresPrescription(false);
     } else if (RESPIRATORY_KEYWORDS.some((kw) => query.includes(kw))) {
       setCategory('Respiratory / Bronchodilator');
       setAutoDetectedCategory('Respiratory / Bronchodilator');
-      setIndications('Bronchodilator / antihistamine for acute respiratory symptoms and allergic rhinitis.');
     }
   }, [name, genericName, itemToEdit]);
-
-  // Quick Preset Helper for Fast Antihypertensive Template Autofill
-  const applyAntihypertensivePreset = (
-    brandName: string,
-    generic: string,
-    str: string,
-    form: string = 'Film-Coated Tablet'
-  ) => {
-    setName(`${brandName} ${str}`);
-    setGenericName(generic);
-    setStrength(str);
-    setDosageForm(form);
-    setCategory('Antihypertensive');
-    setAutoDetectedCategory('Antihypertensive');
-    setUnit('tablets');
-    setStockQuantity(100);
-    setMinimumThreshold(30);
-    setRequiresPrescription(true);
-    setIndications('First-line management for essential hypertension / elevated blood pressure maintenance.');
-    setProgramSource('DOH Botika sa Barangay / LGU NCD Cardiovascular Allocation');
-  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -242,46 +206,6 @@ export const PharmacyInventoryModal: React.FC<PharmacyInventoryModalProps> = ({
           </button>
         </div>
 
-        {/* Quick Antihypertensive Presets Toolbar */}
-        {!itemToEdit && (
-          <div className="p-3 bg-gradient-to-r from-rose-50 to-orange-50 dark:from-rose-950/40 dark:to-slate-900 border border-rose-200 dark:border-rose-900/60 rounded-2xl space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] font-black uppercase tracking-wider text-rose-900 dark:text-rose-300 flex items-center gap-1.5">
-                <HeartPulse className="w-3.5 h-3.5 text-rose-600 dark:text-rose-400" />
-                <span>Quick Antihypertensive Templates (1-Click Fill)</span>
-              </span>
-              <span className="text-[10px] font-bold text-rose-700 dark:text-rose-400 bg-rose-100 dark:bg-rose-900/80 px-2 py-0.5 rounded-full">
-                DOH Priority NCD
-              </span>
-            </div>
-            <div className="flex flex-wrap gap-1.5">
-              {[
-                { brand: 'Losartan Potassium', generic: 'Losartan Potassium', strength: '50mg' },
-                { brand: 'Amlodipine Besylate', generic: 'Amlodipine Besylate', strength: '5mg' },
-                { brand: 'Metoprolol Tartrate', generic: 'Metoprolol Tartrate', strength: '50mg' },
-                { brand: 'Telmisartan', generic: 'Telmisartan', strength: '40mg' },
-                { brand: 'Captopril', generic: 'Captopril', strength: '25mg' },
-              ].map((preset, idx) => (
-                <button
-                  key={idx}
-                  type="button"
-                  onClick={() =>
-                    applyAntihypertensivePreset(
-                      preset.brand,
-                      preset.generic,
-                      preset.strength
-                    )
-                  }
-                  className="px-2.5 py-1 bg-white dark:bg-slate-800 hover:bg-rose-600 hover:text-white dark:hover:bg-rose-600 text-slate-800 dark:text-slate-200 rounded-xl text-[11px] font-bold border border-rose-200/80 dark:border-rose-800/80 cursor-pointer transition-all shadow-2xs flex items-center gap-1"
-                >
-                  <Zap className="w-3 h-3 text-rose-500 hover:text-white" />
-                  <span>{preset.brand} {preset.strength}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
         <form onSubmit={handleSubmit} className="space-y-3.5 text-xs">
           {/* Category Selector with Highlighted Antihypertensive Introduction */}
           <div className="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-2">
@@ -299,17 +223,18 @@ export const PharmacyInventoryModal: React.FC<PharmacyInventoryModalProps> = ({
             </div>
 
             <select
+              required
               value={category}
               onChange={(e) => {
                 setCategory(e.target.value as any);
                 setAutoDetectedCategory(null);
                 if (e.target.value === 'Antihypertensive') {
-                  setIndications('First-line management for essential hypertension / elevated blood pressure maintenance.');
                   setRequiresPrescription(true);
                 }
               }}
               className="w-full px-3 py-2 border-2 border-rose-400 dark:border-rose-600 rounded-xl bg-white dark:bg-slate-900 font-bold text-slate-900 dark:text-white focus:ring-2 focus:ring-rose-500 cursor-pointer shadow-xs"
             >
+              <option value="" disabled>Select a category</option>
               <optgroup label="Primary Cardiovascular & NCD Allocation">
                 <option value="Antihypertensive">
                   ❤️ Antihypertensive (Cardiovascular / Blood Pressure Maintenance)
@@ -347,7 +272,6 @@ export const PharmacyInventoryModal: React.FC<PharmacyInventoryModalProps> = ({
                     setCategory(cat as any);
                     setAutoDetectedCategory(null);
                     if (cat === 'Antihypertensive') {
-                      setIndications('First-line management for essential hypertension / elevated blood pressure maintenance.');
                       setRequiresPrescription(true);
                     }
                   }}
@@ -372,7 +296,7 @@ export const PharmacyInventoryModal: React.FC<PharmacyInventoryModalProps> = ({
               <input
                 type="text"
                 required
-                placeholder="e.g. Losartan Potassium 50mg"
+                placeholder="Enter product name and strength"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800/80 focus:bg-white font-medium text-slate-900 dark:text-white"
@@ -385,7 +309,7 @@ export const PharmacyInventoryModal: React.FC<PharmacyInventoryModalProps> = ({
               <input
                 type="text"
                 required
-                placeholder="e.g. Losartan Potassium"
+                placeholder="Enter the active ingredient"
                 value={genericName}
                 onChange={(e) => setGenericName(e.target.value)}
                 className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800/80 focus:bg-white font-medium text-slate-900 dark:text-white"
@@ -457,7 +381,7 @@ export const PharmacyInventoryModal: React.FC<PharmacyInventoryModalProps> = ({
                 type="text"
                 value={batchNumber}
                 onChange={(e) => setBatchNumber(e.target.value)}
-                placeholder="LOT-2026-X"
+                placeholder="Enter batch/lot number"
                 className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800/80 focus:bg-white font-mono font-medium text-slate-900 dark:text-white"
               />
             </div>

@@ -79,14 +79,14 @@ export const HealthPatientHistoryTab: React.FC<HealthPatientHistoryTabProps> = (
     (allResidents || []).forEach((r) => {
       if (!r?.name) return;
       map.set(r.name.toLowerCase(), {
-        id: r.id || 'RES-0',
+        id: r.id || '',
         name: r.name,
-        purok: r.purok || 'Purok 1',
-        age: r.age || 35,
-        contactNumber: r.contactNumber || '0917-889-1020',
-        philhealthNo: r.philhealthNo || `PH-${(r.id || '0000').slice(-4)}-2026`,
-        bloodType: r.bloodType || 'O+',
-        allergies: r.allergies || 'No known drug allergies',
+        purok: r.purok,
+        age: r.age,
+        contactNumber: r.contactNumber,
+        philhealthNo: r.philhealthNo,
+        bloodType: r.bloodType,
+        allergies: r.allergies,
       });
     });
 
@@ -97,14 +97,9 @@ export const HealthPatientHistoryTab: React.FC<HealthPatientHistoryTabProps> = (
       const key = pName.toLowerCase();
       if (!map.has(key)) {
         map.set(key, {
-          id: a.residentId || 'RES-0',
+          id: a.residentId || a.id,
           name: pName,
-          purok: 'Barangay Sangkol',
-          age: a.patientAge || 30,
-          contactNumber: '0917-000-0000',
-          philhealthNo: `PH-${(a.residentId || '0000').slice(-4)}-2026`,
-          bloodType: 'O+',
-          allergies: 'None recorded',
+          age: a.patientAge,
         });
       }
     });
@@ -114,18 +109,7 @@ export const HealthPatientHistoryTab: React.FC<HealthPatientHistoryTabProps> = (
 
   const activePatient = useMemo(() => {
     if (mode === 'resident') {
-      return (
-        currentResident || {
-          id: 'RES-DEFAULT',
-          name: 'Resident Patient',
-          purok: 'Purok 1',
-          age: 32,
-          contactNumber: '0917-123-4567',
-          philhealthNo: 'PH-1092-2026',
-          bloodType: 'O+',
-          allergies: 'No known allergies',
-        }
-      );
+      return currentResident || null;
     }
     const targetName = (selectedPatientName || '').toLowerCase();
     const found = patientDirectory.find(
@@ -298,17 +282,17 @@ export const HealthPatientHistoryTab: React.FC<HealthPatientHistoryTabProps> = (
                     {activePatient.id}
                   </span>
                   <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
-                    PhilHealth: {activePatient.philhealthNo || 'Active Member'}
+                    PhilHealth: {activePatient.philhealthNo || 'Not recorded'}
                   </span>
                 </div>
                 <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500 pt-0.5">
-                  <span>Age: <strong className="text-slate-800 dark:text-slate-200">{activePatient.age || 32} y/o</strong></span>
+                  <span>Age: <strong className="text-slate-800 dark:text-slate-200">{activePatient.age ? `${activePatient.age} y/o` : 'Not recorded'}</strong></span>
                   <span>•</span>
-                  <span>Purok: <strong className="text-slate-800 dark:text-slate-200">{activePatient.purok || 'Purok 2'}</strong></span>
+                  <span>Purok: <strong className="text-slate-800 dark:text-slate-200">{activePatient.purok || 'Not recorded'}</strong></span>
                   <span>•</span>
-                  <span>Blood Type: <strong className="text-rose-600 font-bold">{activePatient.bloodType || 'O+'}</strong></span>
+                  <span>Blood Type: <strong className="text-rose-600 font-bold">{activePatient.bloodType || 'Not recorded'}</strong></span>
                   <span>•</span>
-                  <span>Allergies: <strong className="text-slate-700 dark:text-slate-300">{activePatient.allergies || 'NKDA'}</strong></span>
+                  <span>Allergies: <strong className="text-slate-700 dark:text-slate-300">{activePatient.allergies || 'Not recorded'}</strong></span>
                 </div>
               </div>
             </div>

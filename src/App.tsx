@@ -123,7 +123,6 @@ const MainLayout: React.FC = () => {
   const [isAnalyticsModalOpen, setIsAnalyticsModalOpen] = useState(false);
   const [authView, setAuthView] = useState<'landing' | 'login'>('login');
   const [pollToast, setPollToast] = useState<string | null>(null);
-  const lastPollToneAtRef = useRef(0);
 
   useEffect(() => {
     let timeoutId: ReturnType<typeof setTimeout> | null = null;
@@ -132,7 +131,6 @@ const MainLayout: React.FC = () => {
       if (!detail?.message) return;
       setPollToast(detail.message);
       playNotificationTone();
-      lastPollToneAtRef.current = Date.now();
       if (timeoutId) clearTimeout(timeoutId);
       timeoutId = setTimeout(() => setPollToast(null), 4000);
     };
@@ -175,20 +173,6 @@ const MainLayout: React.FC = () => {
     .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
 
   const unreadNotifCount = notifications.filter((notification) => !notification.read).length;
-  const previousUnreadNotifCountRef = useRef<number | null>(null);
-
-  useEffect(() => {
-    const previousCount = previousUnreadNotifCountRef.current;
-    previousUnreadNotifCountRef.current = unreadNotifCount;
-
-    if (
-      previousCount !== null &&
-      unreadNotifCount > previousCount &&
-      Date.now() - lastPollToneAtRef.current > 1000
-    ) {
-      playNotificationTone();
-    }
-  }, [unreadNotifCount]);
 
   const markAllVisibleNotificationsAsRead = () => {
     filteredNotifications.forEach((notification) => markNotificationAsRead(notification.id));

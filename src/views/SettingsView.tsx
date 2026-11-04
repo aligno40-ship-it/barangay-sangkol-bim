@@ -552,43 +552,6 @@ export const SettingsView: React.FC = () => {
               )}
             </button>
 
-            {/* Discard Button (if modified) */}
-            {hasUnsavedChanges && (
-              <button
-                type="button"
-                onClick={handleDiscardChanges}
-                className="flex items-center gap-1.5 px-3.5 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-semibold border border-slate-300 dark:border-slate-600 transition-colors cursor-pointer"
-              >
-                <RotateCcw className="w-3.5 h-3.5" />
-                <span>Discard</span>
-              </button>
-            )}
-
-            {/* Primary Save Button */}
-            <button
-              type="button"
-              disabled={isSaving}
-              onClick={() => handleSaveAllSettings()}
-              className={`flex items-center gap-2 px-5 py-2 rounded-xl text-xs font-bold shadow-xs transition-all cursor-pointer ${
-                isSaving
-                  ? 'bg-indigo-400 text-white cursor-not-allowed'
-                  : hasUnsavedChanges
-                  ? 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-indigo-500/25 ring-2 ring-indigo-400/40 animate-pulse'
-                  : 'bg-indigo-600 hover:bg-indigo-700 text-white'
-              }`}
-            >
-              {isSaving ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>Saving to Supabase...</span>
-                </>
-              ) : (
-                <>
-                  <Save className="w-4 h-4" />
-                  <span>Save Changes</span>
-                </>
-              )}
-            </button>
           </div>
         </div>
 

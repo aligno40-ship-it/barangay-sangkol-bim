@@ -653,14 +653,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
           </div>
         </div>
 
-        <button
-          type="button"
-          onClick={() => setIsRegisterModalOpen(true)}
-          className="px-3 py-1.5 rounded-xl bg-white/80 hover:bg-white text-emerald-800 text-xs font-bold border border-emerald-200 shadow-xs transition-colors cursor-pointer flex items-center gap-1.5"
-        >
-          <UserPlus className="w-3.5 h-3.5 text-emerald-600" />
-          <span>Resident Registration</span>
-        </button>
+        
       </header>
 
       {/* Centered Login Card Area */}

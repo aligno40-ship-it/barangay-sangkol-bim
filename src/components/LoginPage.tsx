@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useBarangay, areNamesMatching } from '../context/BarangayContext';
 import { BarangaySangkolSeal, RepublicSeal } from './OfficialSeals';
 import { AnimatedLogoLoader } from './AnimatedLogoLoader';
+import { ResidentRegistrationModal } from './ResidentRegistrationModal';
 import { LegalPoliciesModal, LegalPolicyTab } from './LegalPoliciesModal';
 import { safeGetItem, safeSetItem, safeRemoveItem } from '../utils/storageUtils';
 import {
@@ -17,6 +18,7 @@ import {
   Loader2,
   Info,
   X,
+  UserPlus,
   Clock,
   CheckCircle2,
   FileCheck2,
@@ -84,6 +86,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
   const [isResetSubmitting, setIsResetSubmitting] = useState(false);
   const [resetError, setResetError] = useState<string | null>(null);
 
+  const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
   const [isLegalModalOpen, setIsLegalModalOpen] = useState(false);
   const [legalModalTab, setLegalModalTab] = useState<LegalPolicyTab>('privacy');
   const [sessionTimeoutNotice, setSessionTimeoutNotice] = useState<string | null>(() => {
@@ -151,7 +154,6 @@ export const LoginPage: React.FC<LoginPageProps> = ({
       // safe fallback
     }
   }, []);
-
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -380,7 +382,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                   Account Status: Pending Admin Verification
                 </span>
                 <p className="text-amber-800 text-[11px] leading-relaxed">
-                  Hi <strong>{pendingStatusInfo.name}</strong> (@{pendingStatusInfo.username}), your Resident Portal registration was submitted and is currently being verified by the Barangay Administrator against the civil registry records.
+                  Hi <strong>{pendingStatusInfo.name}</strong> (@{pendingStatusInfo.username}), your Resident Portal registration was submitted and is currently being verified by the Barangay Administration.
                 </p>
               </div>
             </div>
@@ -476,7 +478,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                 }}
                 placeholder="Enter username or email"
                 disabled={isLoading}
-                className="w-full pl-10 pr-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs sm:text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-transparent focus:bg-white transition-all font-medium disabled:opacity-60 disabled:cursor-not-allowed"
+                className="w-full pl-10 pr-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs sm:text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 disabled:opacity-60"
               />
             </div>
           </div>
@@ -508,7 +510,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                 }}
                 placeholder="Enter your password"
                 disabled={isLoading}
-                className="w-full pl-10 pr-10 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs sm:text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-transparent focus:bg-white transition-all font-medium disabled:opacity-60 disabled:cursor-not-allowed"
+                className="w-full pl-10 pr-10 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs sm:text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 disabled:opacity-60"
               />
               <button
                 type="button"
@@ -554,7 +556,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full py-2.5 px-4 text-white font-semibold rounded-xl text-xs sm:text-sm transition-all duration-150 flex items-center justify-center gap-2 shadow-sm cursor-pointer mt-2 disabled:opacity-60 disabled:cursor-not-allowed bg-emerald-700 hover:bg-emerald-800 shadow-emerald-700/20"
+            className="w-full py-2.5 px-4 text-white font-semibold rounded-xl text-xs sm:text-sm transition-all duration-150 flex items-center justify-center gap-2 shadow-sm cursor-pointer mt-2 bg-emerald-700 hover:bg-emerald-800 disabled:opacity-60"
           >
             {isLoading ? (
               <AnimatedLogoLoader mode="inline" label="Authenticating Secure Session..." />
@@ -567,6 +569,20 @@ export const LoginPage: React.FC<LoginPageProps> = ({
           </button>
         </form>
 
+        {/* Resident Registration Link */}
+        <div className="mt-4 pt-4 border-t border-slate-100 text-center space-y-2">
+          <p className="text-xs text-slate-600">
+            Not yet registered in the Resident Portal?
+          </p>
+          <button
+            type="button"
+            onClick={() => setIsRegisterModalOpen(true)}
+            className="w-full py-2 px-3 rounded-xl border border-emerald-300 bg-emerald-50 hover:bg-emerald-100 text-emerald-900 text-xs font-bold transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+          >
+            <UserPlus className="w-3.5 h-3.5 text-emerald-700" />
+            <span>Register Resident Account (Admin Approval Required)</span>
+          </button>
+        </div>
       </div>
 
       {/* Footer */}
@@ -579,6 +595,15 @@ export const LoginPage: React.FC<LoginPageProps> = ({
         </p>
       </footer>
 
+      {/* Resident Registration Modal */}
+      <ResidentRegistrationModal
+        isOpen={isRegisterModalOpen}
+        onClose={() => setIsRegisterModalOpen(false)}
+        onSuccess={(regUsername) => {
+          setUsername(regUsername);
+          setPassword('');
+        }}
+      />
     </div>
   );
 
@@ -628,6 +653,14 @@ export const LoginPage: React.FC<LoginPageProps> = ({
           </div>
         </div>
 
+        <button
+          type="button"
+          onClick={() => setIsRegisterModalOpen(true)}
+          className="px-3 py-1.5 rounded-xl bg-white/80 hover:bg-white text-emerald-800 text-xs font-bold border border-emerald-200 shadow-xs transition-colors cursor-pointer flex items-center gap-1.5"
+        >
+          <UserPlus className="w-3.5 h-3.5 text-emerald-600" />
+          <span>Resident Registration</span>
+        </button>
       </header>
 
       {/* Centered Login Card Area */}

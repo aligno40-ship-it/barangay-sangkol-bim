@@ -580,7 +580,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
             className="w-full py-2 px-3 rounded-xl border border-emerald-300 bg-emerald-50 hover:bg-emerald-100 text-emerald-900 text-xs font-bold transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
           >
             <UserPlus className="w-3.5 h-3.5 text-emerald-700" />
-            <span>Register Resident Account (Admin Approval Required)</span>
+            <span> Resident Sign-Up Request </span>
           </button>
         </div>
       </div>

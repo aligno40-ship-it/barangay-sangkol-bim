@@ -48,7 +48,7 @@ function AppRoot() {
   if (!isOnline) {
     return (
       <main className="offline-page" role="status" aria-live="assertive">
-        <h1>Wakay konekyon Kol!!!</h1>
+        <h1>Wakay koneksyon Kol!!!</h1>
       </main>
     );
   }

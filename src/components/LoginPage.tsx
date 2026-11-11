@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useBarangay, areNamesMatching } from '../context/BarangayContext';
 import { BarangaySangkolSeal, RepublicSeal } from './OfficialSeals';
 import { AnimatedLogoLoader } from './AnimatedLogoLoader';
-import { LegalPoliciesModal, LegalPolicyTab } from './LegalPoliciesModal';
 import { ResidentRegistrationModal } from './ResidentRegistrationModal';
+import { LegalPoliciesModal, LegalPolicyTab } from './LegalPoliciesModal';
 import { safeGetItem, safeSetItem, safeRemoveItem } from '../utils/storageUtils';
 import {
   User,
@@ -18,6 +18,7 @@ import {
   Loader2,
   Info,
   X,
+  UserPlus,
   Clock,
   CheckCircle2,
   FileCheck2,
@@ -25,7 +26,6 @@ import {
   Scale,
   ArrowLeft,
   KeyRound,
-  UserPlus,
 } from 'lucide-react';
 
 interface LoginPageProps {
@@ -154,7 +154,6 @@ export const LoginPage: React.FC<LoginPageProps> = ({
       // safe fallback
     }
   }, []);
-
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -383,7 +382,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                   Account Status: Pending Admin Verification
                 </span>
                 <p className="text-amber-800 text-[11px] leading-relaxed">
-                  Hi <strong>{pendingStatusInfo.name}</strong> (@{pendingStatusInfo.username}), your Resident Portal registration was submitted and is currently being verified by the Barangay Administrator against the civil registry records.
+                  Hi <strong>{pendingStatusInfo.name}</strong> (@{pendingStatusInfo.username}), your Resident Portal registration was submitted and is currently being verified by the Barangay Administration.
                 </p>
               </div>
             </div>
@@ -479,7 +478,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                 }}
                 placeholder="Enter username or email"
                 disabled={isLoading}
-                className="w-full pl-10 pr-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs sm:text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-transparent focus:bg-white transition-all font-medium disabled:opacity-60 disabled:cursor-not-allowed"
+                className="w-full pl-10 pr-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs sm:text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 disabled:opacity-60"
               />
             </div>
           </div>
@@ -511,7 +510,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                 }}
                 placeholder="Enter your password"
                 disabled={isLoading}
-                className="w-full pl-10 pr-10 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs sm:text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-transparent focus:bg-white transition-all font-medium disabled:opacity-60 disabled:cursor-not-allowed"
+                className="w-full pl-10 pr-10 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs sm:text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 disabled:opacity-60"
               />
               <button
                 type="button"
@@ -557,7 +556,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full py-2.5 px-4 text-white font-semibold rounded-xl text-xs sm:text-sm transition-all duration-150 flex items-center justify-center gap-2 shadow-sm cursor-pointer mt-2 disabled:opacity-60 disabled:cursor-not-allowed bg-emerald-700 hover:bg-emerald-800 shadow-emerald-700/20"
+            className="w-full py-2.5 px-4 text-white font-semibold rounded-xl text-xs sm:text-sm transition-all duration-150 flex items-center justify-center gap-2 shadow-sm cursor-pointer mt-2 bg-emerald-700 hover:bg-emerald-800 disabled:opacity-60"
           >
             {isLoading ? (
               <AnimatedLogoLoader mode="inline" label="Authenticating Secure Session..." />
@@ -583,12 +582,15 @@ export const LoginPage: React.FC<LoginPageProps> = ({
             <span>Resident Sign-Up Request</span>
           </button>
         </div>
-
       </div>
 
       <ResidentRegistrationModal
         isOpen={isRegistrationModalOpen}
         onClose={() => setIsRegistrationModalOpen(false)}
+        onSuccess={(regUsername) => {
+          setUsername(regUsername);
+          setPassword('');
+        }}
       />
 
       {/* Footer */}

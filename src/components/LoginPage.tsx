@@ -556,13 +556,13 @@ export const LoginPage: React.FC<LoginPageProps> = ({
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full py-2.5 px-4 text-white font-semibold rounded-xl text-xs sm:text-sm transition-all duration-150 flex items-center justify-center gap-2 shadow-sm cursor-pointer mt-2 bg-emerald-700 hover:bg-emerald-800 disabled:opacity-60"
+            className="w-full py-2.5 px-4 text-white font-semibold rounded-xl text-xs sm:text-sm transition-all duration-150 flex items-center justify-center gap-2 shadow-sm cursor-pointer mt-2 bg-blue-900 hover:bg-blue-950 disabled:opacity-60"
           >
             {isLoading ? (
               <AnimatedLogoLoader mode="inline" label="Authenticating Secure Session..." />
             ) : (
               <>
-                <span>Sign In</span>
+                <span>Login</span>
                 <ArrowRight className="w-4 h-4" />
               </>
             )}

@@ -2332,7 +2332,7 @@ export const ManageUsersView: React.FC = () => {
 
                 {/* Email Address */}
                 <div className="space-y-1">
-                  <label className="block text-xs font-semibold text-slate-700">Email Address (for Gmail OTP)</label>
+                  <label className="block text-xs font-semibold text-slate-700">Email Address</label>
                   <input
                     type="email"
                     value={formData.email}
@@ -2766,7 +2766,7 @@ export const ManageUsersView: React.FC = () => {
           isOpen={Boolean(approvalModalUser)}
           user={approvalModalUser}
           onClose={() => setApprovalModalUser(null)}
-          onSuccess={(msg) => triggerFeedback(msg)}
+          onSuccess={(msg) => triggerFeedback(msg || 'Resident registration updated successfully.')}
         />
       )}
     </div>

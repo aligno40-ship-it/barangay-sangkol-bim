@@ -2057,9 +2057,9 @@ export const ManageUsersView: React.FC = () => {
 
       {/* Add / Edit User Modal */}
       {isUserModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex items-start justify-center p-4 bg-slate-900/60 backdrop-blur-xs overflow-y-auto sm:items-center">
           <div className="fixed inset-0" onClick={() => setIsUserModalOpen(false)} />
-          <div className="relative bg-white rounded-2xl border border-slate-200 shadow-2xl max-w-xl w-full p-6 z-10 animate-in fade-in zoom-in-95 duration-150 my-8">
+          <div className="relative bg-white rounded-2xl border border-slate-200 shadow-2xl max-w-xl w-full max-h-[calc(100dvh-2rem)] overflow-y-auto overscroll-contain p-6 z-10 animate-in fade-in zoom-in-95 duration-150 my-4">
             <div className="flex items-center justify-between pb-4 border-b border-slate-100">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-indigo-50 border border-indigo-200 flex items-center justify-center text-indigo-600">

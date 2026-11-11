@@ -46,19 +46,6 @@ interface ResidentRegistrationModalProps {
   onSuccess?: (registeredUsername: string) => void;
 }
 
-const VALID_ID_TYPES = [
-  'PhilSys National ID',
-  "Driver's License",
-  "COMELEC Voter's ID / Certification",
-  'Postal ID (Digitized)',
-  'Philippine Passport',
-  'UMID / SSS / GSIS Card',
-  'Senior Citizen ID',
-  'Person with Disability (PWD) ID',
-  'Student ID (School Year 2025-2026)',
-  'Barangay Resident ID Card',
-];
-
 const SECURITY_QUESTIONS = [
   'What is your registered Purok in Barangay Sangkol?',
   'What was the name of your elementary school?',
@@ -107,8 +94,6 @@ export const ResidentRegistrationModal: React.FC<ResidentRegistrationModalProps>
     email: '',
     username: '',
     password: '',
-    validIdType: 'PhilSys National ID',
-    validIdNumber: '',
     validIdPhoto: AVATAR_PRESETS[0]?.url || '',
     proofOfResidency: 'Barangay Census Record',
     securityQuestion: SECURITY_QUESTIONS[0],
@@ -175,7 +160,6 @@ export const ResidentRegistrationModal: React.FC<ResidentRegistrationModalProps>
       birthDate: formData.birthDate,
       contactNumber: formData.contactNumber,
       householdNo: formData.householdNo,
-      validIdNumber: formData.validIdNumber,
       email: formData.email,
       purok: formData.purok,
     });
@@ -187,7 +171,6 @@ export const ResidentRegistrationModal: React.FC<ResidentRegistrationModalProps>
     formData.birthDate,
     formData.contactNumber,
     formData.householdNo,
-    formData.validIdNumber,
     formData.email,
     formData.purok,
     checkResidentMatch,
@@ -486,7 +469,7 @@ export const ResidentRegistrationModal: React.FC<ResidentRegistrationModalProps>
                       required
                       value={formData.firstName}
                       onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
-                      placeholder="e.g. Maria Clara"
+                      placeholder="Enter your first name"
                       className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs text-slate-900 placeholder-slate-400 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none"
                     />
                   </div>
@@ -499,7 +482,7 @@ export const ResidentRegistrationModal: React.FC<ResidentRegistrationModalProps>
                       type="text"
                       value={formData.middleName}
                       onChange={(e) => setFormData({ ...formData, middleName: e.target.value })}
-                      placeholder="e.g. Santos"
+                      placeholder="Enter your middle name"
                       className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs text-slate-900 placeholder-slate-400 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none"
                     />
                   </div>
@@ -513,7 +496,7 @@ export const ResidentRegistrationModal: React.FC<ResidentRegistrationModalProps>
                       required
                       value={formData.lastName}
                       onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
-                      placeholder="e.g. Del Rosario"
+                      placeholder="Enter your last name"
                       className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs text-slate-900 placeholder-slate-400 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none"
                     />
                   </div>
@@ -701,7 +684,7 @@ export const ResidentRegistrationModal: React.FC<ResidentRegistrationModalProps>
                       required
                       value={formData.streetAddress}
                       onChange={(e) => setFormData({ ...formData, streetAddress: e.target.value })}
-                      placeholder="e.g. 142 Mango Avenue"
+                      placeholder="Enter your street or house address"
                       className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs text-slate-900 placeholder-slate-400 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none"
                     />
                   </div>
@@ -714,7 +697,7 @@ export const ResidentRegistrationModal: React.FC<ResidentRegistrationModalProps>
                       type="text"
                       value={formData.householdNo || ''}
                       onChange={(e) => setFormData({ ...formData, householdNo: e.target.value, householdId: e.target.value })}
-                      placeholder="e.g. HH-2024-001"
+                      placeholder="Enter your household ID or number"
                       className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs text-slate-900 placeholder-slate-400 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none"
                     />
                   </div>
@@ -798,7 +781,7 @@ export const ResidentRegistrationModal: React.FC<ResidentRegistrationModalProps>
                       type="text"
                       value={formData.occupation || ''}
                       onChange={(e) => setFormData({ ...formData, occupation: e.target.value })}
-                      placeholder="e.g. Farmer, Carpenter, Teacher"
+                      placeholder="Enter your occupation or livelihood"
                       className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs text-slate-900 placeholder-slate-400 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none"
                     />
                   </div>
@@ -914,7 +897,7 @@ export const ResidentRegistrationModal: React.FC<ResidentRegistrationModalProps>
                         type="text"
                         value={formData.precinctNo || ''}
                         onChange={(e) => setFormData({ ...formData, precinctNo: e.target.value })}
-                        placeholder="e.g. 0042A"
+                        placeholder="Enter your precinct number or cluster"
                         className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-xl text-xs font-mono text-slate-900 focus:ring-2 focus:ring-emerald-500"
                       />
                     </div>
@@ -973,7 +956,7 @@ export const ResidentRegistrationModal: React.FC<ResidentRegistrationModalProps>
                       type="text"
                       value={formData.emergencyContactName || ''}
                       onChange={(e) => setFormData({ ...formData, emergencyContactName: e.target.value })}
-                      placeholder="e.g. Maria Dela Cruz"
+                      placeholder="Enter your emergency contact's name"
                       className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs text-slate-900 placeholder-slate-400 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none"
                     />
                   </div>
@@ -987,38 +970,6 @@ export const ResidentRegistrationModal: React.FC<ResidentRegistrationModalProps>
                       value={formData.emergencyContactNumber || ''}
                       onChange={(e) => setFormData({ ...formData, emergencyContactNumber: e.target.value })}
                       placeholder="0917-xxx-xxxx"
-                      className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs text-slate-900 placeholder-slate-400 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-                  <div className="space-y-1">
-                    <label className="block text-[11px] font-semibold text-slate-700">
-                      Valid Government ID Type <span className="text-rose-500">*</span>
-                    </label>
-                    <select
-                      value={formData.validIdType}
-                      onChange={(e) => setFormData({ ...formData, validIdType: e.target.value })}
-                      className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs text-slate-900 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none"
-                    >
-                      {VALID_ID_TYPES.map((t) => (
-                        <option key={t} value={t}>
-                          {t}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div className="space-y-1">
-                    <label className="block text-[11px] font-semibold text-slate-700">
-                      Valid ID / Certificate Number
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.validIdNumber}
-                      onChange={(e) => setFormData({ ...formData, validIdNumber: e.target.value })}
-                      placeholder="e.g. PH-9821-4402-1193"
                       className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs text-slate-900 placeholder-slate-400 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none"
                     />
                   </div>
@@ -1148,7 +1099,7 @@ export const ResidentRegistrationModal: React.FC<ResidentRegistrationModalProps>
                           username: e.target.value.toLowerCase().replace(/\s+/g, '.'),
                         })
                       }
-                      placeholder="e.g. maria.delacruz"
+                      placeholder="Enter your desired username"
                       className="w-full pl-8 pr-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-mono text-slate-900 placeholder-slate-400 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none"
                     />
                   </div>

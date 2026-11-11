@@ -3,6 +3,7 @@ import { useBarangay, areNamesMatching } from '../context/BarangayContext';
 import { BarangaySangkolSeal, RepublicSeal } from './OfficialSeals';
 import { AnimatedLogoLoader } from './AnimatedLogoLoader';
 import { LegalPoliciesModal, LegalPolicyTab } from './LegalPoliciesModal';
+import { ResidentRegistrationModal } from './ResidentRegistrationModal';
 import { safeGetItem, safeSetItem, safeRemoveItem } from '../utils/storageUtils';
 import {
   User,
@@ -24,6 +25,7 @@ import {
   Scale,
   ArrowLeft,
   KeyRound,
+  UserPlus,
 } from 'lucide-react';
 
 interface LoginPageProps {
@@ -73,6 +75,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
 
   const [isLoading, setIsLoading] = useState(false);
   const [showForgotNotice, setShowForgotNotice] = useState(false);
+  const [isRegistrationModalOpen, setIsRegistrationModalOpen] = useState(false);
 
   // Self-Service Reset Password Modal State
   const [isResetPasswordModalOpen, setIsResetPasswordModalOpen] = useState(false);
@@ -560,14 +563,33 @@ export const LoginPage: React.FC<LoginPageProps> = ({
               <AnimatedLogoLoader mode="inline" label="Authenticating Secure Session..." />
             ) : (
               <>
-                <span>Log In</span>
+                <span>Sign In</span>
                 <ArrowRight className="w-4 h-4" />
               </>
             )}
           </button>
         </form>
 
+        <div className="mt-5 border-t border-slate-100 pt-4 text-center">
+          <p className="mb-2 text-xs text-slate-500">
+            Not yet registered in the Resident Portal?
+          </p>
+          <button
+            type="button"
+            onClick={() => setIsRegistrationModalOpen(true)}
+            className="w-full rounded-xl border border-emerald-300 bg-emerald-50 px-4 py-2.5 text-xs font-bold text-emerald-800 transition-colors hover:bg-emerald-100 flex items-center justify-center gap-2 cursor-pointer"
+          >
+            <UserPlus className="h-4 w-4 text-emerald-600" />
+            <span>Resident Sign-Up Request</span>
+          </button>
+        </div>
+
       </div>
+
+      <ResidentRegistrationModal
+        isOpen={isRegistrationModalOpen}
+        onClose={() => setIsRegistrationModalOpen(false)}
+      />
 
       {/* Footer */}
       <footer className="mt-5 text-center text-xs text-slate-500 space-y-1">

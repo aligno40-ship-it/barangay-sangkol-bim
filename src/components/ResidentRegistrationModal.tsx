@@ -568,13 +568,19 @@ export const ResidentRegistrationModal: React.FC<ResidentRegistrationModalProps>
                     <label className="block text-[11px] font-semibold text-slate-700">
                       Suffix
                     </label>
-                    <input
-                      type="text"
+                    <select
                       value={formData.suffix}
                       onChange={(e) => setFormData({ ...formData, suffix: e.target.value.toUpperCase() })}
-                      placeholder="Jr., III, etc."
-                      className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs text-slate-900 placeholder-slate-400 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none"
-                    />
+                      className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs text-slate-900 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none cursor-pointer"
+                    >
+                      <option value="">No suffix</option>
+                      <option value="JR.">Jr.</option>
+                      <option value="SR.">Sr.</option>
+                      <option value="II">II</option>
+                      <option value="III">III</option>
+                      <option value="IV">IV</option>
+                      <option value="V">V</option>
+                    </select>
                   </div>
                 </div>
 

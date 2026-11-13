@@ -2190,8 +2190,8 @@ export const ManageUsersView: React.FC = () => {
                     type="text"
                     required
                     value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    placeholder="e.g. Juan Dela Cruz"
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value.toUpperCase() })}
+                    placeholder="Enter full name"
                     className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-indigo-500"
                   />
                 </div>
@@ -2455,7 +2455,7 @@ export const ManageUsersView: React.FC = () => {
                       <input
                         type="text"
                         value={formData.streetAddress || ''}
-                        onChange={(e) => setFormData({ ...formData, streetAddress: e.target.value })}
+                        onChange={(e) => setFormData({ ...formData, streetAddress: e.target.value.toUpperCase() })}
                         placeholder="House No., Street Name, Sitio"
                         className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-indigo-500"
                       />

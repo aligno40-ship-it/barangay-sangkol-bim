@@ -467,7 +467,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 Security & Anti-Counterfeiting
               </span>
               <h2 className="text-2xl sm:text-4xl font-extrabold text-white tracking-tight">
-                Cryptographic Document Integrity & QR Seal
+                Document Integrity & QR Seal
               </h2>
               <p className="text-sm sm:text-base text-slate-300 leading-relaxed font-normal">
                 Upang maprotektahan ang ating mga mamamayan laban sa pamemeke ng mga dokumento, bawat

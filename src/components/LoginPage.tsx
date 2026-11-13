@@ -593,16 +593,6 @@ export const LoginPage: React.FC<LoginPageProps> = ({
         }}
       />
 
-      {/* Footer */}
-      <footer className="mt-5 text-center text-xs text-slate-500 space-y-1">
-        <p className="font-medium text-slate-600">
-          © 2026 Barangay Information Management System
-        </p>
-        <p className="text-[11px] text-slate-400">
-          All rights reserved. {settings.barangayName}, {settings.municipality}
-        </p>
-      </footer>
-
     </div>
   );
 
@@ -700,6 +690,12 @@ export const LoginPage: React.FC<LoginPageProps> = ({
           <span>Republic of the Philippines • Barangay Sangkol, Dipolog City</span>
           <span>•</span>
           <span>Official LGU Portal • PMA</span>
+        </div>
+
+        <div className="pt-1 text-[11px] text-slate-500 space-y-0.5">
+          <p className="text-slate-400">
+            All rights reserved. {settings.barangayName}, {settings.municipality}
+          </p>
         </div>
       </footer>
 

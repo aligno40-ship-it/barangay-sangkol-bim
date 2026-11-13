@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { useBarangay } from '../context/BarangayContext';
 import { ResidentRegistrationInput, Sex, CivilStatus } from '../types';
 import { BarangaySangkolSeal } from './OfficialSeals';
@@ -54,12 +55,22 @@ const SECURITY_QUESTIONS = [
   'What is the street name where you grew up?',
 ];
 
+const REGISTRATION_STEPS = [
+  'Personal information',
+  'Residency & livelihood',
+  'Contact & ID',
+  'Account security',
+  'Review & submit',
+];
+
 export const ResidentRegistrationModal: React.FC<ResidentRegistrationModalProps> = ({
   isOpen,
   onClose,
   onSuccess,
 }) => {
   const { registerResidentAccount, checkResidentMatch, settings, residents } = useBarangay();
+  const [activeStep, setActiveStep] = useState(0);
+  const formScrollRef = useRef<HTMLDivElement>(null);
 
   // Form State
   const [formData, setFormData] = useState<ResidentRegistrationInput>({
@@ -179,6 +190,11 @@ export const ResidentRegistrationModal: React.FC<ResidentRegistrationModalProps>
   const registryMatch = matchResult?.matchedResident || null;
 
   if (!isOpen) return null;
+
+  const navigateToStep = (step: number) => {
+    setActiveStep(step);
+    formScrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   const handleCustomPhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -309,11 +325,11 @@ export const ResidentRegistrationModal: React.FC<ResidentRegistrationModalProps>
     }
   };
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-slate-900/70 backdrop-blur-xs overflow-y-auto animate-in fade-in duration-200">
-      <div className="bg-white w-full max-w-2xl rounded-3xl border border-slate-200 shadow-2xl overflow-hidden flex flex-col my-auto max-h-[92vh]">
+  return createPortal(
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-slate-900/70 backdrop-blur-xs overflow-y-auto animate-in fade-in duration-200">
+      <div className="bg-white w-full max-w-4xl rounded-3xl border border-slate-200 shadow-2xl overflow-hidden flex flex-col my-auto max-h-[94vh]">
         {/* Modal Header */}
-        <div className="bg-gradient-to-r from-emerald-800 via-teal-900 to-slate-900 p-5 sm:p-6 text-white relative shrink-0">
+        <div className="bg-gradient-to-r from-emerald-800 via-teal-900 to-slate-900 p-4 sm:px-6 sm:py-5 text-white relative shrink-0">
           <button
             type="button"
             onClick={onClose}
@@ -347,7 +363,7 @@ export const ResidentRegistrationModal: React.FC<ResidentRegistrationModalProps>
         </div>
 
         {/* Modal Body */}
-        <div className="flex-1 overflow-y-auto p-5 sm:p-7 space-y-6">
+        <div ref={formScrollRef} className="flex-1 overflow-y-auto p-4 sm:p-6">
           {submittedResult ? (
             /* Successful Registration Submitted View */
             <div className="text-center py-4 space-y-5 animate-in zoom-in-95 duration-200">
@@ -428,17 +444,23 @@ export const ResidentRegistrationModal: React.FC<ResidentRegistrationModalProps>
             </div>
           ) : (
             /* Registration Form */
-            <form onSubmit={handleSubmit} noValidate className="space-y-5">
+            <form
+              onSubmit={activeStep === REGISTRATION_STEPS.length - 1 ? handleSubmit : (event) => event.preventDefault()}
+              noValidate
+              className="space-y-5"
+            >
               {/* Official Notice Banner */}
-              <div className="p-3.5 bg-emerald-50/80 border border-emerald-200 rounded-2xl text-xs text-emerald-900 flex items-start gap-2.5">
-                <Info className="w-4 h-4 text-emerald-700 shrink-0 mt-0.5" />
-                <div className="leading-relaxed">
-                  <span className="font-bold text-emerald-950 block">
-                    Important Resident Notice:
-                  </span>
-                  This registration is exclusively for <strong>Barangay Sangkol residents</strong>. All new accounts undergo verification by the Barangay Administrator before login is granted. Officials and staff must use the official administration login.
+              {activeStep === 0 && (
+                <div className="p-3.5 bg-emerald-50/80 border border-emerald-200 rounded-2xl text-xs text-emerald-900 flex items-start gap-2.5">
+                  <Info className="w-4 h-4 text-emerald-700 shrink-0 mt-0.5" />
+                  <div className="leading-relaxed">
+                    <span className="font-bold text-emerald-950 block">
+                      Important Resident Notice:
+                    </span>
+                    This registration is exclusively for <strong>Barangay Sangkol residents</strong>. All new accounts undergo verification by the Barangay Administrator before login is granted. Officials and staff must use the official administration login.
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* Error Notification */}
               {errorMessage && (
@@ -452,8 +474,49 @@ export const ResidentRegistrationModal: React.FC<ResidentRegistrationModalProps>
                 </div>
               )}
 
+              {/* Step Progress */}
+              <nav aria-label="Registration progress" className="rounded-2xl border border-slate-200 bg-slate-50/80 p-3 sm:p-4">
+                <ol className="grid grid-cols-5 gap-1">
+                  {REGISTRATION_STEPS.map((step, index) => {
+                    const isComplete = index < activeStep;
+                    const isActive = index === activeStep;
+                    return (
+                      <li
+                        key={step}
+                        aria-current={isActive ? 'step' : undefined}
+                        className="flex min-w-0 flex-col items-center gap-1.5 text-center"
+                      >
+                        <span className={`flex h-7 w-7 items-center justify-center rounded-full border text-[11px] font-bold transition-colors ${
+                          isComplete
+                            ? 'border-emerald-700 bg-emerald-700 text-white'
+                            : isActive
+                              ? 'border-emerald-700 bg-white text-emerald-800 ring-4 ring-emerald-100'
+                              : 'border-slate-300 bg-white text-slate-400'
+                        }`}>
+                          {isComplete ? <Check className="h-3.5 w-3.5" /> : index + 1}
+                        </span>
+                        <span className={`hidden sm:block text-[10px] leading-tight ${
+                          isActive ? 'font-bold text-emerald-900' : isComplete ? 'font-medium text-slate-600' : 'text-slate-400'
+                        }`}>
+                          {step}
+                        </span>
+                      </li>
+                    );
+                  })}
+                </ol>
+                <div className="mt-3 h-1 overflow-hidden rounded-full bg-slate-200">
+                  <div
+                    className="h-full rounded-full bg-emerald-600 transition-all duration-300"
+                    style={{ width: `${(activeStep / (REGISTRATION_STEPS.length - 1)) * 100}%` }}
+                  />
+                </div>
+                <p className="mt-2 text-center text-[11px] font-semibold text-slate-600 sm:hidden">
+                  Step {activeStep + 1} of {REGISTRATION_STEPS.length}: {REGISTRATION_STEPS[activeStep]}
+                </p>
+              </nav>
+
               {/* Section 1: Full Legal Name & Civil Profile */}
-              <div className="space-y-3">
+              <div className={`space-y-3 ${activeStep !== 0 ? 'hidden' : ''}`}>
                 <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5 border-b border-slate-100 pb-1.5">
                   <User className="w-3.5 h-3.5 text-emerald-600" />
                   <span>1. Resident Personal Information</span>
@@ -468,7 +531,7 @@ export const ResidentRegistrationModal: React.FC<ResidentRegistrationModalProps>
                       type="text"
                       required
                       value={formData.firstName}
-                      onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+                      onChange={(e) => setFormData({ ...formData, firstName: e.target.value.toUpperCase() })}
                       placeholder="Enter your first name"
                       className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs text-slate-900 placeholder-slate-400 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none"
                     />
@@ -481,7 +544,7 @@ export const ResidentRegistrationModal: React.FC<ResidentRegistrationModalProps>
                     <input
                       type="text"
                       value={formData.middleName}
-                      onChange={(e) => setFormData({ ...formData, middleName: e.target.value })}
+                      onChange={(e) => setFormData({ ...formData, middleName: e.target.value.toUpperCase() })}
                       placeholder="Enter your middle name"
                       className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs text-slate-900 placeholder-slate-400 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none"
                     />
@@ -495,7 +558,7 @@ export const ResidentRegistrationModal: React.FC<ResidentRegistrationModalProps>
                       type="text"
                       required
                       value={formData.lastName}
-                      onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+                      onChange={(e) => setFormData({ ...formData, lastName: e.target.value.toUpperCase() })}
                       placeholder="Enter your last name"
                       className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs text-slate-900 placeholder-slate-400 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none"
                     />
@@ -508,7 +571,7 @@ export const ResidentRegistrationModal: React.FC<ResidentRegistrationModalProps>
                     <input
                       type="text"
                       value={formData.suffix}
-                      onChange={(e) => setFormData({ ...formData, suffix: e.target.value })}
+                      onChange={(e) => setFormData({ ...formData, suffix: e.target.value.toUpperCase() })}
                       placeholder="Jr., III, etc."
                       className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs text-slate-900 placeholder-slate-400 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none"
                     />
@@ -650,7 +713,7 @@ export const ResidentRegistrationModal: React.FC<ResidentRegistrationModalProps>
               </div>
 
               {/* Section 2: Barangay Sangkol Address & Purok */}
-              <div className="space-y-3">
+              <div className={`space-y-3 ${activeStep !== 1 ? 'hidden' : ''}`}>
                 <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5 border-b border-slate-100 pb-1.5">
                   <MapPin className="w-3.5 h-3.5 text-emerald-600" />
                   <span>2. Barangay Residency & Location</span>
@@ -683,7 +746,7 @@ export const ResidentRegistrationModal: React.FC<ResidentRegistrationModalProps>
                       type="text"
                       required
                       value={formData.streetAddress}
-                      onChange={(e) => setFormData({ ...formData, streetAddress: e.target.value })}
+                      onChange={(e) => setFormData({ ...formData, streetAddress: e.target.value.toUpperCase() })}
                       placeholder="Enter your street or house address"
                       className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs text-slate-900 placeholder-slate-400 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none"
                     />
@@ -766,7 +829,7 @@ export const ResidentRegistrationModal: React.FC<ResidentRegistrationModalProps>
               </div>
 
               {/* Section 3: Civil, Livelihood & Sectoral Classification */}
-              <div className="space-y-3">
+              <div className={`space-y-3 ${activeStep !== 1 ? 'hidden' : ''}`}>
                 <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5 border-b border-slate-100 pb-1.5">
                   <Building className="w-3.5 h-3.5 text-emerald-600" />
                   <span>3. Livelihood, Sectoral & Voter Status</span>
@@ -906,7 +969,7 @@ export const ResidentRegistrationModal: React.FC<ResidentRegistrationModalProps>
               </div>
 
               {/* Section 4: Contact, Emergency Contact & Government ID Verification */}
-              <div className="space-y-3">
+              <div className={`space-y-3 ${activeStep !== 2 ? 'hidden' : ''}`}>
                 <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5 border-b border-slate-100 pb-1.5">
                   <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
                   <span>4. Contact, Emergency Contact & ID Verification</span>
@@ -1077,7 +1140,7 @@ export const ResidentRegistrationModal: React.FC<ResidentRegistrationModalProps>
               </div>
 
               {/* Section 5: Portal Sign-In Credentials & Password Security */}
-              <div className="space-y-4">
+              <div className={`space-y-4 ${activeStep !== 3 ? 'hidden' : ''}`}>
                 <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5 border-b border-slate-100 pb-1.5">
                   <Lock className="w-3.5 h-3.5 text-emerald-600" />
                   <span>5. Desired Resident Login Credentials & Password Security</span>
@@ -1155,8 +1218,80 @@ export const ResidentRegistrationModal: React.FC<ResidentRegistrationModalProps>
                 </div>
               </div>
 
+              {/* Review & Submit */}
+              <section className={`space-y-4 ${activeStep !== 4 ? 'hidden' : ''}`}>
+                <div className="flex items-start gap-3">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-800">
+                    <FileCheck2 className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-slate-900">Review your registration</h3>
+                    <p className="mt-0.5 text-xs text-slate-500">Check your details before sending your application for admin approval.</p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  <section className="rounded-2xl border border-slate-200 bg-white p-3.5">
+                    <h4 className="mb-2 text-[10px] font-bold uppercase tracking-wider text-emerald-800">Personal information</h4>
+                    <dl className="grid grid-cols-2 gap-x-3 gap-y-2 text-xs">
+                      <div><dt className="text-slate-500">Legal name</dt><dd className="font-semibold text-slate-900">{[formData.firstName, formData.middleName, formData.lastName, formData.suffix].filter(Boolean).join(' ') || 'Not provided'}</dd></div>
+                      <div><dt className="text-slate-500">Birth date</dt><dd className="font-semibold text-slate-900">{formData.birthDate || 'Not provided'}</dd></div>
+                      <div><dt className="text-slate-500">Sex / civil status</dt><dd className="font-semibold text-slate-900">{formData.sex} · {formData.civilStatus}</dd></div>
+                      <div><dt className="text-slate-500">Citizenship</dt><dd className="font-semibold text-slate-900">{formData.citizenship || 'Not provided'}</dd></div>
+                      <div><dt className="text-slate-500">Religion</dt><dd className="font-semibold text-slate-900">{formData.religion || 'Not provided'}</dd></div>
+                      <div><dt className="text-slate-500">Blood type</dt><dd className="font-semibold text-slate-900">{formData.bloodType || 'Not provided'}</dd></div>
+                      <div className="col-span-2"><dt className="text-slate-500">Education</dt><dd className="font-semibold text-slate-900">{formData.educationalAttainment || 'Not provided'}</dd></div>
+                    </dl>
+                  </section>
+
+                  <section className="rounded-2xl border border-slate-200 bg-white p-3.5">
+                    <h4 className="mb-2 text-[10px] font-bold uppercase tracking-wider text-emerald-800">Residency & livelihood</h4>
+                    <dl className="grid grid-cols-2 gap-x-3 gap-y-2 text-xs">
+                      <div><dt className="text-slate-500">Purok</dt><dd className="font-semibold text-slate-900">{formData.purok || 'Not provided'}</dd></div>
+                      <div><dt className="text-slate-500">Household number</dt><dd className="font-semibold text-slate-900">{formData.householdNo || 'Not provided'}</dd></div>
+                      <div className="col-span-2"><dt className="text-slate-500">Street / house address</dt><dd className="font-semibold text-slate-900">{formData.streetAddress || 'Not provided'}</dd></div>
+                      <div><dt className="text-slate-500">Occupation</dt><dd className="font-semibold text-slate-900">{formData.occupation || 'Not provided'}</dd></div>
+                      <div><dt className="text-slate-500">Monthly income</dt><dd className="font-semibold text-slate-900">₱{Number(formData.monthlyIncome || 0).toLocaleString()}</dd></div>
+                      <div><dt className="text-slate-500">Voter status</dt><dd className="font-semibold text-slate-900">{formData.voterStatus || 'Not provided'}</dd></div>
+                      <div><dt className="text-slate-500">Precinct</dt><dd className="font-semibold text-slate-900">{formData.precinctNo || 'Not provided'}</dd></div>
+                      <div className="col-span-2"><dt className="text-slate-500">Classification</dt><dd className="font-semibold text-slate-900">{[
+                        formData.isHouseholdHead && 'Household head',
+                        formData.isSeniorCitizen && 'Senior citizen',
+                        formData.isPWD && `PWD${formData.pwdType ? ` (${formData.pwdType})` : ''}`,
+                        formData.is4PsBeneficiary && '4Ps beneficiary',
+                        formData.isSoloParent && 'Solo parent',
+                        formData.isIndigent && 'Indigent',
+                      ].filter(Boolean).join(', ') || 'None selected'}</dd></div>
+                    </dl>
+                  </section>
+
+                  <section className="rounded-2xl border border-slate-200 bg-white p-3.5">
+                    <h4 className="mb-2 text-[10px] font-bold uppercase tracking-wider text-emerald-800">Contact & verification</h4>
+                    <dl className="grid grid-cols-2 gap-x-3 gap-y-2 text-xs">
+                      <div><dt className="text-slate-500">Mobile number</dt><dd className="font-semibold text-slate-900">{formData.contactNumber || 'Not provided'}</dd></div>
+                      <div><dt className="text-slate-500">Email</dt><dd className="break-all font-semibold text-slate-900">{formData.email || 'Not provided'}</dd></div>
+                      <div><dt className="text-slate-500">Emergency contact</dt><dd className="font-semibold text-slate-900">{formData.emergencyContactName || 'Not provided'}</dd></div>
+                      <div><dt className="text-slate-500">Emergency phone</dt><dd className="font-semibold text-slate-900">{formData.emergencyContactNumber || 'Not provided'}</dd></div>
+                      <div><dt className="text-slate-500">ID photo</dt><dd className="font-semibold text-slate-900">{formData.validIdPhoto ? 'Provided' : 'Not provided'}</dd></div>
+                      <div><dt className="text-slate-500">Face verification</dt><dd className="font-semibold text-slate-900">{formData.faceVerified ? 'Verified' : 'Not completed'}</dd></div>
+                      <div className="col-span-2"><dt className="text-slate-500">Census record</dt><dd className="font-semibold text-slate-900">{matchResult?.matchedResident ? `${matchResult.matchedResident.firstName} ${matchResult.matchedResident.lastName} · ${matchResult.confidence}` : 'No existing match found'}</dd></div>
+                    </dl>
+                  </section>
+
+                  <section className="rounded-2xl border border-slate-200 bg-white p-3.5">
+                    <h4 className="mb-2 text-[10px] font-bold uppercase tracking-wider text-emerald-800">Account security</h4>
+                    <dl className="grid grid-cols-2 gap-x-3 gap-y-2 text-xs">
+                      <div><dt className="text-slate-500">Username</dt><dd className="font-semibold text-slate-900">{formData.username ? `@${formData.username}` : 'Not provided'}</dd></div>
+                      <div><dt className="text-slate-500">Password</dt><dd className="font-semibold text-slate-900">{formData.password ? '••••••••' : 'Not provided'}</dd></div>
+                      <div className="col-span-2"><dt className="text-slate-500">Recovery question</dt><dd className="font-semibold text-slate-900">{formData.securityQuestion || 'Not provided'}</dd></div>
+                      <div><dt className="text-slate-500">Recovery answer</dt><dd className="font-semibold text-slate-900">{formData.securityAnswer ? 'Provided' : 'Not provided'}</dd></div>
+                    </dl>
+                  </section>
+                </div>
+              </section>
+
               {/* Terms and Consent Checkbox */}
-              <div className="pt-2">
+              <div className={`pt-2 ${activeStep !== 4 ? 'hidden' : ''}`}>
                 <label className="flex items-start gap-2.5 text-xs text-slate-600 cursor-pointer select-none">
                   <input
                     type="checkbox"
@@ -1171,33 +1306,57 @@ export const ResidentRegistrationModal: React.FC<ResidentRegistrationModalProps>
                 </label>
               </div>
 
-              {/* Submit Buttons */}
-              <div className="pt-3 border-t border-slate-100 flex items-center justify-between gap-3">
+              {/* Wizard Navigation */}
+              <div className="sticky bottom-0 z-10 -mx-4 border-t border-slate-100 bg-white/95 px-4 py-3 backdrop-blur-sm flex items-center justify-between gap-3 sm:-mx-6 sm:px-6">
                 <button
                   type="button"
                   onClick={onClose}
-                  className="px-4 py-2.5 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 text-xs font-semibold transition-colors cursor-pointer"
+                  className="px-3.5 py-2.5 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 text-xs font-semibold transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
 
-                <button
-                  type="submit"
-                  disabled={isLoading}
-                  className="px-6 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 active:bg-emerald-900 text-white text-xs font-bold shadow-md shadow-emerald-700/20 transition-all flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
-                >
-                  {isLoading ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      <span>Submitting to Admin...</span>
-                    </>
-                  ) : (
-                    <>
-                      <span>Submit Application for Admin Approval</span>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => navigateToStep(activeStep - 1)}
+                    disabled={activeStep === 0 || isLoading}
+                    className="px-3.5 py-2.5 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-50 text-xs font-semibold transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                  >
+                    Previous
+                  </button>
+
+                  {activeStep < REGISTRATION_STEPS.length - 1 ? (
+                    <button
+                      type="button"
+                      onClick={() => navigateToStep(activeStep + 1)}
+                      disabled={isLoading}
+                      className="px-5 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 active:bg-emerald-900 text-white text-xs font-bold shadow-md shadow-emerald-700/20 transition-all flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
+                    >
+                      <span>Next</span>
                       <ArrowRight className="w-4 h-4" />
-                    </>
+                    </button>
+                  ) : (
+                    <button
+                      type="submit"
+                      disabled={isLoading}
+                      className="px-4 sm:px-6 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 active:bg-emerald-900 text-white text-xs font-bold shadow-md shadow-emerald-700/20 transition-all flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
+                    >
+                      {isLoading ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          <span>Submitting to Admin...</span>
+                        </>
+                      ) : (
+                        <>
+                          <span className="sm:hidden">Submit</span>
+                          <span className="hidden sm:inline">Submit Application for Admin Approval</span>
+                          <ArrowRight className="w-4 h-4" />
+                        </>
+                      )}
+                    </button>
                   )}
-                </button>
+                </div>
               </div>
             </form>
           )}
@@ -1224,6 +1383,7 @@ export const ResidentRegistrationModal: React.FC<ResidentRegistrationModalProps>
           setIsFaceModalOpen(false);
         }}
       />
-    </div>
+    </div>,
+    document.body,
   );
 };
